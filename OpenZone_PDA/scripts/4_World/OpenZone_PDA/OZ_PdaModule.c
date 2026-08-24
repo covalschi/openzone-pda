@@ -33,6 +33,37 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
     }
 }
 
+class OZ_PdaHandlerQuests : OZ_PageHandler
+{
+    override string Handle(string op, string json, PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+        error = "STR_OZ_ERR_UNKNOWN_OP";
+
+        if (op == "journal")
+        {
+            // Порожній журнал і ВІДСУТНІЙ журнал -- різні повідомлення для
+            // гравця. HasProvider розрізняє «завдань немає» і «на цьому
+            // сервері квестового мода взагалі немає».
+            OZ_QuestJournal j = OZ_PdaQuests.Collect(sender);
+
+            string outJson;
+            string err;
+            if (JsonFileLoader<OZ_QuestJournal>.MakeData(j, outJson, err, false))
+            {
+                ok = true;
+                error = "";
+                return outJson;
+            }
+
+            OZ_Log.Error("quest journal serialise failed: " + err);
+            error = "STR_OZ_ERR_INTERNAL";
+        }
+
+        return "";
+    }
+}
+
 [CF_RegisterModule(OZ_PdaModule)]
 class OZ_PdaModule : CF_ModuleWorld
 {
@@ -57,6 +88,11 @@ class OZ_PdaModule : CF_ModuleWorld
                                  "set:oz_pda image:device",
                                  new OZ_PdaHandlerDevice());
 
+        OZ_PageRegistry.Register(OZ_PdaConst.PAGE_QUESTS,
+                                 "#STR_OZ_PAGE_QUESTS",
+                                 "set:oz_pda image:quests",
+                                 new OZ_PdaHandlerQuests());
+
         OZ_PdaProfiles.ServerLoad();
         OZ_PdaHardware.ServerLoad();
 
@@ -68,7 +104,7 @@ class OZ_PdaModule : CF_ModuleWorld
 
         string summary = "pda loaded: profiles=" + OZ_PdaProfiles.Count().ToString();
         summary += " pages=" + OZ_PageRegistry.Count().ToString();
-        summary += " antennas=" + OZ_PdaHardware.AntennaCount().ToString();
+        summary += " modules=" + OZ_PdaHardware.ModuleCount().ToString();
         summary += " carriers=" + OZ_PdaHardware.CarrierCount().ToString();
         OZ_Log.Info(summary);
     }
@@ -79,8 +115,9 @@ class OZ_PdaModule : CF_ModuleWorld
     private void CheckSlots()
     {
         CheckSlot(OZ_PdaConst.SLOT_BATTERY);
-        CheckSlot(OZ_PdaConst.SLOT_ANTENNA);
         CheckSlot(OZ_PdaConst.SLOT_CARRIER);
+        for (int i = 0; i < OZ_PdaConst.MODULE_SLOTS_MAX; i++)
+            CheckSlot(OZ_PdaConst.ModuleSlot(i));
     }
 
     private void CheckSlot(string name)

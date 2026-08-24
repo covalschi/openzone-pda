@@ -10,8 +10,28 @@ class OZ_PdaConst
     // Решта наші, і рушій про них не знає нічого -- що в них влазить і що це
     // дає, вирішує таблиця класнеймів у Hardware.json.
     static const string SLOT_BATTERY = "BatteryD";
-    static const string SLOT_ANTENNA = "OZ_Antenna";
     static const string SLOT_CARRIER = "OZ_DataCarrier";
+
+    // Модульні відсіки. Оголошені ВСІ, бо слоти не додаються в рантаймі;
+    // скільки з них видно на конкретній моделі -- вирішує профіль, а зайві
+    // ховає CanDisplayAttachmentSlot.
+    static const int    MODULE_SLOTS_MAX = 3;
+    static const string SLOT_MODULE_1 = "OZ_Module1";
+    static const string SLOT_MODULE_2 = "OZ_Module2";
+    static const string SLOT_MODULE_3 = "OZ_Module3";
+
+    static string ModuleSlot(int i)
+    {
+        if (i == 0) return SLOT_MODULE_1;
+        if (i == 1) return SLOT_MODULE_2;
+        if (i == 2) return SLOT_MODULE_3;
+        return "";
+    }
+
+    // Види модулів. Рядками, бо ці ж слова стоять у JSON і їх читає адмін.
+    static const string MOD_ANTENNA    = "antenna";
+    static const string MOD_RADIOMETER = "radiometer";
+    static const string MOD_DOSIMETER  = "dosimeter";
 
     // Id меню для EnterScriptedMenu.
     //
@@ -30,6 +50,11 @@ class OZ_PdaConst
     static const string INPUT_OPEN = "UAOZPdaOpen";
     static const string INPUT_PTT  = "UAOZPdaPtt";
 
-    // Сторінка, яку несе сам КПК.
+    // Сторінки, які несе сам КПК.
+    //
+    // PAGE_QUESTS -- договір, а не вміст: КПК малює журнал, а завдання в нього
+    // кладе квестовий мод через OZ_PdaQuests.Bind(). Так журнал лишається
+    // один, чий би мод його не наповнював.
     static const string PAGE_DEVICE = "device";
+    static const string PAGE_QUESTS = "quests";
 }

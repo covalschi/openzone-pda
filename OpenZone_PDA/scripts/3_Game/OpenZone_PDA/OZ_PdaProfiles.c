@@ -27,6 +27,12 @@ class OZ_PdaProfile
     ref OZ_PdaLimits  Limits;
     string            Theme       = "stalker2";
 
+    // Скільки модульних відсіків видно на цій моделі. ГОЛОВНИЙ важіль тиру:
+    // один відсік змушує вибирати між далеким зв'язком і лічильником Гейгера,
+    // три дозволяють нести все. Стеля -- MODULE_SLOTS_MAX, бо слоти не
+    // додаються в рантаймі.
+    int ModuleSlots = 1;
+
     // --- замок ---
     // Через скільки хвилин після того, як пристрій прибрали з рук, він
     // замикається сам. Нуль вимикає автоблокування для цієї моделі зовсім.
@@ -70,6 +76,7 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
 
         p.Pages = new array<string>();
         p.Pages.Insert(OZ_PdaConst.PAGE_DEVICE);
+        p.Pages.Insert(OZ_PdaConst.PAGE_QUESTS);
 
         p.BatteryClassNames = new array<string>();
         p.BatteryClassNames.Insert("Battery9V");
@@ -77,6 +84,29 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
         p.Limits            = new OZ_PdaLimits();
         p.PinProtectedPages = new array<string>();
         Profiles.Insert(p);
+
+        OZ_PdaProfile a = new OZ_PdaProfile();
+        a.Id          = "advanced";
+        a.DisplayName = "#STR_OZ_PDA_ADVANCED";
+
+        a.ClassNames = new array<string>();
+        a.ClassNames.Insert("OZ_PDA_Advanced");
+
+        a.Pages = new array<string>();
+        a.Pages.Insert(OZ_PdaConst.PAGE_DEVICE);
+        a.Pages.Insert(OZ_PdaConst.PAGE_QUESTS);
+
+        a.BatteryClassNames = new array<string>();
+        a.BatteryClassNames.Insert("Battery9V");
+
+        a.Limits            = new OZ_PdaLimits();
+        a.Limits.Markers    = 40;
+        a.Limits.Friends    = 60;
+        a.Limits.GroupChats = 8;
+        a.PinProtectedPages = new array<string>();
+        a.ModuleSlots       = OZ_PdaConst.MODULE_SLOTS_MAX;
+        a.LockAfterMinutes  = 5;
+        Profiles.Insert(a);
 
         VirtualDevice = new OZ_PdaVirtualDevice();
         VirtualDevice.Pages    = new array<string>();
@@ -96,7 +126,30 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
         if (!Profiles)
             Profiles = new array<ref OZ_PdaProfile>();
         if (!VirtualDevice)
-            VirtualDevice = new OZ_PdaVirtualDevice();
+            OZ_PdaProfile a = new OZ_PdaProfile();
+        a.Id          = "advanced";
+        a.DisplayName = "#STR_OZ_PDA_ADVANCED";
+
+        a.ClassNames = new array<string>();
+        a.ClassNames.Insert("OZ_PDA_Advanced");
+
+        a.Pages = new array<string>();
+        a.Pages.Insert(OZ_PdaConst.PAGE_DEVICE);
+        a.Pages.Insert(OZ_PdaConst.PAGE_QUESTS);
+
+        a.BatteryClassNames = new array<string>();
+        a.BatteryClassNames.Insert("Battery9V");
+
+        a.Limits            = new OZ_PdaLimits();
+        a.Limits.Markers    = 40;
+        a.Limits.Friends    = 60;
+        a.Limits.GroupChats = 8;
+        a.PinProtectedPages = new array<string>();
+        a.ModuleSlots       = OZ_PdaConst.MODULE_SLOTS_MAX;
+        a.LockAfterMinutes  = 5;
+        Profiles.Insert(a);
+
+        VirtualDevice = new OZ_PdaVirtualDevice();
 
         for (int i = 0; i < Profiles.Count(); i++)
         {
@@ -143,6 +196,17 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
                 p.BatteryClassNames = new array<string>();
             if (!p.PinProtectedPages)
                 p.PinProtectedPages = new array<string>();
+
+            if (p.ModuleSlots < 0 || p.ModuleSlots > OZ_PdaConst.MODULE_SLOTS_MAX)
+            {
+                string wm = "profile \"" + p.Id;
+                wm += "\" asks for " + p.ModuleSlots.ToString();
+                wm += " module bays; the config declares at most ";
+                wm += OZ_PdaConst.MODULE_SLOTS_MAX.ToString();
+                OZ_Log.Warn(wm);
+                p.ModuleSlots = Math.Clamp(p.ModuleSlots, 0, OZ_PdaConst.MODULE_SLOTS_MAX);
+                warnings++;
+            }
 
             if (p.LockAfterMinutes < 0)
             {

@@ -4,7 +4,7 @@
 // бази, який дивиться на КПК в руках гравця й звіряє три речі підряд:
 //
 //   1. сторінка входить у набір ПРОФІЛЮ цього пристрою;
-//   2. якщо її вмикає антена -- антена справді вставлена;
+//   2. якщо її вмикає модуль -- модуль справді вставлений;
 //   3. якщо профіль позначив її як захищену піном -- пристрій відімкнений.
 //
 // Кожна перевірка серверна. Клієнт може попросити що завгодно; відповідає
@@ -31,8 +31,9 @@ class OZ_PdaAccess : OZ_PageAccess
 
         if (prof.Pages.Find(pageId) == -1)
         {
-            // Сторінки може не бути в профілі, але її може вмикати антена.
-            if (!AntennaEnables(pda, pageId))
+            // Сторінки може не бути в профілі, але її може вмикати
+            // вставлений модуль.
+            if (!ModuleEnables(pda, pageId))
                 return false;
         }
 
@@ -48,17 +49,22 @@ class OZ_PdaAccess : OZ_PageAccess
         return true;
     }
 
-    private bool AntennaEnables(OZ_PDA_Base pda, string pageId)
+    private bool ModuleEnables(OZ_PDA_Base pda, string pageId)
     {
-        string ant = pda.OZ_AntennaClass();
-        if (ant == "")
-            return false;
+        for (int i = 0; i < OZ_PdaConst.MODULE_SLOTS_MAX; i++)
+        {
+            string cls = pda.OZ_ModuleClass(i);
+            if (cls == "")
+                continue;
 
-        OZ_AntennaSpec spec = OZ_PdaHardware.AntennaFor(ant);
-        if (!spec || !spec.EnablesPages)
-            return false;
+            OZ_ModuleSpec spec = OZ_PdaHardware.ModuleFor(cls);
+            if (!spec || !spec.EnablesPages)
+                continue;
 
-        return spec.EnablesPages.Find(pageId) != -1;
+            if (spec.EnablesPages.Find(pageId) != -1)
+                return true;
+        }
+        return false;
     }
 }
 

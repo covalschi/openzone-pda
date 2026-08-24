@@ -4,27 +4,52 @@
 // declaring it and loading without the core gets a blocking "Addon X requires
 // addon Y" dialog before the game starts, not a silently skipped pbo.
 //
-// The PDA declares three slots and owns none of what goes in them. Batteries
-// are vanilla; antennas come from OpenZone Radio; data carriers can come from
-// anywhere. What each attachment DOES is a table of classnames in JSON, so an
-// admin can point the mod at items from mods we have never heard of.
+// Three kinds of socket, not one list:
+//
+//   POWER    a battery. Vanilla slot; the engine plugs the device into it.
+//   STORAGE  a data carrier. Its own slot: that is content, not capability.
+//   MODULES  antenna, radiometer, dosimeter, and whatever other mods bring.
+//            They share a LIMITED number of bays.
+//
+// The bay count is the tier lever. A rookie PDA has one and its owner chooses
+// between long-range comms and a Geiger counter; a Duty PDA has three and
+// carries all of it. A device with a slot per device type would offer no
+// choice at all.
+//
+// What fits a bay, and what it does, is a table of classnames in JSON -- so a
+// module can come from any mod, and an admin can point the PDA at an item we
+// have never heard of.
 
 class CfgSlots
 {
     // The class is Slot_<name>; the bare `name` is what attachments[] and
     // inventorySlot[] match on.
-    class Slot_OZ_Antenna
-    {
-        name = "OZ_Antenna";
-        displayName = "$STR_OZ_SLOT_ANTENNA";
-        ghostIcon = "set:dayz_inventory image:cable";
-    };
-
     class Slot_OZ_DataCarrier
     {
         name = "OZ_DataCarrier";
         displayName = "$STR_OZ_SLOT_CARRIER";
         ghostIcon = "set:dayz_inventory image:memorycard";
+    };
+
+    class Slot_OZ_Module1
+    {
+        name = "OZ_Module1";
+        displayName = "$STR_OZ_SLOT_MODULE";
+        ghostIcon = "set:dayz_inventory image:cable";
+    };
+
+    class Slot_OZ_Module2
+    {
+        name = "OZ_Module2";
+        displayName = "$STR_OZ_SLOT_MODULE";
+        ghostIcon = "set:dayz_inventory image:cable";
+    };
+
+    class Slot_OZ_Module3
+    {
+        name = "OZ_Module3";
+        displayName = "$STR_OZ_SLOT_MODULE";
+        ghostIcon = "set:dayz_inventory image:cable";
     };
 };
 
@@ -32,7 +57,14 @@ class CfgPatches
 {
     class OpenZone_PDA
     {
-        units[] = {"OZ_PDA_Novice", "OZ_DataCarrier_Base"};
+        units[] =
+        {
+            "OZ_PDA_Novice",
+            "OZ_PDA_Advanced",
+            "OZ_DataCarrier_Chip",
+            "OZ_Module_Radiometer",
+            "OZ_Module_Dosimeter"
+        };
         weapons[] = {};
         requiredVersion = 0.1;
         requiredAddons[] =
@@ -43,8 +75,9 @@ class CfgPatches
             // The core's CfgPatches class name -- that string IS the addon
             // identity, and nothing else resolves to it.
             "OpenZone_Core",
-            // The vanilla GPS model borrowed until dayz-3d delivers our own.
-            "DZ_Gear_Navigation"
+            // Vanilla models borrowed until dayz-3d delivers our own.
+            "DZ_Gear_Navigation",
+            "DZ_Gear_Tools"
         };
     };
 };
@@ -68,9 +101,9 @@ class CfgMods
 
         class defs
         {
-            // imageSets appear in Task 9 together with the UI they serve: an
-            // imageset pointing at a texture that does not exist yet is a
-            // broken reference the engine complains about on every boot.
+            // imageSets arrive with the UI they serve: an imageset pointing at
+            // a texture that does not exist yet is a broken reference the
+            // engine complains about on every boot.
 
             class gameScriptModule    { value = ""; files[] = {"OpenZone_PDA/scripts/3_Game"}; };
             class worldScriptModule   { value = ""; files[] = {"OpenZone_PDA/scripts/4_World"}; };
@@ -97,21 +130,25 @@ class CfgVehicles
         rotationFlags = 1;
         absorbency = 0.3;
 
-        // Battery, antenna, data carrier. The battery slot is all the engine
-        // needs to know: with plugType=1 and attachmentAction=1 it plugs the
-        // device into whatever battery is attached and unplugs it on detach,
-        // with no script involved.
-        //
-        // The other two carry no engine meaning at all -- they are ours, and
-        // what fits in them is decided by JSON, not by inheritance.
-        attachments[] = {"BatteryD", "OZ_Antenna", "OZ_DataCarrier"};
+        // Every bay is declared here; the profile decides how many of them a
+        // given model actually exposes, and the script hides the rest. Slots
+        // cannot be added at runtime, so the maximum lives in config and the
+        // limit lives in JSON.
+        attachments[] =
+        {
+            "BatteryD",
+            "OZ_DataCarrier",
+            "OZ_Module1",
+            "OZ_Module2",
+            "OZ_Module3"
+        };
 
         class EnergyManager
         {
             hasIcon = 1;
             autoSwitchOffWhenInCargo = 1;
-            // 0.5 per minute. A device profile can raise the effective drain;
-            // this is the default the engine ticks with.
+            // 0.5 per minute. Modules raise the effective drain through their
+            // PowerFactor; this is the bare device.
             energyUsagePerSecond = 0.0083;
             // Stores nothing itself: it lives off the attached battery.
             energyStorageMax = 0;
@@ -128,9 +165,15 @@ class CfgVehicles
         descriptionShort = "$STR_OZ_PDA_NOVICE_DESC";
     };
 
-    // A data carrier the PDA can read. Ships as a base plus one concrete item
-    // so the slot is testable out of the box; content mods add their own and
-    // name them in the JSON table.
+    class OZ_PDA_Advanced : OZ_PDA_Base
+    {
+        scope = 2;
+        displayName = "$STR_OZ_PDA_ADVANCED";
+        descriptionShort = "$STR_OZ_PDA_ADVANCED_DESC";
+    };
+
+    // ------------------------------------------------------------- storage
+
     class OZ_DataCarrier_Base : Inventory_Base
     {
         scope = 0;
@@ -146,5 +189,36 @@ class CfgVehicles
         scope = 2;
         displayName = "$STR_OZ_CARRIER_CHIP";
         descriptionShort = "$STR_OZ_CARRIER_CHIP_DESC";
+    };
+
+    // ------------------------------------------------------------- modules
+    //
+    // A module fits ANY bay: one inventorySlot[] listing all three, so the
+    // player is not made to remember which hole a given chip belongs in.
+
+    class OZ_Module_Base : Inventory_Base
+    {
+        scope = 0;
+        model = "\dz\gear\tools\Battery9V.p3d";
+        itemSize[] = {1, 1};
+        weight = 60;
+        rotationFlags = 1;
+        inventorySlot[] = {"OZ_Module1", "OZ_Module2", "OZ_Module3"};
+    };
+
+    // Geiger counter: measures the field around you, right now.
+    class OZ_Module_Radiometer : OZ_Module_Base
+    {
+        scope = 2;
+        displayName = "$STR_OZ_MOD_RADIOMETER";
+        descriptionShort = "$STR_OZ_MOD_RADIOMETER_DESC";
+    };
+
+    // Injected sensor: measures the dose already in your body.
+    class OZ_Module_Dosimeter : OZ_Module_Base
+    {
+        scope = 2;
+        displayName = "$STR_OZ_MOD_DOSIMETER";
+        descriptionShort = "$STR_OZ_MOD_DOSIMETER_DESC";
     };
 };
