@@ -21,6 +21,7 @@ class OZ_PdaPageFactory
         Add(OZ_PdaConst.PAGE_DEVICE, OZ_PdaPageDevice);
         Add(OZ_PdaConst.PAGE_QUESTS, OZ_PdaPageQuests);
         Add(OZ_PdaConst.PAGE_CONTACTS, OZ_PdaPageContacts);
+        Add(OZ_PdaConst.PAGE_NOTES, OZ_PdaPageNotes);
     }
 
     static void Add(string pageId, typename pageClass)
@@ -65,7 +66,7 @@ class OZ_PdaPageFactory
         if (pageId == OZ_PdaConst.PAGE_CONTACTS) return "C";
         if (pageId == "chat")     return "@";
         if (pageId == "radio")    return "R";
-        if (pageId == "notes")    return "N";
+        if (pageId == OZ_PdaConst.PAGE_NOTES) return "N";
         return "?";
     }
 }

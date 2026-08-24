@@ -78,6 +78,14 @@ class OZ_PdaPage
         return false;
     }
 
+    // Вибір рядка в списку -- ОКРЕМА подія рушія, а не клік: TextListboxWidget
+    // веде виділення сам і повідомляє про це через OnItemSelected. Ловити його
+    // кліком означало б читати виділення до того, як воно змінилось.
+    bool OnPageItemSelected(Widget w, int row)
+    {
+        return false;
+    }
+
     void Show(bool show)
     {
         if (m_Root)

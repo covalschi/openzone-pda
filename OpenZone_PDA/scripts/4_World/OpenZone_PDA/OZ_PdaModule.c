@@ -379,6 +379,15 @@ class OZ_PdaModule : CF_ModuleWorld
                                  "set:oz_pda image:contacts",
                                  new OZ_PdaHandlerContacts());
 
+        OZ_PageRegistry.Register(OZ_PdaConst.PAGE_NOTES,
+                                 "#STR_OZ_PAGE_NOTES",
+                                 "set:oz_pda image:notes",
+                                 new OZ_PdaHandlerNotes());
+
+        // Каталог записок -- наш, і створити його мусимо ми: ядро про нього
+        // не знає.
+        OZ_NoteStore.EnsureDir();
+
         OZ_PdaProfiles.ServerLoad();
         OZ_PdaHardware.ServerLoad();
 

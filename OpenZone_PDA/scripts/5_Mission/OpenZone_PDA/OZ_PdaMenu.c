@@ -686,6 +686,17 @@ class OZ_PdaMenu : UIScriptedMenu
         return super.OnClick(w, x, y, button);
     }
 
+    override bool OnItemSelected(Widget w, int x, int y, int row, int column, int oldRow, int oldColumn)
+    {
+        if (m_Current != "" && m_Pages.Contains(m_Current))
+        {
+            if (m_Pages.Get(m_Current).OnPageItemSelected(w, row))
+                return true;
+        }
+
+        return super.OnItemSelected(w, x, y, row, column, oldRow, oldColumn);
+    }
+
     override bool OnMouseEnter(Widget w, int x, int y)
     {
         if (w && w.GetUserID() == 1)

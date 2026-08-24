@@ -1,0 +1,246 @@
+// Сторінка «Записки»: список ліворуч, редактор праворуч.
+//
+// Кладеться скриптом у PageHost меню (1045x414 одиниць розмітки).
+// Імена читає OZ_PdaPageNotes.c: NoteList, BtnNew, BtnNewText, NoteTitle,
+// NoteBody, BtnSave, BtnSaveText, BtnDelete, BtnDeleteText, NotesHint.
+
+FrameWidgetClass OZ_PageNotes {
+ visible 1
+ position 0 0
+ size 1045 414
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ {
+  // --- ліва колонка: перелік ---
+  TextListboxWidgetClass NoteList {
+   visible 1
+   position 16 12
+   size 340 356
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   style NoScrollBar
+   "title visible" 0
+   "highlight row" 1
+   colums "text;100;"
+   lines 14
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 14
+   color 0.788 0.788 0.816 1
+   priority 2
+  }
+
+  // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+  // віджетів, і напис усередині зникає.
+  ButtonWidgetClass BtnNew {
+   visible 1
+   position 16 376
+   size 340 26
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnNewBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 340 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnNewText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 340 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
+  // --- права колонка: редактор ---
+  PanelWidgetClass EditorPane {
+   visible 1
+   color 0.067 0.067 0.075 1
+   position 372 12
+   size 657 356
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 1
+   style rover_sim_colorable
+   {
+    EditBoxWidgetClass NoteTitle {
+     visible 1
+     position 10 8
+     size 637 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 16
+     color 1 0.478 0.102 1
+     priority 2
+    }
+
+    // Той самий віджет, яким ваниль дає писати на папері
+    // (gui/layouts/day_z_inventory_note.layout). Клавіатуру він ловить сам --
+    // на відміну від OnKeyPress меню, куди ввід доходить не з усякого джерела.
+    MultilineEditBoxWidgetClass NoteBody {
+     visible 1
+     position 10 42
+     size 637 304
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     "exact text" 1
+     "exact text size" 15
+     lines 15
+     "limit visible" 1
+     color 0.788 0.788 0.816 1
+     font "gui/fonts/sdf_MetronBook24"
+     priority 2
+    }
+   }
+  }
+
+  ButtonWidgetClass BtnSave {
+   visible 1
+   position 372 376
+   size 160 26
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnSaveBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 160 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnSaveText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 160 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
+  ButtonWidgetClass BtnDelete {
+   visible 1
+   position 544 376
+   size 160 26
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnDeleteBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 160 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnDeleteText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 160 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.788 0.478 0.478 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
+  TextWidgetClass NotesHint {
+   visible 1
+   ignorepointer 1
+   halign right_ref
+   position 16 376
+   size 300 26
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.463 0.463 0.494 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 13
+   "text halign" right
+   "text valign" center
+   priority 2
+  }
+ }
+}

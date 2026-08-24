@@ -132,3 +132,22 @@ class OZ_ContactList
         Entries = new array<ref OZ_ContactEntry>();
     }
 }
+
+// --- сторінка «Записки» ---
+//
+// Порожній Id означає «це нова записка». Так клієнту не треба знати, як
+// сервер їх нумерує, і не треба другої операції «створити».
+
+class OZ_Note
+{
+    string Id        = "";
+    string Title     = "";
+    string Body      = "";
+    string CreatedAt = "";
+    string EditedAt  = "";
+}
+
+class OZ_NoteRef
+{
+    string Id = "";
+}
