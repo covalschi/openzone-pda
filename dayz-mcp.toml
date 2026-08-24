@@ -1,0 +1,23 @@
+# Переносна половина профілю для dayz-agentic-modding-mcp.
+# Машинні шляхи живуть у dayz-mcp.local.toml, який не комітиться.
+#
+# КПК ЖОРСТКО залежить від @OpenZone_Core через requiredAddons. Без нього гра
+# показує блокуюче вікно «Addon requires addon» ще до завантаження — це не
+# тихий пропуск pbo. Тому ядро підставляється стенду через [mods] extra
+# у локальному файлі, а не через цей.
+
+[project]
+name = "openzone-pda"
+
+[build]
+mods = ["OpenZone_PDA"]
+
+[expect]
+ready_line   = "pda loaded"
+max_warnings = 0
+forbid       = ["Bad type", "Can't compile", "NULL pointer to instance"]
+error_regex  = ["SCRIPT\s+\(E\).*OZ_"]
+noise        = []
+
+[expect.counters]
+# Заповнюється після першого бута, коли ready-рядок існує насправді.

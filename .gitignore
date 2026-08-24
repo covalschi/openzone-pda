@@ -16,3 +16,6 @@ build/out/
 .dayz-mcp/
 Thumbs.db
 desktop.ini
+
+# машинний профіль MCP: шляхи цієї машини, не комітиться
+dayz-mcp.local.toml
