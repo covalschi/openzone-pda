@@ -77,6 +77,7 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
         p.Pages = new array<string>();
         p.Pages.Insert(OZ_PdaConst.PAGE_DEVICE);
         p.Pages.Insert(OZ_PdaConst.PAGE_QUESTS);
+        p.Pages.Insert(OZ_PdaConst.PAGE_CONTACTS);
 
         p.BatteryClassNames = new array<string>();
         p.BatteryClassNames.Insert("Battery9V");
@@ -95,6 +96,7 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
         a.Pages = new array<string>();
         a.Pages.Insert(OZ_PdaConst.PAGE_DEVICE);
         a.Pages.Insert(OZ_PdaConst.PAGE_QUESTS);
+        a.Pages.Insert(OZ_PdaConst.PAGE_CONTACTS);
 
         a.BatteryClassNames = new array<string>();
         a.BatteryClassNames.Insert("Battery9V");
@@ -126,30 +128,7 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
         if (!Profiles)
             Profiles = new array<ref OZ_PdaProfile>();
         if (!VirtualDevice)
-            OZ_PdaProfile a = new OZ_PdaProfile();
-        a.Id          = "advanced";
-        a.DisplayName = "#STR_OZ_PDA_ADVANCED";
-
-        a.ClassNames = new array<string>();
-        a.ClassNames.Insert("OZ_PDA_Advanced");
-
-        a.Pages = new array<string>();
-        a.Pages.Insert(OZ_PdaConst.PAGE_DEVICE);
-        a.Pages.Insert(OZ_PdaConst.PAGE_QUESTS);
-
-        a.BatteryClassNames = new array<string>();
-        a.BatteryClassNames.Insert("Battery9V");
-
-        a.Limits            = new OZ_PdaLimits();
-        a.Limits.Markers    = 40;
-        a.Limits.Friends    = 60;
-        a.Limits.GroupChats = 8;
-        a.PinProtectedPages = new array<string>();
-        a.ModuleSlots       = OZ_PdaConst.MODULE_SLOTS_MAX;
-        a.LockAfterMinutes  = 5;
-        Profiles.Insert(a);
-
-        VirtualDevice = new OZ_PdaVirtualDevice();
+            VirtualDevice = new OZ_PdaVirtualDevice();
 
         for (int i = 0; i < Profiles.Count(); i++)
         {

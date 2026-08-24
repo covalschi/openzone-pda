@@ -1,0 +1,128 @@
+// Сторінка «Контакти»: хто зараз у Зоні.
+//
+// Кладеться скриптом у PageHost меню (1045x414 одиниць розмітки).
+// Імена читає OZ_PdaPageContacts.c: ContactsHeader, ContactList,
+// ContactsHint, BtnHide, BtnHideText.
+
+FrameWidgetClass OZ_PageContacts {
+ visible 1
+ position 0 0
+ size 1045 414
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ {
+  TextWidgetClass ContactsHeader {
+   visible 1
+   ignorepointer 1
+   position 16 12
+   size 700 22
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 1 0.478 0.102 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 16
+   "text halign" left
+   "text valign" center
+   priority 2
+  }
+
+  // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+  // віджетів, і напис усередині зникає.
+  ButtonWidgetClass BtnHide {
+   visible 1
+   position 861 12
+   size 168 24
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnHideBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 168 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnHideText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 168 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
+  // "colums" -- саме так, з одним m: помилка в самому рушії, і виправляти її
+  // тут означає лишитись без колонок. "lines" обов'язковий.
+  TextListboxWidgetClass ContactList {
+   visible 1
+   position 16 46
+   size 1013 320
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   // style NoScrollBar -- інакше рушій малює власну смугу прокрутки, і вона
+   // яскраво-червона поверх графітового екрана. Так само робить ваниль там,
+   // де смуга не потрібна (debug/day_z_debug_remoteinfo.layout).
+   style NoScrollBar
+   "title visible" 0
+   "highlight row" 0
+   // Формат ванільний: "назва;ширина у відсотках;". Одна колонка на весь ряд.
+   colums "text;100;"
+   lines 14
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 15
+   color 0.788 0.788 0.816 1
+   priority 2
+  }
+
+  TextWidgetClass ContactsHint {
+   visible 1
+   ignorepointer 1
+   halign center_ref
+   position 0 374
+   size 900 24
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.463 0.463 0.494 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 14
+   "text halign" center
+   "text valign" center
+   priority 2
+  }
+ }
+}

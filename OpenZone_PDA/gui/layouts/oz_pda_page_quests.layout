@@ -38,9 +38,15 @@ FrameWidgetClass OZ_PageQuests {
    vexactsize 1
    // Друкарська помилка в назві -- рушійна, не наша: властивість зветься
    // саме colums. Виправиш на columns -- список перестане працювати.
-   colums 1
+   // style NoScrollBar -- інакше рушій малює власну смугу прокрутки, і вона
+   // яскраво-червона поверх графітового екрана. Так само робить ваниль там,
+   // де смуга не потрібна (debug/day_z_debug_remoteinfo.layout).
+   style NoScrollBar
+   "title visible" 0
+   "highlight row" 0
+   // Формат ванільний: "назва;ширина у відсотках;". Одна колонка на весь ряд.
+   colums "text;100;"
    lines 14
-   "colum 0" 1.0
    font "gui/fonts/sdf_MetronBook24"
    "exact text" 1
    "exact text size" 16

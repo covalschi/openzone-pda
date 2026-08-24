@@ -57,4 +57,5 @@ class OZ_PdaConst
     // один, чий би мод його не наповнював.
     static const string PAGE_DEVICE = "device";
     static const string PAGE_QUESTS = "quests";
+    static const string PAGE_CONTACTS = "contacts";
 }

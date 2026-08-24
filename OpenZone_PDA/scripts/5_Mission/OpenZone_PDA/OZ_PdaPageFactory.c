@@ -20,6 +20,7 @@ class OZ_PdaPageFactory
         s_Map = new map<string, typename>();
         Add(OZ_PdaConst.PAGE_DEVICE, OZ_PdaPageDevice);
         Add(OZ_PdaConst.PAGE_QUESTS, OZ_PdaPageQuests);
+        Add(OZ_PdaConst.PAGE_CONTACTS, OZ_PdaPageContacts);
     }
 
     static void Add(string pageId, typename pageClass)
@@ -61,7 +62,7 @@ class OZ_PdaPageFactory
         if (pageId == OZ_PdaConst.PAGE_DEVICE) return "D";
         if (pageId == OZ_PdaConst.PAGE_QUESTS) return "J";
         if (pageId == "map")      return "M";
-        if (pageId == "contacts") return "C";
+        if (pageId == OZ_PdaConst.PAGE_CONTACTS) return "C";
         if (pageId == "chat")     return "@";
         if (pageId == "radio")    return "R";
         if (pageId == "notes")    return "N";

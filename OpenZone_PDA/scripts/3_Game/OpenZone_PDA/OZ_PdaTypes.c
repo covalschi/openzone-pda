@@ -106,3 +106,29 @@ class OZ_PdaFlagOp
 {
     bool Value = false;
 }
+
+// --- сторінка «Контакти» ---
+
+class OZ_ContactEntry
+{
+    string Name = "";
+    bool   Me   = false;   // це ти
+
+    // Поля «схований» тут НЕМАЄ навмисно. Для чужих воно завжди false (бо
+    // схований у список не потрапляє зовсім), а для себе відповідь уже є --
+    // MeHidden у самому списку. Друге поле про те саме означало б два місця,
+    // де це може розійтись.
+}
+
+// Лічильника окремим полем НЕМАЄ навмисно: він дорівнює довжині списку, а
+// будь-яке інше число підказало б, що когось приховано.
+class OZ_ContactList
+{
+    bool MeHidden = false;
+    ref array<ref OZ_ContactEntry> Entries;
+
+    void OZ_ContactList()
+    {
+        Entries = new array<ref OZ_ContactEntry>();
+    }
+}

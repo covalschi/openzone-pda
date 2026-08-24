@@ -374,6 +374,11 @@ class OZ_PdaModule : CF_ModuleWorld
                                  "set:oz_pda image:quests",
                                  new OZ_PdaHandlerQuests());
 
+        OZ_PageRegistry.Register(OZ_PdaConst.PAGE_CONTACTS,
+                                 "#STR_OZ_PAGE_CONTACTS",
+                                 "set:oz_pda image:contacts",
+                                 new OZ_PdaHandlerContacts());
+
         OZ_PdaProfiles.ServerLoad();
         OZ_PdaHardware.ServerLoad();
 
