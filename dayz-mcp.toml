@@ -16,7 +16,7 @@ mods = ["OpenZone_PDA"]
 ready_line   = "pda loaded"
 max_warnings = 0
 forbid       = ["Bad type", "Can't compile", "NULL pointer to instance"]
-error_regex  = ["SCRIPT\s+\(E\).*OZ_"]
+error_regex  = ["SCRIPT\\s+\\(E\\).*OZ_"]
 noise        = []
 
 [expect.counters]

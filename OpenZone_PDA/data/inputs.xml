@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<!--
+	Read by the ENGINE, wired up by CfgMods `inputs=`.
+
+	<sorting> is what makes a key VISIBLE and REBINDABLE in Settings -> Controls.
+	Without it the input exists but the player can never find or change it.
+
+	`loc` is a BARE stringtable key: no leading # and no $.
+
+	Input names are global across every loaded mod, so they must be prefixed.
+
+	Default is O, not P: P is taken by PDA_WT from the @Radio pack, and on a
+	server running both mods that would be a silent conflict.
+-->
+<modded_inputs>
+	<inputs>
+		<actions>
+			<input name="UAOZPdaOpen" loc="oz_input_pda_open"/>
+			<input name="UAOZPdaPtt"  loc="oz_input_pda_ptt"/>
+		</actions>
+		<sorting name="openzone" loc="oz_input_group">
+			<input name="UAOZPdaOpen"/>
+			<input name="UAOZPdaPtt"/>
+		</sorting>
+	</inputs>
+	<preset>
+		<input name="UAOZPdaOpen">
+			<btn name="kO"/>
+		</input>
+		<input name="UAOZPdaPtt">
+			<btn name="kCapital"/>
+		</input>
+	</preset>
+</modded_inputs>
