@@ -1,0 +1,18 @@
+# signing key — a leak lets anyone sign a mod as you
+*.biprivatekey
+keys/*.biprivatekey
+
+# build output
+build/out/
+@OpenZone_Core/
+@OpenZone_PDA/
+*.pbo
+*.bisign
+*.log
+*.RPT
+
+# local
+.compile-check-profile/
+.dayz-mcp/
+Thumbs.db
+desktop.ini
