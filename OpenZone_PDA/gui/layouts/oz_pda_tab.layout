@@ -1,0 +1,72 @@
+// Одна кнопка стрічки вкладок. Створюється скриптом по одній на сторінку,
+// доступну профілю пристрою.
+//
+// Ім'я КОРЕНЯ скрипт перезаписує на id сторінки (SetName), а SetUserID(1)
+// відрізняє вкладку від решти клікабельного в OnClick. Тому в самому файлі
+// ім'я -- лише заготовка.
+//
+// Іконки поки текстові: imageset приїде разом із власними .paa. Літера в
+// центрі -- не заглушка на викид, а робочий стан: вкладка вже клікається,
+// підсвічується й перемикає сторінку.
+
+ButtonWidgetClass OZ_PdaTab {
+ visible 1
+ position 0 0
+ size 60 52
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ text ""
+ // БЕЗ style "DayZButton": власна графіка стилю малюється ПОВЕРХ дочірніх
+ // віджетів, і оранжевий маркер активної вкладки під нею просто не видно.
+ // Виміряно на живому клієнті.
+ {
+  PanelWidgetClass TabActive {
+   visible 0
+   ignorepointer 1
+   color 1 0.478 0.102 1
+   position 0 0
+   size 60 52
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 1
+   style rover_sim_colorable
+  }
+  PanelWidgetClass TabHover {
+   visible 0
+   ignorepointer 1
+   color 1 0.478 0.102 0.18
+   position 0 0
+   size 60 52
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 2
+   style rover_sim_colorable
+  }
+  TextWidgetClass TabGlyph {
+   visible 1
+   ignorepointer 1
+   halign center_ref
+   valign center_ref
+   position 0 0
+   size 60 52
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.549 0.549 0.576 1
+   text "?"
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 22
+   "text halign" center
+   "text valign" center
+   priority 3
+  }
+ }
+}

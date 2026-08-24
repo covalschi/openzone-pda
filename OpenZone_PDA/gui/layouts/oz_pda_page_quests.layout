@@ -1,0 +1,73 @@
+// Сторінка «Журнал». Кладеться скриптом у PageHost (1045x414).
+// Імена читає OZ_PdaPageQuests.c: QuestList, QuestSource, QuestHint.
+
+FrameWidgetClass OZ_PageQuests {
+ visible 1
+ position 0 0
+ size 1045 414
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ {
+  TextWidgetClass QuestSource {
+   visible 1
+   ignorepointer 1
+   position 16 12
+   size 700 22
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.463 0.463 0.494 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 14
+   "text halign" left
+   "text valign" center
+  }
+
+  TextListboxWidgetClass QuestList {
+   visible 1
+   position 16 42
+   size 1013 356
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   // Друкарська помилка в назві -- рушійна, не наша: властивість зветься
+   // саме colums. Виправиш на columns -- список перестане працювати.
+   colums 1
+   lines 14
+   "colum 0" 1.0
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 16
+   color 0.686 0.686 0.71 1
+  }
+
+  // Підказка лежить ПОВЕРХ списку й показується лише коли список порожній:
+  // два різні «нічого не видно» мусять читатися по-різному.
+  TextWidgetClass QuestHint {
+   visible 1
+   ignorepointer 1
+   halign center_ref
+   valign center_ref
+   position 0 0
+   size 900 26
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.365 0.365 0.388 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 16
+   "text halign" center
+   "text valign" center
+   priority 5
+  }
+ }
+}

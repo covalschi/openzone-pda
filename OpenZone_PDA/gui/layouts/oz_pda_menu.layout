@@ -1,0 +1,320 @@
+// КПК: корпус пристрою поверх приглушеного світу.
+//
+// Розміри в одиницях розмітки 1280x640 -- рівно 2:1, як і текстура корпуса
+// (2048x1024). Інакше вирізу довелось би не збігтися з рамкою.
+//
+// КООРДИНАТИ ЕКРАНА ПРОДУБЛЬОВАНІ в tools/gen_oz_pda_bezel.py (SCR_*).
+// Правити СИНХРОННО: розійдуться -- і живий інтерфейс поїде з-під рамки.
+//   L 0.068 * 1280 = 87      T 0.105 * 640 = 67
+//   W 0.864 * 1280 = 1106    H 0.690 * 640 = 442
+//
+// Імена віджетів читає OZ_PdaMenu.c: Backdrop, Device, Bezel, Screen,
+// TabRail, PageHost, StatusLeft, StatusMid, StatusRight, LockPanel,
+// LockLabel, LockDots, BtnClose.
+
+FrameWidgetClass OZ_PdaRoot {
+ visible 1
+ ignorepointer 1
+ position 0 0
+ size 1 1
+ hexactpos 0
+ vexactpos 0
+ hexactsize 0
+ vexactsize 0
+ priority 990
+ {
+  // Світ лишається видимим і приглушеним: пристрій тримають у руках, а не
+  // йдуть в іншу реальність.
+  PanelWidgetClass Backdrop {
+   visible 1
+   ignorepointer 1
+   color 0 0 0 0.55
+   position 0 0
+   size 1 1
+   hexactpos 0
+   vexactpos 0
+   hexactsize 0
+   vexactsize 0
+   priority 1
+   style rover_sim_colorable
+  }
+
+  FrameWidgetClass Device {
+   visible 1
+   ignorepointer 1
+   halign center_ref
+   valign center_ref
+   position 0 0
+   size 1280 640
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 2
+   {
+    // ЕКРАН ПЕРШИЙ, корпус ПОВЕРХ нього: у корпусі проріз, і саме через
+    // нього видно екран. Зворотний порядок сховав би екран цілком.
+    PanelWidgetClass Screen {
+     visible 1
+     ignorepointer 1
+     clipchildren 1
+     color 0.055 0.055 0.062 1
+     position 87 67
+     size 1106 442
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+     {
+      // Стрічка вкладок ліворуч. Вертикальна навмисно: шість сторінок зараз,
+      // десять потім -- горизонтальна почала б переповнюватись.
+      WrapSpacerWidgetClass TabRail {
+       visible 1
+       position 0 0
+       size 60 442
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 2
+      }
+      PanelWidgetClass TabRailBg {
+       visible 1
+       ignorepointer 1
+       color 0.125 0.125 0.137 1
+       position 0 0
+       size 60 442
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      PanelWidgetClass TabRailEdge {
+       visible 1
+       ignorepointer 1
+       color 0.149 0.149 0.165 1
+       position 60 0
+       size 1 442
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 2
+       style rover_sim_colorable
+      }
+
+      // Поле сторінки. Сторінки створюються скриптом і кладуться сюди.
+      FrameWidgetClass PageHost {
+       visible 1
+       position 61 0
+       size 1045 414
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 3
+      }
+
+      // Смуга стану внизу екрана.
+      PanelWidgetClass StatusBar {
+       visible 1
+       ignorepointer 1
+       color 0.078 0.078 0.086 1
+       position 61 414
+       size 1045 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 4
+       style rover_sim_colorable
+       {
+        TextWidgetClass StatusLeft {
+         visible 1
+         ignorepointer 1
+         position 12 0
+         size 340 28
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         color 0.541 0.541 0.565 1
+         text "POWER --"
+         font "gui/fonts/sdf_MetronBook24"
+         "exact text" 1
+         "exact text size" 15
+         "text halign" left
+         "text valign" center
+        }
+        TextWidgetClass StatusMid {
+         visible 1
+         ignorepointer 1
+         halign center_ref
+         position 0 0
+         size 360 28
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         color 1 0.478 0.102 1
+         text ""
+         font "gui/fonts/sdf_MetronBook24"
+         "exact text" 1
+         "exact text size" 15
+         "text halign" center
+         "text valign" center
+        }
+        TextWidgetClass StatusRight {
+         visible 1
+         ignorepointer 1
+         halign right_ref
+         position 12 0
+         size 300 28
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         color 0.541 0.541 0.565 1
+         text ""
+         font "gui/fonts/sdf_MetronBook24"
+         "exact text" 1
+         "exact text size" 15
+         "text halign" right
+         "text valign" center
+        }
+       }
+      }
+
+      // Екран блокування. Лежить ПОВЕРХ усього вмісту й перекриває його
+      // цілком: замкнений пристрій не має показувати навіть назви вкладок.
+      PanelWidgetClass LockPanel {
+       visible 0
+       color 0.043 0.043 0.051 1
+       position 0 0
+       size 1106 442
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 9
+       style rover_sim_colorable
+       {
+        TextWidgetClass LockLabel {
+         visible 1
+         ignorepointer 1
+         halign center_ref
+         valign center_ref
+         position 0 -40
+         size 700 30
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         color 0.541 0.541 0.565 1
+         text "#STR_OZ_LOCK_PROMPT"
+         font "gui/fonts/sdf_MetronBook24"
+         "exact text" 1
+         "exact text size" 20
+         "text halign" center
+         "text valign" center
+        }
+        TextWidgetClass LockDots {
+         visible 1
+         ignorepointer 1
+         halign center_ref
+         valign center_ref
+         position 0 8
+         size 400 48
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         color 1 0.478 0.102 1
+         text "----"
+         font "gui/fonts/sdf_MetronBook24"
+         "exact text" 1
+         "exact text size" 40
+         "text halign" center
+         "text valign" center
+        }
+        TextWidgetClass LockHint {
+         visible 1
+         ignorepointer 1
+         halign center_ref
+         valign bottom_ref
+         position 0 18
+         size 800 24
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         color 0.36 0.36 0.39 1
+         text ""
+         font "gui/fonts/sdf_MetronBook24"
+         "exact text" 1
+         "exact text size" 14
+         "text halign" center
+         "text valign" center
+        }
+       }
+      }
+     }
+    }
+
+    // Корпус. Проріз у текстурі прозорий, тому екран під ним видно.
+    // ignorepointer, бо клікати треба по вмісту, а не по рамці.
+    ImageWidgetClass Bezel {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 1280 640
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     // Виміряно на живому клієнті: color МНОЖИТЬ текстуру, і рушій виводить
+     // її помітно світліше, ніж вона лежить на диску (схоже на подвійне
+     // гамма-перетворення). Тому яскравість калібрується тут, а не
+     // перегенерацією .paa: текстура на диску правильна -- (28,29,33).
+     color 0.38 0.38 0.40 1
+     priority 5
+     image0 "OpenZone_PDA/gui/textures/oz_pda_bezel_ca.paa"
+     // mode blend ОБОВ'ЯЗКОВИЙ. Без нього режим за замовчуванням ігнорує
+     // альфу й підмішує картинку аддитивно: проріз стає непрозорим, а
+     // графітовий корпус світлішає до сірого металу. Ваніль завжди ставить
+     // саме blend для прозорих картинок і opaque для фонів.
+     mode blend
+     "src alpha" 1
+     // "stretch mode" ОБОВ'ЯЗКОВИЙ. Без нього віджет не масштабує текстуру, а
+     // ОБРІЗАЄ її: видно рівно стільки, скільки вміщується, тобто лівий верхній
+     // кут. Симптом на живому клієнті був саме такий -- верхня й ліва частини
+     // рамки малювались, права й нижня зникали. Ваніль ставить те саме на
+     // повноекранному фоні (day_z_title_screen.layout).
+     //
+     // Віджет 1280x640 і текстура 2048x1024 -- обидва рівно 2:1, тож
+     // stretch_w_h не спотворює нічого.
+     "stretch mode" stretch_w_h
+    }
+
+    // Кнопка закриття лежить ПОВЕРХ корпуса, у правому верхньому куті рамки.
+    ButtonWidgetClass BtnClose {
+     visible 1
+     halign right_ref
+     position 18 14
+     size 34 34
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 6
+     text ""
+     style "DayZButton"
+    }
+   }
+  }
+ }
+}
