@@ -41,6 +41,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             return "";
         }
 
+        PlayerBase player = OZ_PdaLookup.PlayerOf(sender);
         OZ_PlayerData pd = OZ_PlayerStore.Load(sender.GetPlainId());
         pda.OZ_EvaluateLock(prof.LockAfterMinutes);
 
@@ -51,6 +52,15 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         st.DisplayName = prof.DisplayName;
         st.ModuleSlots = prof.ModuleSlots;
         st.LockAfterMinutes = prof.LockAfterMinutes;
+
+        // Адреса пристрою для клієнта. GetNetworkID віддає id двома int'ами,
+        // і клієнт піднімає по них ту саму сутність через GetObjectByNetworkId.
+        int netLow;
+        int netHigh;
+        pda.GetNetworkID(netLow, netHigh);
+        st.NetLow  = netLow;
+        st.NetHigh = netHigh;
+        st.InHands = (player != null && player.GetItemInHands() == pda);
 
         for (int i = 0; i < prof.Pages.Count(); i++)
         {
@@ -119,7 +129,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         bool wantDose    = pda.OZ_HasModuleKind(OZ_PdaConst.MOD_DOSIMETER);
         if (wantAmbient || wantDose)
         {
-            OZ_RadiationReading rr = OZ_PdaRadiation.Read(OZ_PdaLookup.PlayerOf(sender), wantAmbient, wantDose);
+            OZ_RadiationReading rr = OZ_PdaRadiation.Read(player, wantAmbient, wantDose);
             st.HasRadiationProvider = rr.HasProvider;
             st.AmbientUSvH = rr.AmbientUSvH;
             st.DoseUSv     = rr.DoseUSv;

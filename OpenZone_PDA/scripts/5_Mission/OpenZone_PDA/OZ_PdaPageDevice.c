@@ -76,14 +76,38 @@ class OZ_PdaPageDevice : OZ_PdaPage
         prof += " / " + st.ClassName;
         SetText("TitleProfile", prof);
 
-        // Показуємо СПРАВЖНІЙ предмет із рук, а не абстрактний екземпляр
-        // класу: SetItem бере сутність, і завдяки цьому у прев'ю видно
-        // вставлені модулі й батарею, а не порожній корпус.
+        // Пристрій у рюкзаку -- це робочий стан, а не помилка, і мовчати про
+        // нього не можна: гравець мусить розуміти, чому екран живий, хоч у
+        // руках порожньо.
+        if (st.InHands)
+            SetText("TitlePlace", "");
+        else
+            SetText("TitlePlace", "#STR_OZ_DEV_STOWED");
+
+        // Показуємо СПРАВЖНІЙ предмет, а не абстрактний екземпляр класу:
+        // SetItem бере сутність, і завдяки цьому у прев'ю видно вставлені
+        // модулі й батарею, а не порожній корпус.
         if (m_Preview)
         {
-            EntityAI held = OZ_PdaClient.HeldEntity();
-            if (held)
-                m_Preview.SetItem(held);
+            EntityAI dev = OZ_PdaClient.Device(st);
+            if (dev)
+            {
+                m_Preview.SetItem(dev);
+                // SetView ОБОВ'ЯЗКОВИЙ: без нього прев'ю не малює нічого.
+                // Індекс беремо в самого предмета, як це робить ванільна
+                // сітка інвентаря (inventorygrid.c:215).
+                m_Preview.SetView(dev.GetViewIndex());
+                // Легкий поворот: пристрій анфас читається як плоска пляма.
+                m_Preview.SetModelOrientation(Vector(0, 12, 0));
+                m_Preview.Show(true);
+            }
+            else
+            {
+                // Сутність клієнту ще не приїхала. Порожній віджет краще за
+                // чужу модель, що лишилась із минулого разу.
+                m_Preview.SetItem(null);
+                m_Preview.Show(false);
+            }
         }
 
         PaintCharge(st);

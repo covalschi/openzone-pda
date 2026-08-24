@@ -107,7 +107,10 @@ class OZ_PdaMenu : UIScriptedMenu
             BuildFrom(json);
 
         if (pageId == OZ_PdaConst.PAGE_DEVICE && op == "status")
+        {
             ApplyLockState(ok, json, error);
+            PaintStatusBar(ok, json);
+        }
 
         if (m_Pages.Contains(pageId))
             m_Pages.Get(pageId).OnResponse(op, ok, json, error);
@@ -238,6 +241,70 @@ class OZ_PdaMenu : UIScriptedMenu
                     hint.SetText("");
             }
         }
+    }
+
+    // Смуга стану -- те, що гравець мусить бачити, не заходячи на сторінку:
+    // живлення, стан зв'язку й час. Ті самі дані, що вже прийшли; окремого
+    // запиту не робимо.
+    private void PaintStatusBar(bool ok, string json)
+    {
+        TextWidget left  = TextWidget.Cast(layoutRoot.FindAnyWidget("StatusLeft"));
+        TextWidget mid   = TextWidget.Cast(layoutRoot.FindAnyWidget("StatusMid"));
+        TextWidget right = TextWidget.Cast(layoutRoot.FindAnyWidget("StatusRight"));
+
+        if (!ok)
+        {
+            if (left)  left.SetText("#STR_OZ_DEV_OFF");
+            if (mid)   mid.SetText("");
+            if (right) right.SetText("");
+            return;
+        }
+
+        string err;
+        OZ_PdaDeviceStatus st;
+        if (!JsonFileLoader<OZ_PdaDeviceStatus>.LoadData(json, st, err))
+            return;
+
+        if (left)
+        {
+            if (!st.Powered)
+                left.SetText("#STR_OZ_DEV_OFF");
+            else
+            {
+                int pct = Math.Round(st.Charge01 * 100);
+                string l = "#STR_OZ_DEV_POWER";
+                l += "  " + pct.ToString() + "%";
+                left.SetText(l);
+            }
+        }
+
+        if (mid)
+        {
+            if (st.Online)
+                mid.SetText("");
+            else
+                mid.SetText("#STR_OZ_DEV_OFFLINE_SHORT");
+        }
+
+        if (right)
+        {
+            // Час беремо ігровий: гравцеві потрібен час Зони, а не свій
+            // системний.
+            // GetHours/GetMinutes не існує -- рушій віддає дату цілком одним
+            // викликом: GetDate(out year, month, day, hour, minute).
+            int y, mo, d, h, m;
+            GetGame().GetWorld().GetDate(y, mo, d, h, m);
+            string tm = Pad2(h);
+            tm += ":" + Pad2(m);
+            right.SetText(tm);
+        }
+    }
+
+    private string Pad2(int v)
+    {
+        if (v < 10)
+            return "0" + v.ToString();
+        return v.ToString();
     }
 
     private void PaintPinDots()

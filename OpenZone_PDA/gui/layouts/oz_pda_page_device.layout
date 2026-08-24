@@ -78,6 +78,26 @@ FrameWidgetClass OZ_PageDevice {
      "text valign" center
      priority 3
     }
+    // Де саме лежить пристрій: у руках чи в спорядженні. Порожній рядок --
+    // у руках, і тоді про це нічого не пишеться.
+    TextWidgetClass TitlePlace {
+     visible 1
+     ignorepointer 1
+     position 14 352
+     size 292 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.463 0.463 0.494 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" left
+     "text valign" center
+     priority 3
+    }
    }
   }
 
