@@ -57,7 +57,7 @@ class OZ_PdaPageNotes : OZ_PdaPage
         OZ_Rpc.Request(OZ_PdaConst.PAGE_NOTES, "list", "{}");
     }
 
-    override bool OnPageClick(Widget w)
+    override bool OnPageClick(Widget w, int x, int y)
     {
         if (!w)
             return false;

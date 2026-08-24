@@ -679,7 +679,7 @@ class OZ_PdaMenu : UIScriptedMenu
         // клікнути неможливо, і давати їй голос означало б ловити чужі кнопки.
         if (m_Current != "" && m_Pages.Contains(m_Current))
         {
-            if (m_Pages.Get(m_Current).OnPageClick(w))
+            if (m_Pages.Get(m_Current).OnPageClick(w, x, y))
                 return true;
         }
 

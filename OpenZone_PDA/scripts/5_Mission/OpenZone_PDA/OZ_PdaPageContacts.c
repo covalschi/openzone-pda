@@ -39,7 +39,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
         OZ_Rpc.Request(OZ_PdaConst.PAGE_CONTACTS, "list", "{}");
     }
 
-    override bool OnPageClick(Widget w)
+    override bool OnPageClick(Widget w, int x, int y)
     {
         if (w && w == m_BtnHide)
         {

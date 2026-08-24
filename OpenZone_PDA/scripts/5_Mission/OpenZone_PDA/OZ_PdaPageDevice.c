@@ -48,7 +48,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
     // Кнопка живлення. Рішення серверне: клієнт лише каже, чого хоче, і
     // одразу перепитує стан -- малювати «увімкнено» з власної голови означало
     // б показати те, чого може не бути.
-    override bool OnPageClick(Widget w)
+    override bool OnPageClick(Widget w, int x, int y)
     {
         if (w && w == m_BtnPower)
         {

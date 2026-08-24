@@ -91,7 +91,9 @@ class CfgMods
         author = "Zone Protocol";
         version = "0.1.0";
         type = "mod";
-        storageVersion = 1;
+        // 2: markers appended to the item's CF record. Bumping this is what
+        // lets CF_OnStoreLoad tell an older save (no markers) from a new one.
+        storageVersion = 2;
         dependencies[] = {"Game", "World", "Mission"};
         defines[] = {"OPENZONE_PDA"};
 

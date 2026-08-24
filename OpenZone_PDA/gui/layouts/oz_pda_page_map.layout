@@ -23,7 +23,7 @@ FrameWidgetClass OZ_PageMap {
    clipchildren 1
    inheritalpha 0
    position 0 0
-   size 1045 372
+   size 1045 344
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -123,24 +123,103 @@ FrameWidgetClass OZ_PageMap {
    }
   }
 
-  TextWidgetClass MapHint {
+  // Підпис нової мітки. EditBoxWidget ловить клавіатуру сам -- так само, як
+  // на сторінці записок, і з тієї ж причини.
+  EditBoxWidgetClass MarkName {
    visible 1
-   ignorepointer 1
-   halign right_ref
-   position 16 378
-   size 580 26
+   position 432 378
+   size 260 26
    hexactpos 1
    vexactpos 1
    hexactsize 1
    vexactsize 1
-   color 0.463 0.463 0.494 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 13
+   color 0.788 0.788 0.816 1
+   priority 3
+  }
+
+  ButtonWidgetClass BtnMark {
+   visible 1
+   position 704 378
+   size 160 26
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnMarkBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 160 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnMarkText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 160 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
+  // Смуга під картою. Своя підкладка ОБОВ'ЯЗКОВА: сірий текст поверх білої
+  // карти не читається, а карта біла майже всюди.
+  PanelWidgetClass HintStrip {
+   visible 1
+   ignorepointer 1
+   color 0.078 0.078 0.086 1
+   position 0 344
+   size 1045 28
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 2
+   style rover_sim_colorable
+  }
+
+  TextWidgetClass MapHint {
+   visible 1
+   ignorepointer 1
+   halign right_ref
+   position 16 346
+   size 1013 24
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.541 0.541 0.565 1
    text ""
    font "gui/fonts/sdf_MetronBook24"
    "exact text" 1
    "exact text size" 13
    "text halign" right
    "text valign" center
-   priority 2
+   priority 3
   }
  }
 }

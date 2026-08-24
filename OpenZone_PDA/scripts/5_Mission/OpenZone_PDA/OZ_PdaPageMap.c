@@ -12,13 +12,23 @@ class OZ_PdaPageMap : OZ_PdaPage
     private ButtonWidget m_BtnMode;
     private ButtonWidget m_BtnCenter;
 
+    private EditBoxWidget m_Name;
+    private ButtonWidget m_BtnMark;
+
     private ref OZ_MapState m_State;
     private bool m_Centred = false;
+
+    // Обрана мітка. Порожньо -- нічого не обрано, і кнопка ставить нову.
+    private string m_PickedId = "";
+
+    // Куди поставити наступну мітку. Заповнюється кліком по порожньому місцю.
+    private string m_PendingPos = "";
 
     // Ванільні іконки: своя й чужа мітки мусять відрізнятись з першого
     // погляду, і кольором тут не обійтись -- на карті кольорів і так вистачає.
     private static const string ICON_SELF   = "\\DZ\\gear\\navigation\\data\\map_tshelter_ca.paa";
     private static const string ICON_BEACON = "\\DZ\\gear\\navigation\\data\\map_transmitter_ca.paa";
+    private static const string ICON_MARK   = "\\DZ\\gear\\navigation\\data\\map_tsign_ca.paa";
 
     override string LayoutPath()
     {
@@ -30,6 +40,8 @@ class OZ_PdaPageMap : OZ_PdaPage
         m_Map       = MapWidget.Cast(Wgt("Map"));
         m_BtnCenter = ButtonWidget.Cast(Wgt("BtnCenter"));
         m_BtnMode   = ButtonWidget.Cast(Wgt("BtnMode"));
+        m_Name      = EditBoxWidget.Cast(Wgt("MarkName"));
+        m_BtnMark   = ButtonWidget.Cast(Wgt("BtnMark"));
 
         SetText("BtnCenterText", "#STR_OZ_MAP_CENTER");
     }
@@ -50,7 +62,7 @@ class OZ_PdaPageMap : OZ_PdaPage
         OZ_Rpc.Request(OZ_PdaConst.PAGE_MAP, "state", "{}");
     }
 
-    override bool OnPageClick(Widget w)
+    override bool OnPageClick(Widget w, int x, int y)
     {
         if (!w)
             return false;
@@ -58,6 +70,24 @@ class OZ_PdaPageMap : OZ_PdaPage
         if (w == m_BtnCenter)
         {
             CentreOnSelf();
+            return true;
+        }
+
+        // Клік по самій карті: спершу питаємо, чи не влучив він у наявну
+        // мітку. Це має бути ПЕРШЕ питання -- інакше кожна спроба обрати
+        // мітку ставила б поверх неї нову.
+        if (w == m_Map)
+        {
+            MapClick(x, y);
+            return true;
+        }
+
+        if (w == m_BtnMark)
+        {
+            if (m_PickedId != "")
+                SendMarkerDelete();
+            else
+                SendMarkerAdd();
             return true;
         }
 
@@ -94,6 +124,95 @@ class OZ_PdaPageMap : OZ_PdaPage
         return "off";
     }
 
+    // Куди клікнули у світових координатах, і що там уже стоїть.
+    private void MapClick(int x, int y)
+    {
+        if (!m_Map || !m_State)
+            return;
+
+        vector at = m_Map.ScreenToMap(Vector(x, y, 0));
+
+        string hit = MarkerNear(at);
+        if (hit != "")
+        {
+            m_PickedId = hit;
+            PaintMarkButton();
+            return;
+        }
+
+        // Порожнє місце -- знімаємо вибір і запам'ятовуємо точку. Ставить
+        // мітку кнопка, а не сам клік: інакше кожен зсув карти лишав би по
+        // мітці на кожному випадковому натисканні.
+        m_PickedId = "";
+        m_PendingPos = at.ToString(false);
+        PaintMarkButton();
+    }
+
+    private string MarkerNear(vector at)
+    {
+        if (!m_State.Markers)
+            return "";
+
+        for (int i = 0; i < m_State.Markers.Count(); i++)
+        {
+            OZ_MapMarker m = m_State.Markers[i];
+            vector p = m.Pos.ToVector();
+
+            // По ПЛОЩИНІ: висота мітки й висота кліку по карті -- різні речі,
+            // і додавати її у відстань означало б не влучати на схилах.
+            float dx = p[0] - at[0];
+            float dz = p[2] - at[2];
+            if (Math.Sqrt(dx * dx + dz * dz) <= OZ_PdaConst.MARKER_PICK_M)
+                return m.Id;
+        }
+        return "";
+    }
+
+    private void SendMarkerAdd()
+    {
+        // Нічого не клікнули -- ставимо ТУТ. «Позначити місце, де я стою» --
+        // найчастіша дія в Зоні, і вимагати заради неї влучити мишею в свою ж
+        // позначку було б знущанням. Клік по карті лишається уточненням.
+        string at = m_PendingPos;
+        if (at == "" && m_State)
+            at = m_State.SelfPos;
+
+        if (at == "")
+        {
+            SetText("MapHint", "#STR_OZ_MAP_MARK_HINT");
+            return;
+        }
+
+        OZ_MapMarker m = new OZ_MapMarker();
+        m.Pos = at;
+        if (m_Name)
+            m.Name = m_Name.GetText();
+
+        string json;
+        string err;
+        if (JsonFileLoader<OZ_MapMarker>.MakeData(m, json, err, false))
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_MAP, "marker_add", json);
+    }
+
+    private void SendMarkerDelete()
+    {
+        OZ_MarkerRef r = new OZ_MarkerRef();
+        r.Id = m_PickedId;
+
+        string json;
+        string err;
+        if (JsonFileLoader<OZ_MarkerRef>.MakeData(r, json, err, false))
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_MAP, "marker_del", json);
+    }
+
+    private void PaintMarkButton()
+    {
+        if (m_PickedId != "")
+            SetText("BtnMarkText", "#STR_OZ_MAP_DELETE");
+        else
+            SetText("BtnMarkText", "#STR_OZ_MAP_MARK");
+    }
+
     private void CentreOnSelf()
     {
         if (!m_Map || !m_State || m_State.SelfPos == "")
@@ -104,10 +223,26 @@ class OZ_PdaPageMap : OZ_PdaPage
 
     override void OnResponse(string op, bool ok, string json, string error)
     {
-        if (op == "transponder")
+        if (op == "transponder" || op == "marker_add" || op == "marker_del")
         {
             if (!ok)
+            {
                 SetText("MapHint", "#" + error);
+            }
+            else if (op == "marker_add")
+            {
+                // Поставили -- поле підпису чистимо, інакше наступна мітка
+                // мовчки успадкує чужу назву.
+                m_PendingPos = "";
+                if (m_Name)
+                    m_Name.SetText("");
+            }
+            else if (op == "marker_del")
+            {
+                m_PickedId = "";
+            }
+
+            PaintMarkButton();
             Request();
             return;
         }
@@ -157,6 +292,19 @@ class OZ_PdaPageMap : OZ_PdaPage
                 m_Map.AddUserMark(b.Pos.ToVector(), b.Name, ARGB(255, 126, 200, 160), ICON_BEACON);
             }
 
+            for (int k = 0; m_State.Markers && k < m_State.Markers.Count(); k++)
+            {
+                OZ_MapMarker m = m_State.Markers[k];
+
+                // Обрана мітка світиться -- інакше після кліку не видно, яку
+                // саме зараз видалить кнопка.
+                int colour = ARGB(255, 214, 214, 222);
+                if (m.Id == m_PickedId)
+                    colour = ARGB(255, 255, 122, 26);
+
+                m_Map.AddUserMark(m.Pos.ToVector(), m.Name, colour, ICON_MARK);
+            }
+
             // Перше відкриття -- показуємо гравцеві, де він. Далі карта
             // лишається там, куди її поставив він сам.
             if (!m_Centred && m_State.SelfPos != "")
@@ -167,6 +315,7 @@ class OZ_PdaPageMap : OZ_PdaPage
             }
         }
 
+        PaintMarkButton();
         SetText("MapHint", Hint());
     }
 
@@ -177,7 +326,12 @@ class OZ_PdaPageMap : OZ_PdaPage
     private string Hint()
     {
         if (!m_State.HasAntenna)
-            return "#STR_OZ_MAP_NO_ANTENNA";
+        {
+            string noAnt = Marks();
+            noAnt += "   ";
+            noAnt += "#STR_OZ_MAP_NO_ANTENNA";
+            return noAnt;
+        }
 
         int n = 0;
         if (m_State.Beacons)
@@ -185,7 +339,9 @@ class OZ_PdaPageMap : OZ_PdaPage
 
         int km = Math.Round(m_State.AntennaRangeM);
 
-        string s = "#STR_OZ_MAP_RANGE";
+        string s = Marks();
+        s += "   ";
+        s += "#STR_OZ_MAP_RANGE";
         s += "  " + km.ToString() + " m";
 
         if (n == 0)
@@ -198,6 +354,18 @@ class OZ_PdaPageMap : OZ_PdaPage
         s += "   ";
         s += "#STR_OZ_MAP_BEACONS";
         s += "  " + n.ToString();
+        return s;
+    }
+
+    private string Marks()
+    {
+        int have = 0;
+        if (m_State.Markers)
+            have = m_State.Markers.Count();
+
+        string s = "#STR_OZ_MAP_MARKS";
+        s += "  " + have.ToString();
+        s += "/" + m_State.MarkerLimit.ToString();
         return s;
     }
 

@@ -49,6 +49,14 @@ class OZ_PDA_Base : ItemBase
     private string m_Snapshot   = "";
     private string m_SnapshotAt = "";
 
+    // --- мітки ---
+    //
+    // Зберігаються РЯДКОМ JSON, а не масивом: запис CF позиційний, і масив
+    // змінної довжини в ньому довелось би вести самому -- лічильник, потім
+    // елементи, і будь-яка неузгодженість з'їдає потік усіх, хто пише після
+    // нас. Один рядок такої проблеми не має.
+    private string m_MarkersJson = "";
+
     // --- тік модулів ---
     // Базовий таймер один на пристрій; кожен модуль накопичує свій час і
     // спрацьовує зі своїм періодом. Один таймер замість трьох -- бо таймерів
@@ -288,6 +296,20 @@ class OZ_PDA_Base : ItemBase
         if (i == -1)
             return 0;
         return m_FailCount[i];
+    }
+
+    // --------------------------------------------------------------- мітки
+
+    string OZ_MarkersJson()
+    {
+        return m_MarkersJson;
+    }
+
+    void OZ_SetMarkersJson(string json)
+    {
+        if (!GetGame().IsServer())
+            return;
+        m_MarkersJson = json;
     }
 
     // --------------------------------------------------------------- сесія
@@ -646,6 +668,9 @@ class OZ_PDA_Base : ItemBase
         ctx.Write(m_SessionEpoch);
         ctx.Write(m_Snapshot);
         ctx.Write(m_SnapshotAt);
+        // v2 і далі -- ДОПИСУЄТЬСЯ В КІНЕЦЬ. Вставка в середину зсунула б
+        // потік і зробила б нечитними всі старіші збереження.
+        ctx.Write(m_MarkersJson);
     }
 
     override bool CF_OnStoreLoad(CF_ModStorageMap storage)
@@ -669,6 +694,14 @@ class OZ_PDA_Base : ItemBase
             return false;
         if (!ctx.Read(m_SnapshotAt))
             return false;
+
+        // Мітки з'явились у v2. Старіше збереження їх просто не має, і
+        // читати звідти нічого -- інакше ми зчитали б чужі байти.
+        if (ctx.GetVersion() >= 2)
+        {
+            if (!ctx.Read(m_MarkersJson))
+                return false;
+        }
 
         // Замок після рестарту закритий: стан «відімкнено» навмисно не
         // зберігається. Пристрій, що пролежав у схроні через рестарт, має

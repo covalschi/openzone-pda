@@ -66,4 +66,12 @@ class OZ_PdaConst
     static const int NOTES_MAX      = 50;
     static const int NOTE_TITLE_MAX = 64;
     static const int NOTE_BODY_MAX  = 1500;
+
+    // Скільки міток -- каже профіль пристрою; тут лише довжина підпису.
+    static const int MARKER_NAME_MAX = 32;
+
+    // Наскільки близько треба клікнути, щоб влучити в наявну мітку, у метрах.
+    // Не в пікселях: на різних масштабах піксель означає різну відстань, і
+    // «влучив» мало б залежати від зуму.
+    static const float MARKER_PICK_M = 40;
 }

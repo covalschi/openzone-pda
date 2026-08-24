@@ -177,13 +177,48 @@ class OZ_MapState
 
     ref array<ref OZ_MapBeacon> Beacons;
 
+    // Мітки цього ПРИСТРОЮ і скільки їх іще влізе. Другий лічильник тут не
+    // зайвий: «більше не влізе» гравець має дізнатись до того, як натисне.
+    ref array<ref OZ_MapMarker> Markers;
+    int MarkerLimit = 0;
+
     void OZ_MapState()
     {
         Beacons = new array<ref OZ_MapBeacon>();
+        Markers = new array<ref OZ_MapMarker>();
     }
 }
 
 class OZ_TransponderOp
 {
     string Mode = "off";
+}
+
+// --- мітки ---
+//
+// Мітки живуть НА ПРИСТРОЇ, а не в акаунті -- на відміну від записок. Через
+// це межа Limits.Markers у профілі щось означає (кращий КПК тримає більше),
+// через це має сенс носій даних, і через це вкрадений КПК віддає чужі
+// схованки. Усе три -- навмисно.
+
+class OZ_MapMarker
+{
+    string Id   = "";
+    string Name = "";
+    string Pos  = "";
+}
+
+class OZ_MarkerList
+{
+    ref array<ref OZ_MapMarker> Items;
+
+    void OZ_MarkerList()
+    {
+        Items = new array<ref OZ_MapMarker>();
+    }
+}
+
+class OZ_MarkerRef
+{
+    string Id = "";
 }
