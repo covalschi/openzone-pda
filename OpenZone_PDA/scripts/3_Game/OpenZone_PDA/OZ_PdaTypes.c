@@ -151,3 +151,39 @@ class OZ_NoteRef
 {
     string Id = "";
 }
+
+// --- сторінка «Карта» ---
+//
+// Позиції рядком "x y z" -- у тому ж вигляді, у якому їх віддає vector, і в
+// тому ж, у якому їх читає ToVector(). Окремих трьох полів тут не треба.
+
+class OZ_MapBeacon
+{
+    string Name = "";
+    string Pos  = "";
+}
+
+class OZ_MapState
+{
+    string SelfPos = "";
+
+    // Антена -- умова і прийому, і передачі. Без неї маячків немає взагалі,
+    // і це ОКРЕМИЙ стан, а не порожній список.
+    bool  HasAntenna    = false;
+    float AntennaRangeM = 0;
+
+    // Свій режим транспондера: off | public | friends | contacts.
+    string TransponderMode = "off";
+
+    ref array<ref OZ_MapBeacon> Beacons;
+
+    void OZ_MapState()
+    {
+        Beacons = new array<ref OZ_MapBeacon>();
+    }
+}
+
+class OZ_TransponderOp
+{
+    string Mode = "off";
+}

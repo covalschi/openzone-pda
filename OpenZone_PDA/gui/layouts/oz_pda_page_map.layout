@@ -1,0 +1,146 @@
+// Сторінка «Карта».
+//
+// Кладеться скриптом у PageHost меню (1045x414 одиниць розмітки).
+// Імена читає OZ_PdaPageMap.c: Map, BtnMode, BtnModeText, BtnCenter,
+// BtnCenterText, MapHint.
+
+FrameWidgetClass OZ_PageMap {
+ visible 1
+ position 0 0
+ size 1045 414
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ {
+  // Сама карта. Рушій малює її й веде масштаб та зсув САМ -- колесо й
+  // перетягування працюють без жодного нашого коду. Наше -- лише позначки.
+  //
+  // clipchildren 1 обов'язковий: без нього карта малюється за межі свого
+  // прямокутника й вилазить із-під рамки корпуса.
+  MapWidgetClass Map {
+   visible 1
+   clipchildren 1
+   inheritalpha 0
+   position 0 0
+   size 1045 372
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 1
+  }
+
+  // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+  // віджетів, і напис усередині зникає.
+  ButtonWidgetClass BtnMode {
+   visible 1
+   position 16 378
+   size 232 26
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnModeBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 232 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnModeText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 232 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
+  ButtonWidgetClass BtnCenter {
+   visible 1
+   position 260 378
+   size 160 26
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnCenterBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 160 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnCenterText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 160 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
+  TextWidgetClass MapHint {
+   visible 1
+   ignorepointer 1
+   halign right_ref
+   position 16 378
+   size 580 26
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.463 0.463 0.494 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 13
+   "text halign" right
+   "text valign" center
+   priority 2
+  }
+ }
+}

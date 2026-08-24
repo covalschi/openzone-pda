@@ -59,6 +59,7 @@ class OZ_PdaConst
     static const string PAGE_QUESTS = "quests";
     static const string PAGE_CONTACTS = "contacts";
     static const string PAGE_NOTES    = "notes";
+    static const string PAGE_MAP      = "map";
 
     // Межі записок. Не смак, а захист: текст їде в JSON на диску, а згодом у
     // тред Discord, у якого своя межа повідомлення.

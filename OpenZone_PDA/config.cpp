@@ -221,4 +221,14 @@ class CfgVehicles
         displayName = "$STR_OZ_MOD_DOSIMETER";
         descriptionShort = "$STR_OZ_MOD_DOSIMETER_DESC";
     };
+
+    // Short-range antenna. Both halves of the transponder need one: it is
+    // what lets the device be seen and what lets it see. Longer-range ones
+    // come from OpenZone Radio and simply declare a larger RangeM.
+    class OZ_Module_Antenna : OZ_Module_Base
+    {
+        scope = 2;
+        displayName = "$STR_OZ_MOD_ANTENNA";
+        descriptionShort = "$STR_OZ_MOD_ANTENNA_DESC";
+    };
 };

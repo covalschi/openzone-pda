@@ -87,9 +87,22 @@ class OZ_PdaHardwareConfig : OZ_ConfigBase
         dose.EnablesPages = new array<string>();
         Modules.Insert(dose);
 
-        // Антен тут немає навмисно: їх приносить OpenZone Radio. Оголосити їх
-        // тут означало б попереджати про відсутні класи на кожному сервері
-        // без мода рації.
+        // Базова антена ЙДЕ З КПК, а не з мода рації. Транспондер -- функція
+        // самого пристрою, і ставити його в залежність від ще не написаного
+        // мода означало б віддати КПК без того, заради чого його носять.
+        //
+        // Далекі антени й вежі приносить OpenZone Radio; вони просто мають
+        // більший RangeM і перекривають цю.
+        OZ_ModuleSpec ant = new OZ_ModuleSpec();
+        ant.ClassName    = "OZ_Module_Antenna";
+        ant.DisplayName  = "#STR_OZ_MOD_ANTENNA";
+        ant.Kind         = "antenna";
+        ant.RangeM       = 500;
+        // Передавач їсть більше за будь-який датчик, і це має бути видно по
+        // батареї.
+        ant.PowerFactor  = 1.6;
+        ant.EnablesPages = new array<string>();
+        Modules.Insert(ant);
 
         OZ_CarrierSpec chip = new OZ_CarrierSpec();
         chip.ClassName   = "OZ_DataCarrier_Chip";
