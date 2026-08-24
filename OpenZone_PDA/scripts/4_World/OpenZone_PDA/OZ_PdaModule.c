@@ -17,6 +17,9 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         if (op == "autolock")
             return AutoLock(json, sender, ok, error);
 
+        if (op == "power")
+            return Power(json, sender, ok, error);
+
         return "";
     }
 
@@ -45,6 +48,16 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         OZ_PlayerData pd = OZ_PlayerStore.Load(sender.GetPlainId());
         pda.OZ_EvaluateLock(prof.LockAfterMinutes);
 
+        // ЧИСТИЙ пристрій прив'язується до того, хто перший його відкрив.
+        // Без цього КПК без піна назавжди лишався б офлайном: сесію відкривав
+        // тільки успішний ввід коду, а вводити на ньому нічого.
+        //
+        // Умова саме «сесії НЕМАЄ ЖОДНОЇ», а не «сесія не моя»: інакше чужий
+        // відімкнений КПК ставав би твоїм від одного погляду, і «капсула
+        // часу» перетворилась би на просту передачу власності.
+        if (pda.OZ_IsUnlocked() && !pda.OZ_HasAnySession())
+            pda.OZ_OpenSession(sender.GetPlainId(), pd.SessionEpoch);
+
         OZ_PdaDeviceStatus st = new OZ_PdaDeviceStatus();
 
         st.ClassName   = pda.GetType();
@@ -71,8 +84,9 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 st.Pages.Insert(prof.Pages[i]);
         }
 
-        st.Powered  = pda.OZ_IsOn();
-        st.Charge01 = pda.OZ_Charge01();
+        st.Powered    = pda.OZ_IsOn();
+        st.HasBattery = pda.OZ_HasBattery();
+        st.Charge01   = pda.OZ_Charge01();
 
         for (int b = 0; b < OZ_PdaConst.MODULE_SLOTS_MAX; b++)
         {
@@ -180,6 +194,39 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         // Відімкнув -- значить сесія на цьому пристрої тепер його.
         OZ_PlayerData pd = OZ_PlayerStore.Load(sender.GetPlainId());
         pda.OZ_OpenSession(sender.GetPlainId(), pd.SessionEpoch);
+
+        ok = true;
+        error = "";
+        return "";
+    }
+
+    // Живлення. Той самий важіль, що й ванільна дія з рук -- але через сервер:
+    // клієнт просить, сервер вирішує й називає причину відмови.
+    private string Power(string json, PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        if (!pda)
+        {
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return "";
+        }
+
+        OZ_PdaFlagOp flag;
+        string err;
+        if (!JsonFileLoader<OZ_PdaFlagOp>.LoadData(json, flag, err))
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        string why = pda.OZ_SetPower(flag.Value);
+        if (why != "")
+        {
+            error = why;
+            return "";
+        }
 
         ok = true;
         error = "";

@@ -85,6 +85,12 @@ class OZ_PDA_Base : ItemBase
     {
         super.EEItemAttached(item, slot_name);
 
+        // Батарея не модуль, і відсіку в неї немає -- але заряд і сама її
+        // наявність їдуть на клієнт саме звідси. Без цього вставлена батарея
+        // з'являлась би на екрані лише при наступному чужому оновленні.
+        if (slot_name == OZ_PdaConst.SLOT_BATTERY && GetGame().IsServer())
+            PushState();
+
         int idx = SlotIndexOf(slot_name);
         if (idx == -1)
             return;
@@ -99,6 +105,9 @@ class OZ_PDA_Base : ItemBase
     override void EEItemDetached(EntityAI item, string slot_name)
     {
         super.EEItemDetached(item, slot_name);
+
+        if (slot_name == OZ_PdaConst.SLOT_BATTERY && GetGame().IsServer())
+            PushState();
 
         int idx = SlotIndexOf(slot_name);
         if (idx == -1)
@@ -283,6 +292,15 @@ class OZ_PDA_Base : ItemBase
             return false;
         // Епоха розійшлась -- гравець скинув сесії з іншого пристрою.
         return m_SessionEpoch == playerEpoch;
+    }
+
+    // Чи є на пристрої ХОЧ ЯКАСЬ сесія -- незалежно від того, чия й чи жива.
+    // Питання окреме від OZ_HasSession навмисно: «сесії немає взагалі» і
+    // «сесія є, але чужа» -- різні стани, і плутати їх означало б віддавати
+    // чужий пристрій новому власнику з одного дотику.
+    bool OZ_HasAnySession()
+    {
+        return m_SessionUid != "";
     }
 
     void OZ_OpenSession(string uid, int playerEpoch)
@@ -505,6 +523,41 @@ class OZ_PDA_Base : ItemBase
 
     // ----------------------------------------------------------- живлення
 
+    // Вмикання/вимикання на прохання інтерфейсу.
+    //
+    // Той самий важіль, що й ванільні ActionTurnOnWhileInHands /
+    // ActionTurnOffWhileInHands, які вже висять у SetActions: пристрій живе
+    // без нашого інтерфейсу зовсім -- підняв, вставив батарею, увімкнув.
+    // Кнопка на сторінці «Пристрій» смикає той самий CompEM, тільки через
+    // сервер, а не повз нього.
+    //
+    // Відповідає рядком-ПРИЧИНОЮ, а не мовчазним false: «немає батареї» й
+    // «пристрій не вміє вмикатись» -- різні речі, і гравцеві треба сказати,
+    // котра з них.
+    string OZ_SetPower(bool on)
+    {
+        if (!HasEnergyManager())
+            return "STR_OZ_ERR_NO_POWER";
+
+        ComponentEnergyManager em = GetCompEM();
+
+        if (on)
+        {
+            if (!em.GetEnergySource())
+                return "STR_OZ_ERR_NO_BATTERY";
+            if (!em.CanSwitchOn())
+                return "STR_OZ_ERR_NO_POWER";
+            em.SwitchOn();
+        }
+        else
+        {
+            em.SwitchOff();
+        }
+
+        PushState();
+        return "";
+    }
+
     override void OnWork(float consumed_energy)
     {
         super.OnWork(consumed_energy);
@@ -532,7 +585,20 @@ class OZ_PDA_Base : ItemBase
         }
     }
 
-    // Заряд беремо з ДЖЕРЕЛА, а не з себе: energyStorageMax=0, свого запасу
+    // Батарея у своєму гнізді. Питати про неї треба САМЕ так, а не через
+    // GetEnergySource(): джерело з'являється лише коли пристрій увімкнений,
+    // тож вимкнений КПК із повною батареєю відповідав би «батареї немає».
+    EntityAI OZ_Battery()
+    {
+        return OZ_Attached(OZ_PdaConst.SLOT_BATTERY);
+    }
+
+    bool OZ_HasBattery()
+    {
+        return OZ_Battery() != null;
+    }
+
+    // Заряд беремо з БАТАРЕЇ, а не з себе: energyStorageMax=0, свого запасу
     // пристрій не має й не повинен.
     private void PushState()
     {
@@ -540,17 +606,14 @@ class OZ_PDA_Base : ItemBase
         m_Charge01 = 0;
 
         if (HasEnergyManager())
-        {
-            ComponentEnergyManager em = GetCompEM();
-            m_IsOn = em.IsWorking();
+            m_IsOn = GetCompEM().IsWorking();
 
-            EntityAI src = em.GetEnergySource();
-            if (src && src.HasEnergyManager())
-            {
-                float maxE = src.GetCompEM().GetEnergyMax();
-                if (maxE > 0)
-                    m_Charge01 = src.GetCompEM().GetEnergy() / maxE;
-            }
+        EntityAI batt = OZ_Battery();
+        if (batt && batt.HasEnergyManager())
+        {
+            float maxE = batt.GetCompEM().GetEnergyMax();
+            if (maxE > 0)
+                m_Charge01 = batt.GetCompEM().GetEnergy() / maxE;
         }
 
         SetSynchDirty();

@@ -390,6 +390,14 @@ class OZ_PdaMenu : UIScriptedMenu
             return true;
         }
 
+        // Далі -- активна сторінка. Питаємо тільки її: сторінки, яку не видно,
+        // клікнути неможливо, і давати їй голос означало б ловити чужі кнопки.
+        if (m_Current != "" && m_Pages.Contains(m_Current))
+        {
+            if (m_Pages.Get(m_Current).OnPageClick(w))
+                return true;
+        }
+
         return super.OnClick(w, x, y, button);
     }
 

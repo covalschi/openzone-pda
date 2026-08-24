@@ -38,8 +38,12 @@ class OZ_PdaDeviceStatus
     int  NetHigh = 0;
 
     // --- живлення ---
-    bool  Powered  = false;
-    float Charge01 = 0;
+    //
+    // HasBattery окремо від Charge01: порожнє гніздо й сіла батарея -- різні
+    // біди, і кнопка живлення мусить писати різне.
+    bool  Powered    = false;
+    bool  HasBattery = false;
+    float Charge01   = 0;
 
     // --- залізо ---
     ref array<ref OZ_BayInfo> Bays;

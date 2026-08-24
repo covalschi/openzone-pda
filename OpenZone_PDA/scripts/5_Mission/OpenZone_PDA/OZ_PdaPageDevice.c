@@ -7,6 +7,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
 {
     private ItemPreviewWidget m_Preview;
     private Widget m_ChargeFill;
+    private ButtonWidget m_BtnPower;
     private ref OZ_PdaDeviceStatus m_Status;
 
     override string LayoutPath()
@@ -18,6 +19,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
     {
         m_Preview    = ItemPreviewWidget.Cast(Wgt("Preview"));
         m_ChargeFill = Wgt("ChargeFill");
+        m_BtnPower   = ButtonWidget.Cast(Wgt("BtnPower"));
     }
 
     override void OnSelected()
@@ -37,8 +39,44 @@ class OZ_PdaPageDevice : OZ_PdaPage
         OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "status", "{}");
     }
 
+    // Кнопка живлення. Рішення серверне: клієнт лише каже, чого хоче, і
+    // одразу перепитує стан -- малювати «увімкнено» з власної голови означало
+    // б показати те, чого може не бути.
+    override bool OnPageClick(Widget w)
+    {
+        if (w && w == m_BtnPower)
+        {
+            bool want = true;
+            if (m_Status)
+                want = !m_Status.Powered;
+
+            OZ_PdaFlagOp op = new OZ_PdaFlagOp();
+            op.Value = want;
+
+            string json;
+            string err;
+            if (!JsonFileLoader<OZ_PdaFlagOp>.MakeData(op, json, err, false))
+                return true;
+
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "power", json);
+            return true;
+        }
+
+        return false;
+    }
+
     override void OnResponse(string op, bool ok, string json, string error)
     {
+        // Відповідь на живлення сама по собі нічого не несе: перепитуємо стан
+        // і малюємо його, а причину відмови показуємо там, де вона видима.
+        if (op == "power")
+        {
+            if (!ok)
+                SetText("ChargeLabel", "#" + error);
+            Request();
+            return;
+        }
+
         if (op != "status")
             return;
 
@@ -130,6 +168,19 @@ class OZ_PdaPageDevice : OZ_PdaPage
             label += "  " + pct.ToString() + "%";
         }
         SetText("ChargeLabel", label);
+
+        // Напис на кнопці -- це те, що станеться після натискання, а не те,
+        // що є зараз. Без батареї вмикати нічого, і кнопка про це й пише.
+        TextWidget pt = Text("PowerText");
+        if (pt)
+        {
+            if (!st.HasBattery)
+                pt.SetText("#STR_OZ_DEV_POWER_NO_BATT");
+            else if (st.Powered)
+                pt.SetText("#STR_OZ_DEV_POWER_OFF");
+            else
+                pt.SetText("#STR_OZ_DEV_POWER_ON");
+        }
 
         if (m_ChargeFill)
         {
