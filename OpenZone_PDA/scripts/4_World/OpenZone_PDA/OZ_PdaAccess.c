@@ -12,7 +12,7 @@
 
 class OZ_PdaAccess : OZ_PageAccess
 {
-    override bool Check(PlayerIdentity who, string pageId)
+    override bool Check(PlayerIdentity who, string pageId, string op)
     {
         if (!who)
             return false;
@@ -41,12 +41,22 @@ class OZ_PdaAccess : OZ_PageAccess
         // ліниво -- будити тік заради кожного КПК на сервері марно.
         pda.OZ_EvaluateLock(prof.LockAfterMinutes);
 
-        if (!pda.OZ_IsUnlocked())
+        // ЗАМОК не стосується тих операцій, які для того й існують, щоб його
+        // зняти. Небезпеки в цьому немає: і unlock, і setpin усе одно
+        // вимагають ЗНАТИ код, і рахують невдалі спроби. Без цього винятку
+        // код нема куди ввести -- гейт відкидає саме той запит, який мав би
+        // відімкнути пристрій.
+        if (!IsLockOp(op) && !pda.OZ_IsUnlocked())
             return false;
 
         // Друге питання коду для окремих сторінок -- поки що просто вимагає
         // відімкненого пристрою; окреме підтвердження приїде разом із UI.
         return true;
+    }
+
+    private bool IsLockOp(string op)
+    {
+        return op == "unlock" || op == "setpin";
     }
 
     private bool ModuleEnables(OZ_PDA_Base pda, string pageId)

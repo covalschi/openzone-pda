@@ -330,11 +330,149 @@ FrameWidgetClass OZ_PageDevice {
     }
 
     // --- замок ---
+    // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+    // віджетів, і напис усередині зникає.
+    ButtonWidgetClass BtnPin {
+     visible 1
+     position 429 264
+     size 124 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 2
+     {
+      PanelWidgetClass BtnPinBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 124 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnPinText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 124 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 13
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+    // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+    // віджетів, і напис усередині зникає.
+    ButtonWidgetClass BtnPinClear {
+     visible 1
+     position 561 264
+     size 116 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 2
+     {
+      PanelWidgetClass BtnPinClearBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 116 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnPinClearText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 116 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 13
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+    // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+    // віджетів, і напис усередині зникає.
+    ButtonWidgetClass BtnAutoLock {
+     visible 1
+     position 545 288
+     size 132 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 2
+     {
+      PanelWidgetClass BtnAutoLockBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 132 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnAutoLockText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 132 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 13
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
     TextWidgetClass PinText {
      visible 1
      ignorepointer 1
      position 0 264
-     size 677 22
+     size 420 22
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -351,7 +489,7 @@ FrameWidgetClass OZ_PageDevice {
      visible 1
      ignorepointer 1
      position 0 288
-     size 677 22
+     size 536 22
      hexactpos 1
      vexactpos 1
      hexactsize 1

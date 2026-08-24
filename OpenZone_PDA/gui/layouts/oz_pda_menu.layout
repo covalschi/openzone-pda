@@ -214,7 +214,7 @@ FrameWidgetClass OZ_PdaRoot {
          ignorepointer 1
          halign center_ref
          valign center_ref
-         position 0 -40
+         position 0 -120
          size 700 30
          hexactpos 1
          vexactpos 1
@@ -233,7 +233,7 @@ FrameWidgetClass OZ_PdaRoot {
          ignorepointer 1
          halign center_ref
          valign center_ref
-         position 0 8
+         position 0 -72
          size 400 48
          hexactpos 1
          vexactpos 1
@@ -246,6 +246,578 @@ FrameWidgetClass OZ_PdaRoot {
          "exact text size" 40
          "text halign" center
          "text valign" center
+        }
+        // Цифрова панель.
+        //
+        // Клавіатуру навмисно НЕ роблять єдиним шляхом: OnKeyPress меню
+        // ловить не всяке джерело вводу, а натискання по віджету ловиться
+        // завжди. Тому код набирається кнопками, а клавіатура лишається
+        // другим, необов'язковим способом.
+        FrameWidgetClass LockPad {
+         visible 1
+         halign center_ref
+         valign center_ref
+         position 0 40
+         size 184 154
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         priority 4
+         {
+         // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+         // віджетів, і цифра всередині зникає.
+         ButtonWidgetClass Key1 {
+          visible 1
+          position 0 0
+          size 56 34
+          hexactpos 1
+          vexactpos 1
+          hexactsize 1
+          vexactsize 1
+          text ""
+          priority 2
+          {
+           PanelWidgetClass Key1Bg {
+            visible 1
+            ignorepointer 1
+            color 0.129 0.129 0.145 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            priority 1
+            style rover_sim_colorable
+           }
+           TextWidgetClass Key1Glyph {
+            visible 1
+            ignorepointer 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            color 0.788 0.788 0.816 1
+            text "1"
+            font "gui/fonts/sdf_MetronBook24"
+            "exact text" 1
+            "exact text size" 18
+            "text halign" center
+            "text valign" center
+            priority 2
+           }
+          }
+         }
+         // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+         // віджетів, і цифра всередині зникає.
+         ButtonWidgetClass Key2 {
+          visible 1
+          position 64 0
+          size 56 34
+          hexactpos 1
+          vexactpos 1
+          hexactsize 1
+          vexactsize 1
+          text ""
+          priority 2
+          {
+           PanelWidgetClass Key2Bg {
+            visible 1
+            ignorepointer 1
+            color 0.129 0.129 0.145 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            priority 1
+            style rover_sim_colorable
+           }
+           TextWidgetClass Key2Glyph {
+            visible 1
+            ignorepointer 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            color 0.788 0.788 0.816 1
+            text "2"
+            font "gui/fonts/sdf_MetronBook24"
+            "exact text" 1
+            "exact text size" 18
+            "text halign" center
+            "text valign" center
+            priority 2
+           }
+          }
+         }
+         // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+         // віджетів, і цифра всередині зникає.
+         ButtonWidgetClass Key3 {
+          visible 1
+          position 128 0
+          size 56 34
+          hexactpos 1
+          vexactpos 1
+          hexactsize 1
+          vexactsize 1
+          text ""
+          priority 2
+          {
+           PanelWidgetClass Key3Bg {
+            visible 1
+            ignorepointer 1
+            color 0.129 0.129 0.145 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            priority 1
+            style rover_sim_colorable
+           }
+           TextWidgetClass Key3Glyph {
+            visible 1
+            ignorepointer 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            color 0.788 0.788 0.816 1
+            text "3"
+            font "gui/fonts/sdf_MetronBook24"
+            "exact text" 1
+            "exact text size" 18
+            "text halign" center
+            "text valign" center
+            priority 2
+           }
+          }
+         }
+         // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+         // віджетів, і цифра всередині зникає.
+         ButtonWidgetClass Key4 {
+          visible 1
+          position 0 40
+          size 56 34
+          hexactpos 1
+          vexactpos 1
+          hexactsize 1
+          vexactsize 1
+          text ""
+          priority 2
+          {
+           PanelWidgetClass Key4Bg {
+            visible 1
+            ignorepointer 1
+            color 0.129 0.129 0.145 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            priority 1
+            style rover_sim_colorable
+           }
+           TextWidgetClass Key4Glyph {
+            visible 1
+            ignorepointer 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            color 0.788 0.788 0.816 1
+            text "4"
+            font "gui/fonts/sdf_MetronBook24"
+            "exact text" 1
+            "exact text size" 18
+            "text halign" center
+            "text valign" center
+            priority 2
+           }
+          }
+         }
+         // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+         // віджетів, і цифра всередині зникає.
+         ButtonWidgetClass Key5 {
+          visible 1
+          position 64 40
+          size 56 34
+          hexactpos 1
+          vexactpos 1
+          hexactsize 1
+          vexactsize 1
+          text ""
+          priority 2
+          {
+           PanelWidgetClass Key5Bg {
+            visible 1
+            ignorepointer 1
+            color 0.129 0.129 0.145 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            priority 1
+            style rover_sim_colorable
+           }
+           TextWidgetClass Key5Glyph {
+            visible 1
+            ignorepointer 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            color 0.788 0.788 0.816 1
+            text "5"
+            font "gui/fonts/sdf_MetronBook24"
+            "exact text" 1
+            "exact text size" 18
+            "text halign" center
+            "text valign" center
+            priority 2
+           }
+          }
+         }
+         // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+         // віджетів, і цифра всередині зникає.
+         ButtonWidgetClass Key6 {
+          visible 1
+          position 128 40
+          size 56 34
+          hexactpos 1
+          vexactpos 1
+          hexactsize 1
+          vexactsize 1
+          text ""
+          priority 2
+          {
+           PanelWidgetClass Key6Bg {
+            visible 1
+            ignorepointer 1
+            color 0.129 0.129 0.145 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            priority 1
+            style rover_sim_colorable
+           }
+           TextWidgetClass Key6Glyph {
+            visible 1
+            ignorepointer 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            color 0.788 0.788 0.816 1
+            text "6"
+            font "gui/fonts/sdf_MetronBook24"
+            "exact text" 1
+            "exact text size" 18
+            "text halign" center
+            "text valign" center
+            priority 2
+           }
+          }
+         }
+         // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+         // віджетів, і цифра всередині зникає.
+         ButtonWidgetClass Key7 {
+          visible 1
+          position 0 80
+          size 56 34
+          hexactpos 1
+          vexactpos 1
+          hexactsize 1
+          vexactsize 1
+          text ""
+          priority 2
+          {
+           PanelWidgetClass Key7Bg {
+            visible 1
+            ignorepointer 1
+            color 0.129 0.129 0.145 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            priority 1
+            style rover_sim_colorable
+           }
+           TextWidgetClass Key7Glyph {
+            visible 1
+            ignorepointer 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            color 0.788 0.788 0.816 1
+            text "7"
+            font "gui/fonts/sdf_MetronBook24"
+            "exact text" 1
+            "exact text size" 18
+            "text halign" center
+            "text valign" center
+            priority 2
+           }
+          }
+         }
+         // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+         // віджетів, і цифра всередині зникає.
+         ButtonWidgetClass Key8 {
+          visible 1
+          position 64 80
+          size 56 34
+          hexactpos 1
+          vexactpos 1
+          hexactsize 1
+          vexactsize 1
+          text ""
+          priority 2
+          {
+           PanelWidgetClass Key8Bg {
+            visible 1
+            ignorepointer 1
+            color 0.129 0.129 0.145 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            priority 1
+            style rover_sim_colorable
+           }
+           TextWidgetClass Key8Glyph {
+            visible 1
+            ignorepointer 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            color 0.788 0.788 0.816 1
+            text "8"
+            font "gui/fonts/sdf_MetronBook24"
+            "exact text" 1
+            "exact text size" 18
+            "text halign" center
+            "text valign" center
+            priority 2
+           }
+          }
+         }
+         // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+         // віджетів, і цифра всередині зникає.
+         ButtonWidgetClass Key9 {
+          visible 1
+          position 128 80
+          size 56 34
+          hexactpos 1
+          vexactpos 1
+          hexactsize 1
+          vexactsize 1
+          text ""
+          priority 2
+          {
+           PanelWidgetClass Key9Bg {
+            visible 1
+            ignorepointer 1
+            color 0.129 0.129 0.145 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            priority 1
+            style rover_sim_colorable
+           }
+           TextWidgetClass Key9Glyph {
+            visible 1
+            ignorepointer 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            color 0.788 0.788 0.816 1
+            text "9"
+            font "gui/fonts/sdf_MetronBook24"
+            "exact text" 1
+            "exact text size" 18
+            "text halign" center
+            "text valign" center
+            priority 2
+           }
+          }
+         }
+         // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+         // віджетів, і цифра всередині зникає.
+         ButtonWidgetClass KeyBack {
+          visible 1
+          position 0 120
+          size 56 34
+          hexactpos 1
+          vexactpos 1
+          hexactsize 1
+          vexactsize 1
+          text ""
+          priority 2
+          {
+           PanelWidgetClass KeyBackBg {
+            visible 1
+            ignorepointer 1
+            color 0.129 0.129 0.145 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            priority 1
+            style rover_sim_colorable
+           }
+           TextWidgetClass KeyBackGlyph {
+            visible 1
+            ignorepointer 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            color 0.788 0.788 0.816 1
+            text "<"
+            font "gui/fonts/sdf_MetronBook24"
+            "exact text" 1
+            "exact text size" 18
+            "text halign" center
+            "text valign" center
+            priority 2
+           }
+          }
+         }
+         // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+         // віджетів, і цифра всередині зникає.
+         ButtonWidgetClass Key0 {
+          visible 1
+          position 64 120
+          size 56 34
+          hexactpos 1
+          vexactpos 1
+          hexactsize 1
+          vexactsize 1
+          text ""
+          priority 2
+          {
+           PanelWidgetClass Key0Bg {
+            visible 1
+            ignorepointer 1
+            color 0.129 0.129 0.145 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            priority 1
+            style rover_sim_colorable
+           }
+           TextWidgetClass Key0Glyph {
+            visible 1
+            ignorepointer 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            color 0.788 0.788 0.816 1
+            text "0"
+            font "gui/fonts/sdf_MetronBook24"
+            "exact text" 1
+            "exact text size" 18
+            "text halign" center
+            "text valign" center
+            priority 2
+           }
+          }
+         }
+         // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+         // віджетів, і цифра всередині зникає.
+         ButtonWidgetClass KeyOk {
+          visible 1
+          position 128 120
+          size 56 34
+          hexactpos 1
+          vexactpos 1
+          hexactsize 1
+          vexactsize 1
+          text ""
+          priority 2
+          {
+           PanelWidgetClass KeyOkBg {
+            visible 1
+            ignorepointer 1
+            color 0.129 0.129 0.145 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            priority 1
+            style rover_sim_colorable
+           }
+           TextWidgetClass KeyOkGlyph {
+            visible 1
+            ignorepointer 1
+            position 0 0
+            size 56 34
+            hexactpos 1
+            vexactpos 1
+            hexactsize 1
+            vexactsize 1
+            color 0.788 0.788 0.816 1
+            text "OK"
+            font "gui/fonts/sdf_MetronBook24"
+            "exact text" 1
+            "exact text size" 18
+            "text halign" center
+            "text valign" center
+            priority 2
+           }
+          }
+         }
+         }
         }
         TextWidgetClass LockHint {
          visible 1

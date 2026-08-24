@@ -26,6 +26,21 @@ class OZ_PdaMenu : UIScriptedMenu
     // один раз, коли гравець підтвердив. Порівнює його сервер.
     private string m_PinBuffer = "";
 
+    // Екран коду має ТРИ приводи з'явитись, і плутати їх не можна:
+    //
+    //   ""        нікому не треба, панель схована;
+    //   "unlock"  пристрій замкнений -- панель ПРИМУСОВА, скасувати не можна;
+    //   "set"     гравець сам попросив задати або змінити код;
+    //   "clear"   гравець сам попросив зняти код.
+    //
+    // Різниця не косметична: примусову панель не можна закрити по Esc, а
+    // добровільну -- треба, інакше вийти з неї нема як.
+    private string m_PinMode = "";
+    private int    m_PinStep = 0;
+    private string m_PinOld  = "";
+    private string m_PinNew  = "";
+    private bool   m_HasPin  = false;
+
     void OZ_PdaMenu()
     {
         m_Pages = new map<string, ref OZ_PdaPage>();
@@ -94,6 +109,16 @@ class OZ_PdaMenu : UIScriptedMenu
 
     void RefreshTick()
     {
+        // Поки стрічки немає, оновлювати нема кому: замкнений пристрій не
+        // віддав жодної сторінки. Питаємо стан самі -- інакше відімкнення
+        // іншим шляхом (скинули пін, минув час) лишилось би непоміченим, і
+        // екран коду висів би над уже відкритим пристроєм.
+        if (!m_Built)
+        {
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "status", "{}");
+            return;
+        }
+
         if (m_Current != "" && m_Pages.Contains(m_Current))
             m_Pages.Get(m_Current).OnRefresh();
     }
@@ -115,8 +140,37 @@ class OZ_PdaMenu : UIScriptedMenu
         if (m_Pages.Contains(pageId))
             m_Pages.Get(pageId).OnResponse(op, ok, json, error);
 
-        if (!ok && pageId == OZ_PdaConst.PAGE_DEVICE && op == "unlock")
-            OnBadPin();
+        if (pageId == OZ_PdaConst.PAGE_DEVICE && op == "unlock")
+        {
+            if (ok)
+            {
+                // Код прийнято. Стрічки ще немає -- її будує ПЕРША вдала
+                // відповідь про стан, і попросити її мусимо саме тут: доти
+                // сторінок немає, а отже нема кому питати.
+                EndPin();
+                OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "status", "{}");
+            }
+            else
+            {
+                OnBadPin();
+            }
+        }
+
+        if (pageId == OZ_PdaConst.PAGE_DEVICE && op == "setpin")
+        {
+            if (ok)
+            {
+                // Код прийнято -- екран іде геть, а стан перепитує сама
+                // сторінка: писати «пін задано» з голови клієнта означало б
+                // показати те, чого сервер міг і не зробити.
+                EndPin();
+                OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "status", "{}");
+            }
+            else
+            {
+                OnBadPin();
+            }
+        }
     }
 
     private void BuildFrom(string json)
@@ -215,10 +269,23 @@ class OZ_PdaMenu : UIScriptedMenu
             return;
 
         // Відмова саме через замок -- єдина причина показати екран коду.
+        //
+        // І це ЗВИЧАЙНИЙ шлях, а не крайній випадок: замкнений пристрій не
+        // віддає навіть device/status, тож нормально ми потрапляємо сюди, а
+        // не в розбір відповіді нижче. Показати саму панель мало -- треба
+        // ввімкнути режим, інакше цифри нікуди не йдуть: панель видно, а
+        // кнопки мовчать. Саме так це й виглядало на живому клієнті.
         if (!ok)
         {
-            bool locked = (error == "STR_OZ_ERR_NO_ACCESS");
-            m_LockPanel.Show(locked);
+            if (error == "STR_OZ_ERR_NO_ACCESS")
+            {
+                if (m_PinMode != "unlock")
+                    BeginPin("unlock");
+            }
+            else if (m_PinMode == "unlock")
+            {
+                EndPin();
+            }
             return;
         }
 
@@ -227,20 +294,187 @@ class OZ_PdaMenu : UIScriptedMenu
         if (!JsonFileLoader<OZ_PdaDeviceStatus>.LoadData(json, st, err))
             return;
 
+        m_HasPin = st.HasPin;
+
         bool needPin = st.HasPin && !st.Unlocked;
-        m_LockPanel.Show(needPin);
 
         if (needPin)
         {
+            // Примусовий екран б'є будь-який добровільний: замкнений пристрій
+            // не місце для зміни коду.
+            if (m_PinMode != "unlock")
+                BeginPin("unlock");
+
             TextWidget hint = TextWidget.Cast(layoutRoot.FindAnyWidget("LockHint"));
             if (hint)
             {
                 if (st.LockedOut)
                     hint.SetText("#STR_OZ_LOCK_TOO_MANY");
                 else
-                    hint.SetText("");
+                    hint.SetText("#STR_OZ_PIN_HINT");
             }
+            return;
         }
+
+        // Відімкнули -- примусовий екран іде геть. Добровільний лишається:
+        // гравець сам його відкрив і сам закриє.
+        if (m_PinMode == "unlock")
+            EndPin();
+    }
+
+    // ------------------------------------------------------------ екран коду
+
+    // Просить сторінка «Пристрій» -- через FindMenu, а не через посилання:
+    // меню одне, живе в UIManager, і тримати на нього другу нитку означало б
+    // мати два джерела правди про те, чи воно взагалі відкрите.
+    void BeginPin(string mode)
+    {
+        if (!m_LockPanel)
+            return;
+
+        m_PinMode   = mode;
+        m_PinBuffer = "";
+        m_PinOld    = "";
+        m_PinNew    = "";
+
+        // Задати код там, де його ще немає, -- це одразу новий код, без
+        // питання про старий.
+        if (mode == "set" && !m_HasPin)
+            m_PinStep = 1;
+        else
+            m_PinStep = 0;
+
+        m_LockPanel.Show(true);
+
+        // Сторінки ховаємо ОКРЕМО, а не покладаємось на те, що панель їх
+        // перекриє: 3D-прев'ю предмета малюється власним проходом рушія і
+        // проступає крізь будь-який 2D-віджет поверх нього. Виміряно на
+        // живому клієнті -- модель було видно просто крізь екран коду.
+        if (m_PageHost)
+            m_PageHost.Show(false);
+
+        PaintPinPrompt("");
+        PaintPinDots();
+    }
+
+    void EndPin()
+    {
+        m_PinMode   = "";
+        m_PinStep   = 0;
+        m_PinBuffer = "";
+        m_PinOld    = "";
+        m_PinNew    = "";
+
+        if (m_LockPanel)
+            m_LockPanel.Show(false);
+
+        if (m_PageHost)
+            m_PageHost.Show(true);
+    }
+
+    bool PinPanelBusy()
+    {
+        return m_PinMode != "";
+    }
+
+    bool HasPin()
+    {
+        return m_HasPin;
+    }
+
+    private void PaintPinPrompt(string hintKey)
+    {
+        TextWidget label = TextWidget.Cast(layoutRoot.FindAnyWidget("LockLabel"));
+        if (label)
+        {
+            if (m_PinMode == "unlock")
+                label.SetText("#STR_OZ_LOCK_PROMPT");
+            else if (m_PinStep == 0)
+                label.SetText("#STR_OZ_PIN_OLD");
+            else if (m_PinStep == 1)
+                label.SetText("#STR_OZ_PIN_NEW");
+            else
+                label.SetText("#STR_OZ_PIN_REPEAT");
+        }
+
+        TextWidget hint = TextWidget.Cast(layoutRoot.FindAnyWidget("LockHint"));
+        if (hint)
+        {
+            if (hintKey != "")
+                hint.SetText(hintKey);
+            else
+                hint.SetText("#STR_OZ_PIN_HINT");
+        }
+    }
+
+    // Enter натиснуто. Що це означає -- залежить від режиму й кроку.
+    private void PinConfirm()
+    {
+        if (m_PinMode == "unlock")
+        {
+            OZ_PdaPinAttempt att = new OZ_PdaPinAttempt();
+            att.Pin = m_PinBuffer;
+
+            string ajson;
+            string aerr;
+            if (JsonFileLoader<OZ_PdaPinAttempt>.MakeData(att, ajson, aerr, false))
+                OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "unlock", ajson);
+            return;
+        }
+
+        if (m_PinMode == "clear")
+        {
+            m_PinOld = m_PinBuffer;
+            SendPinChange(m_PinOld, "");
+            return;
+        }
+
+        // m_PinMode == "set"
+        if (m_PinStep == 0)
+        {
+            m_PinOld    = m_PinBuffer;
+            m_PinBuffer = "";
+            m_PinStep   = 1;
+            PaintPinPrompt("");
+            PaintPinDots();
+            return;
+        }
+
+        if (m_PinStep == 1)
+        {
+            m_PinNew    = m_PinBuffer;
+            m_PinBuffer = "";
+            m_PinStep   = 2;
+            PaintPinPrompt("");
+            PaintPinDots();
+            return;
+        }
+
+        // Повтор не збігся -- повертаємось на крок назад, а не мовчки
+        // приймаємо перший варіант.
+        if (m_PinBuffer != m_PinNew)
+        {
+            m_PinNew    = "";
+            m_PinBuffer = "";
+            m_PinStep   = 1;
+            PaintPinPrompt("#STR_OZ_PIN_MISMATCH");
+            PaintPinDots();
+            return;
+        }
+
+        SendPinChange(m_PinOld, m_PinNew);
+    }
+
+    private void SendPinChange(string oldPin, string newPin)
+    {
+        OZ_PdaPinChange ch = new OZ_PdaPinChange();
+        ch.OldPin = oldPin;
+        ch.NewPin = newPin;
+
+        string json;
+        string err;
+        if (JsonFileLoader<OZ_PdaPinChange>.MakeData(ch, json, err, false))
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "setpin", json);
     }
 
     // Смуга стану -- те, що гравець мусить бачити, не заходячи на сторінку:
@@ -307,6 +541,44 @@ class OZ_PdaMenu : UIScriptedMenu
         return v.ToString();
     }
 
+    // true -- натискання було по цифровій панелі й уже розібране.
+    private bool PinPadClick(string name)
+    {
+        if (name == "KeyOk")
+        {
+            if (m_PinBuffer.Length() > 0)
+                PinConfirm();
+            return true;
+        }
+
+        if (name == "KeyBack")
+        {
+            if (m_PinBuffer.Length() > 0)
+            {
+                m_PinBuffer = m_PinBuffer.Substring(0, m_PinBuffer.Length() - 1);
+                PaintPinDots();
+            }
+            return true;
+        }
+
+        // Key0..Key9 -- і тільки вони: чуже ім'я тут не цифра.
+        if (name.Length() != 4)
+            return false;
+        if (name.Substring(0, 3) != "Key")
+            return false;
+
+        string digit = name.Substring(3, 1);
+        if (digit != "0" && digit.ToInt() == 0)
+            return false;
+
+        if (m_PinBuffer.Length() < 4)
+        {
+            m_PinBuffer += digit;
+            PaintPinDots();
+        }
+        return true;
+    }
+
     private void PaintPinDots()
     {
         TextWidget dots = TextWidget.Cast(layoutRoot.FindAnyWidget("LockDots"));
@@ -329,21 +601,36 @@ class OZ_PdaMenu : UIScriptedMenu
         m_PinBuffer = "";
         PaintPinDots();
 
-        TextWidget hint = TextWidget.Cast(layoutRoot.FindAnyWidget("LockHint"));
-        if (hint)
-            hint.SetText("#STR_OZ_LOCK_WRONG");
+        // На кроці «повтори новий код» помилятись нема в чому -- сервер
+        // відмовляє лише через СТАРИЙ код, тож повертаємо на його крок.
+        if (m_PinMode == "set" && m_PinStep > 0 && m_HasPin)
+        {
+            m_PinStep = 0;
+            m_PinOld  = "";
+            m_PinNew  = "";
+        }
+
+        PaintPinPrompt("#STR_OZ_LOCK_WRONG");
     }
 
     override bool OnKeyPress(Widget w, int x, int y, int key)
     {
         if (key == KeyCode.KC_ESCAPE)
         {
+            // Добровільний екран коду скасовується; примусовий -- ні, бо з
+            // замкненого пристрою виходити нема куди, крім як із меню.
+            if (m_PinMode != "" && m_PinMode != "unlock")
+            {
+                EndPin();
+                return true;
+            }
+
             Close();
             return true;
         }
 
-        // Код набирається лише поки видно екран блокування.
-        if (m_LockPanel && m_LockPanel.IsVisible())
+        // Код набирається лише поки відкритий екран коду.
+        if (m_PinMode != "")
         {
             if (key >= KeyCode.KC_0 && key <= KeyCode.KC_9 && m_PinBuffer.Length() < 4)
             {
@@ -361,14 +648,7 @@ class OZ_PdaMenu : UIScriptedMenu
 
             if (key == KeyCode.KC_RETURN && m_PinBuffer.Length() > 0)
             {
-                OZ_PdaPinAttempt att = new OZ_PdaPinAttempt();
-                att.Pin = m_PinBuffer;
-
-                string json;
-                string err;
-                if (JsonFileLoader<OZ_PdaPinAttempt>.MakeData(att, json, err, false))
-                    OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "unlock", json);
-
+                PinConfirm();
                 return true;
             }
         }
@@ -389,6 +669,11 @@ class OZ_PdaMenu : UIScriptedMenu
             Select(w.GetName());
             return true;
         }
+
+        // Цифрова панель екрана коду. Розбирається ТУТ, а не на сторінці:
+        // набраний код живе в меню й ніде більше.
+        if (m_PinMode != "" && w && PinPadClick(w.GetName()))
+            return true;
 
         // Далі -- активна сторінка. Питаємо тільки її: сторінки, яку не видно,
         // клікнути неможливо, і давати їй голос означало б ловити чужі кнопки.

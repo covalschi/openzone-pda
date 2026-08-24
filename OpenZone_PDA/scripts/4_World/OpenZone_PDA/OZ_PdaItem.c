@@ -243,8 +243,16 @@ class OZ_PDA_Base : ItemBase
         if (!GetGame().IsServer())
             return false;
 
+        // Коду немає -- відмикається завжди, але ВІДМИКАЄТЬСЯ, а не просто
+        // відповідає «так». Після рестарту пристрій приходить замкненим
+        // незалежно від того, є на ньому код чи ні, і без цього рядка КПК
+        // без піна лишався б замкненим назавжди.
         if (m_Pin == "")
+        {
+            m_Unlocked = true;
+            SetSynchDirty();
             return true;
+        }
 
         if (OZ_IsLockedOut(uid))
             return false;

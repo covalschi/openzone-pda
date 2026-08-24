@@ -20,6 +20,9 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         if (op == "power")
             return Power(json, sender, ok, error);
 
+        if (op == "setpin")
+            return SetPin(json, sender, ok, error);
+
         return "";
     }
 
@@ -127,6 +130,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         st.HasPin    = pda.OZ_HasPin();
         st.Unlocked  = pda.OZ_IsUnlocked();
         st.AutoLock  = pda.OZ_AutoLock();
+        st.ForceAutoLock = prof.ForceAutoLock;
         st.LockedOut = pda.OZ_IsLockedOut(sender.GetPlainId());
 
         st.Online      = pda.OZ_IsOnline(pd.SessionEpoch);
@@ -194,6 +198,45 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         // Відімкнув -- значить сесія на цьому пристрої тепер його.
         OZ_PlayerData pd = OZ_PlayerStore.Load(sender.GetPlainId());
         pda.OZ_OpenSession(sender.GetPlainId(), pd.SessionEpoch);
+
+        ok = true;
+        error = "";
+        return "";
+    }
+
+    // Зміна коду. Щоб змінити пін, його треба ЗНАТИ -- пристрій не питає,
+    // хто ти, він питає старий код. Порожній новий код означає «зняти пін».
+    private string SetPin(string json, PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        if (!pda)
+        {
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return "";
+        }
+
+        OZ_PdaPinChange ch;
+        string err;
+        if (!JsonFileLoader<OZ_PdaPinChange>.LoadData(json, ch, err))
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        if (!pda.OZ_SetPin(sender.GetPlainId(), ch.OldPin, ch.NewPin))
+        {
+            // Скільки спроб лишилось -- НЕ кажемо, з тієї ж причини, що й при
+            // відмиканні: це підказка тому, хто підбирає.
+            error = "STR_OZ_ERR_BAD_PIN";
+            return "";
+        }
+
+        // Задав код -- значить сесія на цьому пристрої тепер його.
+        OZ_PlayerData pd = OZ_PlayerStore.Load(sender.GetPlainId());
+        if (!pda.OZ_HasAnySession())
+            pda.OZ_OpenSession(sender.GetPlainId(), pd.SessionEpoch);
 
         ok = true;
         error = "";

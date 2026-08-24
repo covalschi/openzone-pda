@@ -8,6 +8,9 @@ class OZ_PdaPageDevice : OZ_PdaPage
     private ItemPreviewWidget m_Preview;
     private Widget m_ChargeFill;
     private ButtonWidget m_BtnPower;
+    private ButtonWidget m_BtnPin;
+    private ButtonWidget m_BtnPinClear;
+    private ButtonWidget m_BtnAutoLock;
     private ref OZ_PdaDeviceStatus m_Status;
 
     override string LayoutPath()
@@ -19,7 +22,10 @@ class OZ_PdaPageDevice : OZ_PdaPage
     {
         m_Preview    = ItemPreviewWidget.Cast(Wgt("Preview"));
         m_ChargeFill = Wgt("ChargeFill");
-        m_BtnPower   = ButtonWidget.Cast(Wgt("BtnPower"));
+        m_BtnPower     = ButtonWidget.Cast(Wgt("BtnPower"));
+        m_BtnPin       = ButtonWidget.Cast(Wgt("BtnPin"));
+        m_BtnPinClear  = ButtonWidget.Cast(Wgt("BtnPinClear"));
+        m_BtnAutoLock  = ButtonWidget.Cast(Wgt("BtnAutoLock"));
     }
 
     override void OnSelected()
@@ -62,6 +68,42 @@ class OZ_PdaPageDevice : OZ_PdaPage
             return true;
         }
 
+        // Набір коду веде МЕНЮ, а не сторінка: цифри ловить OnKeyPress меню,
+        // і другого місця, де живе введений код, бути не повинно.
+        if (w && w == m_BtnPin)
+        {
+            OZ_PdaMenu menu = OZ_PdaMenu.Cast(GetGame().GetUIManager().FindMenu(OZ_PdaConst.MENU_PDA));
+            if (menu)
+                menu.BeginPin("set");
+            return true;
+        }
+
+        if (w && w == m_BtnPinClear)
+        {
+            OZ_PdaMenu clearMenu = OZ_PdaMenu.Cast(GetGame().GetUIManager().FindMenu(OZ_PdaConst.MENU_PDA));
+            if (clearMenu)
+                clearMenu.BeginPin("clear");
+            return true;
+        }
+
+        if (w && w == m_BtnAutoLock)
+        {
+            bool wantLock = true;
+            if (m_Status)
+                wantLock = !m_Status.AutoLock;
+
+            OZ_PdaFlagOp lockOp = new OZ_PdaFlagOp();
+            lockOp.Value = wantLock;
+
+            string lockJson;
+            string lockErr;
+            if (!JsonFileLoader<OZ_PdaFlagOp>.MakeData(lockOp, lockJson, lockErr, false))
+                return true;
+
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "autolock", lockJson);
+            return true;
+        }
+
         return false;
     }
 
@@ -73,6 +115,16 @@ class OZ_PdaPageDevice : OZ_PdaPage
         {
             if (!ok)
                 SetText("ChargeLabel", "#" + error);
+            Request();
+            return;
+        }
+
+        // Пін і автоблокування самі нічого не несуть: перепитуємо стан.
+        // Причину відмови по піну малює екран коду, він же її й ловить.
+        if (op == "setpin" || op == "autolock")
+        {
+            if (!ok && op == "autolock")
+                SetText("AutoLockText", "#" + error);
             Request();
             return;
         }
@@ -294,6 +346,28 @@ class OZ_PdaPageDevice : OZ_PdaPage
             }
         }
         SetText("AutoLockText", al);
+
+        // Написи на кнопках -- це те, що станеться після натискання.
+        if (st.HasPin)
+            SetText("BtnPinText", "#STR_OZ_PIN_CHANGE_BTN");
+        else
+            SetText("BtnPinText", "#STR_OZ_PIN_SET_BTN");
+
+        SetText("BtnPinClearText", "#STR_OZ_PIN_CLEAR_BTN");
+
+        // Знімати код нема з чого, поки його немає: кнопка не сіріє, а зникає.
+        if (m_BtnPinClear)
+            m_BtnPinClear.Show(st.HasPin);
+
+        // Так само з автоблокуванням: якщо сервер заборонив його вимикати,
+        // кнопки просто немає -- замість кнопки, яка завжди відмовляє.
+        if (m_BtnAutoLock)
+            m_BtnAutoLock.Show(!st.ForceAutoLock);
+
+        if (st.AutoLock)
+            SetText("BtnAutoLockText", "#STR_OZ_AUTOLOCK_OFF_BTN");
+        else
+            SetText("BtnAutoLockText", "#STR_OZ_AUTOLOCK_ON_BTN");
     }
 
     private void PaintRadiation(OZ_PdaDeviceStatus st)

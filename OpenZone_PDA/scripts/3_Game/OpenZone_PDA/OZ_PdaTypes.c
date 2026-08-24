@@ -55,6 +55,9 @@ class OZ_PdaDeviceStatus
     bool HasPin   = false;
     bool Unlocked = true;
     bool AutoLock = true;
+    // Сервер може заборонити вимикати автоблокування. Клієнту це треба, щоб
+    // не малювати кнопку, яка завжди відмовляє.
+    bool ForceAutoLock = false;
     bool LockedOut = false;           // спроби вичерпані
     float LockAfterMinutes = 0;
 
