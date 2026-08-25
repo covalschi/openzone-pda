@@ -56,7 +56,10 @@ class OZ_PdaAccess : OZ_PageAccess
 
     private bool IsLockOp(string op)
     {
-        return op == "unlock" || op == "setpin";
+        // crack -- теж операція про замок, і теж мусить проходити крізь
+        // гейт: запечатаний пристрій НЕ віддає нічого, і без цього винятку
+        // дешифратор не мав би куди підключитись.
+        return op == "unlock" || op == "setpin" || op == "crack" || op == "sealed";
     }
 
     private bool ModuleEnables(OZ_PDA_Base pda, string pageId)

@@ -57,6 +57,20 @@ class OZ_PDA_Base : ItemBase
     // нас. Один рядок такої проблеми не має.
     private string m_MarkersJson = "";
 
+    // --- запечатаний пристрій ---
+    //
+    // m_Seeded відповідає на одне питання: чи вже писали на цей пристрій те,
+    // що профіль велів написати. Один раз -- і назавжди; інакше кожен рестарт
+    // відновлював би мітки, які гравець стер, і квестова схованка ставала б
+    // невичерпною.
+    //
+    // m_CrackUntil -- час у мілісекундах GetGame().GetTime(), після якого
+    // код спаде. Нуль означає «ніхто не ламає». Час РУШІЙНИЙ, а не
+    // календарний: рестарт сервера злічильник обнуляє, і це правильно --
+    // дешифратор рахував у пам'яті, а не в сейфі.
+    private bool m_Seeded     = false;
+    private int  m_CrackUntil = 0;
+
     // --- тік модулів ---
     // Базовий таймер один на пристрій; кожен модуль накопичує свій час і
     // спрацьовує зі своїм періодом. Один таймер замість трьох -- бо таймерів
@@ -88,6 +102,18 @@ class OZ_PDA_Base : ItemBase
     }
 
     // --------------------------------------------------------------- модулі
+
+    // Предмет щойно з'явився у світі. САМЕ ТУТ пишеться те, що профіль велів
+    // покласти на нього -- і лише якщо його ще не писали: EEInit кличеться і
+    // при створенні, і при завантаженні зі збереження, а другий раз писати
+    // не можна.
+    override void EEInit()
+    {
+        super.EEInit();
+
+        if (GetGame().IsServer())
+            OZ_SeedFromProfile();
+    }
 
     override void EEItemAttached(EntityAI item, string slot_name)
     {
@@ -296,6 +322,148 @@ class OZ_PDA_Base : ItemBase
         if (i == -1)
             return 0;
         return m_FailCount[i];
+    }
+
+    // ------------------------------------------------------ запечатаний КПК
+
+    bool OZ_IsSealed()
+    {
+        OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(GetType());
+        if (!prof || !prof.Sealed)
+            return false;
+
+        // Профіль каже «запечатаний», але зламаний пристрій уже не такий.
+        // Ознака зламаності -- відсутність коду: код у нього ставив сервер, і
+        // прибрати його могло лише зламування.
+        return m_Pin != "";
+    }
+
+    bool OZ_IsCracking()
+    {
+        return m_CrackUntil > 0;
+    }
+
+    int OZ_CrackLeftSec()
+    {
+        if (m_CrackUntil <= 0)
+            return 0;
+
+        int left = m_CrackUntil - GetGame().GetTime();
+        if (left <= 0)
+            return 0;
+        return left / 1000;
+    }
+
+    bool OZ_HasDecryptor()
+    {
+        return OZ_HasModuleKind(OZ_PdaConst.MOD_DECRYPTOR);
+    }
+
+    // Почати злам. Причину відмови повертаємо рядком: «нема чого ламати» й
+    // «нема чим» -- різні біди.
+    string OZ_StartCrack(float seconds)
+    {
+        if (!GetGame().IsServer())
+            return "STR_OZ_ERR_INTERNAL";
+
+        if (!OZ_IsSealed())
+            return "STR_OZ_ERR_NOT_SEALED";
+
+        if (!OZ_HasDecryptor())
+            return "STR_OZ_ERR_NO_DECRYPTOR";
+
+        if (m_CrackUntil > 0)
+            return "STR_OZ_ERR_BUSY";
+
+        int ms = Math.Round(seconds * 1000);
+        if (ms < 1000)
+            ms = 1000;
+
+        m_CrackUntil = GetGame().GetTime() + ms;
+        return "";
+    }
+
+    // Ліниво, як і замок: будити тік заради кожного запечатаного КПК на
+    // сервері марно, а спитають про нього рівно тоді, коли на нього дивляться.
+    void OZ_EvaluateCrack()
+    {
+        if (!GetGame().IsServer())
+            return;
+        if (m_CrackUntil <= 0)
+            return;
+
+        if (GetGame().GetTime() < m_CrackUntil)
+        {
+            // Дешифратор ВИЙНЯЛИ посеред роботи -- рахунок збивається. Інакше
+            // його можна було б переставити в інший пристрій і зламати два
+            // одночасно одним модулем.
+            if (!OZ_HasDecryptor())
+            {
+                m_CrackUntil = 0;
+                OZ_Log.Dbg("crack aborted: decryptor removed");
+            }
+            return;
+        }
+
+        m_CrackUntil = 0;
+        m_Pin        = "";
+        m_Unlocked   = true;
+        SetSynchDirty();
+        OZ_Log.Dbg("pda cracked open: " + GetType());
+    }
+
+    // Записати на пристрій те, що профіль велів -- РІВНО ОДИН раз за життя
+    // предмета. Кличеться з EEInit сервера.
+    void OZ_SeedFromProfile()
+    {
+        if (!GetGame().IsServer() || m_Seeded)
+            return;
+
+        OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(GetType());
+        if (!prof)
+            return;
+
+        m_Seeded = true;
+
+        if (prof.PresetMarkers && prof.PresetMarkers.Count() > 0)
+        {
+            OZ_MarkerList list = new OZ_MarkerList();
+            for (int i = 0; i < prof.PresetMarkers.Count(); i++)
+            {
+                OZ_MapMarker src = prof.PresetMarkers[i];
+
+                OZ_MapMarker m = new OZ_MapMarker();
+                m.Id   = "preset#" + i.ToString();
+                m.Name = src.Name;
+                m.Pos  = src.Pos;
+                list.Items.Insert(m);
+            }
+
+            string json;
+            string err;
+            if (JsonFileLoader<OZ_MarkerList>.MakeData(list, json, err, false))
+                m_MarkersJson = json;
+        }
+
+        if (prof.Sealed)
+        {
+            // Код ставить СЕРВЕР і не каже його нікому -- зокрема й собі в
+            // лог. Підібрати його не можна не тому, що він складний, а тому
+            // що його не існує в жодній голові.
+            int a = Math.RandomInt(0, 10);
+            int b = Math.RandomInt(0, 10);
+            int c = Math.RandomInt(0, 10);
+            int d = Math.RandomInt(0, 10);
+
+            m_Pin  = a.ToString();
+            m_Pin += b.ToString();
+            m_Pin += c.ToString();
+            m_Pin += d.ToString();
+
+            m_Unlocked = false;
+            m_AutoLock = true;
+            SetSynchDirty();
+        }
     }
 
     // --------------------------------------------------------------- мітки
@@ -671,6 +839,8 @@ class OZ_PDA_Base : ItemBase
         // v2 і далі -- ДОПИСУЄТЬСЯ В КІНЕЦЬ. Вставка в середину зсунула б
         // потік і зробила б нечитними всі старіші збереження.
         ctx.Write(m_MarkersJson);
+        // v3 -- знову В КІНЕЦЬ.
+        ctx.Write(m_Seeded);
     }
 
     override bool CF_OnStoreLoad(CF_ModStorageMap storage)
@@ -700,6 +870,12 @@ class OZ_PDA_Base : ItemBase
         if (ctx.GetVersion() >= 2)
         {
             if (!ctx.Read(m_MarkersJson))
+                return false;
+        }
+
+        if (ctx.GetVersion() >= 3)
+        {
+            if (!ctx.Read(m_Seeded))
                 return false;
         }
 

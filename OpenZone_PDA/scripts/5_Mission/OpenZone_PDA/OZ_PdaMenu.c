@@ -116,6 +116,10 @@ class OZ_PdaMenu : UIScriptedMenu
         if (!m_Built)
         {
             OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "status", "{}");
+            // Поки йде злам, зворотний відлік мусить рухатись сам: гравець
+            // дивиться на нього, а не натискає щосекунди.
+            if (m_PinMode == "unlock")
+                AskSealed();
             return;
         }
 
@@ -154,6 +158,20 @@ class OZ_PdaMenu : UIScriptedMenu
             {
                 OnBadPin(error);
             }
+        }
+
+        if (pageId == OZ_PdaConst.PAGE_DEVICE && op == "sealed" && ok)
+        {
+            PaintSealed(json);
+            return;
+        }
+
+        if (pageId == OZ_PdaConst.PAGE_DEVICE && op == "crack")
+        {
+            if (!ok)
+                PaintPinPrompt("#" + error);
+            AskSealed();
+            return;
         }
 
         if (pageId == OZ_PdaConst.PAGE_DEVICE && op == "setpin")
@@ -281,6 +299,10 @@ class OZ_PdaMenu : UIScriptedMenu
             {
                 if (m_PinMode != "unlock")
                     BeginPin("unlock");
+
+                // Запечатаний пристрій показує СВОЄ. Пропонувати набирати код
+                // там, де його ніхто не знає, -- це запрошення в нікуди.
+                AskSealed();
             }
             else if (m_PinMode == "unlock")
             {
@@ -357,6 +379,81 @@ class OZ_PdaMenu : UIScriptedMenu
         PaintPinDots();
     }
 
+    // Запечатаний пристрій не віддає навіть status, тож про його стан
+    // доводиться питати ОКРЕМО -- операцією, яку гейт пропускає.
+    private void AskSealed()
+    {
+        OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "sealed", "{}");
+    }
+
+    // Запечатаний пристрій має СВОЮ розповідь, і клавіатура в ній не бере
+    // участі: набирати код, якого ніхто не знає, нема сенсу.
+    private void PaintSealed(string json)
+    {
+        string err;
+        OZ_PdaDeviceStatus st;
+        if (!JsonFileLoader<OZ_PdaDeviceStatus>.LoadData(json, st, err))
+            return;
+
+        ButtonWidget crack = ButtonWidget.Cast(layoutRoot.FindAnyWidget("BtnCrack"));
+        Widget pad = layoutRoot.FindAnyWidget("LockPad");
+
+        if (!st.Sealed)
+        {
+            // Звичайний замкнений КПК -- усе як було: код і панель.
+            if (crack)
+                crack.Show(false);
+            if (pad)
+                pad.Show(true);
+            return;
+        }
+
+        if (pad)
+            pad.Show(false);
+
+        TextWidget label = TextWidget.Cast(layoutRoot.FindAnyWidget("LockLabel"));
+        if (label)
+            label.SetText("#STR_OZ_SEALED");
+
+        TextWidget dots = TextWidget.Cast(layoutRoot.FindAnyWidget("LockDots"));
+        if (dots)
+            dots.SetText("");
+
+        TextWidget hint = TextWidget.Cast(layoutRoot.FindAnyWidget("LockHint"));
+
+        if (st.Cracking)
+        {
+            if (crack)
+                crack.Show(false);
+            if (hint)
+            {
+                string left = "#STR_OZ_CRACKING";
+                left += "   " + st.CrackLeftSec.ToString() + " s";
+                hint.SetText(left);
+            }
+            return;
+        }
+
+        if (!st.HasDecryptor)
+        {
+            if (crack)
+                crack.Show(false);
+            if (hint)
+                hint.SetText("#STR_OZ_SEALED_NEED");
+            return;
+        }
+
+        if (crack)
+        {
+            crack.Show(true);
+            TextWidget ct = TextWidget.Cast(layoutRoot.FindAnyWidget("BtnCrackText"));
+            if (ct)
+                ct.SetText("#STR_OZ_CRACK");
+        }
+        if (hint)
+            hint.SetText("");
+    }
+
     void EndPin()
     {
         m_PinMode   = "";
@@ -367,6 +464,16 @@ class OZ_PdaMenu : UIScriptedMenu
 
         if (m_LockPanel)
             m_LockPanel.Show(false);
+
+        // Панель вимкнули -- усе, що жило лише на ній, теж. Інакше кнопка
+        // зламу лишалась би видимою на вже відкритому пристрої.
+        ButtonWidget crack = ButtonWidget.Cast(layoutRoot.FindAnyWidget("BtnCrack"));
+        if (crack)
+            crack.Show(false);
+
+        Widget pad = layoutRoot.FindAnyWidget("LockPad");
+        if (pad)
+            pad.Show(true);
 
         if (m_PageHost)
             m_PageHost.Show(true);
@@ -674,6 +781,12 @@ class OZ_PdaMenu : UIScriptedMenu
         if (w && w.GetUserID() == 1)
         {
             Select(w.GetName());
+            return true;
+        }
+
+        if (m_PinMode != "" && w && w.GetName() == "BtnCrack")
+        {
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "crack", "{}");
             return true;
         }
 

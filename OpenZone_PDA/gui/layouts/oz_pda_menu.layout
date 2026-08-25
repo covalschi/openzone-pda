@@ -819,6 +819,55 @@ FrameWidgetClass OZ_PdaRoot {
          }
          }
         }
+        // Кнопка зламу. Показується ЛИШЕ на запечатаному пристрої з
+        // дешифратором -- на будь-якому іншому їй нема чого робити.
+        ButtonWidgetClass BtnCrack {
+         visible 0
+         halign center_ref
+         valign center_ref
+         position 0 40
+         size 240 30
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         text ""
+         priority 5
+         {
+          PanelWidgetClass BtnCrackBg {
+           visible 1
+           ignorepointer 1
+           color 0.145 0.145 0.161 1
+           position 0 0
+           size 240 30
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           priority 1
+           style rover_sim_colorable
+          }
+          TextWidgetClass BtnCrackText {
+           visible 1
+           ignorepointer 1
+           position 0 0
+           size 240 30
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           color 1 0.478 0.102 1
+           text ""
+           font "gui/fonts/sdf_MetronBook24"
+           "exact text" 1
+           "exact text size" 14
+           "text halign" center
+           "text valign" center
+           priority 2
+          }
+         }
+        }
+
         TextWidgetClass LockHint {
          visible 1
          ignorepointer 1

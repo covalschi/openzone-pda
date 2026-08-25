@@ -93,7 +93,10 @@ class CfgMods
         type = "mod";
         // 2: markers appended to the item's CF record. Bumping this is what
         // lets CF_OnStoreLoad tell an older save (no markers) from a new one.
-        storageVersion = 2;
+        // 3: the "already seeded" flag for sealed devices, appended after the
+        // markers. Preset content must be written exactly once, and the flag
+        // is what remembers that it was.
+        storageVersion = 3;
         dependencies[] = {"Game", "World", "Mission"};
         defines[] = {"OPENZONE_PDA"};
 
@@ -174,6 +177,17 @@ class CfgVehicles
         descriptionShort = "$STR_OZ_PDA_ADVANCED_DESC";
     };
 
+    // A sealed device. Its profile marks it Sealed, so the server gives it a
+    // random code nobody is ever told and writes whatever the profile lists
+    // onto it. A separate classname on purpose: profiles are keyed by class,
+    // and a quest PDA has to be a different item, not a flag on a normal one.
+    class OZ_PDA_Sealed : OZ_PDA_Base
+    {
+        scope = 2;
+        displayName = "$STR_OZ_PDA_SEALED";
+        descriptionShort = "$STR_OZ_PDA_SEALED_DESC";
+    };
+
     // ------------------------------------------------------------- storage
 
     class OZ_DataCarrier_Base : Inventory_Base
@@ -232,5 +246,14 @@ class CfgVehicles
         scope = 2;
         displayName = "$STR_OZ_MOD_ANTENNA";
         descriptionShort = "$STR_OZ_MOD_ANTENNA_DESC";
+    };
+
+    // Opens sealed devices, and only those. On an ordinary PDA it just takes
+    // up a bay. The value of a sealed PDA is never the hardware.
+    class OZ_Module_Decryptor : OZ_Module_Base
+    {
+        scope = 2;
+        displayName = "$STR_OZ_MOD_DECRYPTOR";
+        descriptionShort = "$STR_OZ_MOD_DECRYPTOR_DESC";
     };
 };

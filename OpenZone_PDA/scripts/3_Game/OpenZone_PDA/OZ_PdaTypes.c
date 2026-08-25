@@ -58,6 +58,16 @@ class OZ_PdaDeviceStatus
     // Сервер може заборонити вимикати автоблокування. Клієнту це треба, щоб
     // не малювати кнопку, яка завжди відмовляє.
     bool ForceAutoLock = false;
+
+    // --- запечатаний пристрій ---
+    //
+    // Sealed і LockedOut -- РІЗНІ речі, хоч обидва означають «код не
+    // допоможе»: перший через те, що коду ніхто не знає, другий через те, що
+    // спроби вичерпані. Гравцеві треба сказати, котре з двох.
+    bool  Sealed       = false;
+    bool  HasDecryptor = false;
+    bool  Cracking     = false;
+    int   CrackLeftSec = 0;
     bool LockedOut = false;           // спроби вичерпані
     float LockAfterMinutes = 0;
 

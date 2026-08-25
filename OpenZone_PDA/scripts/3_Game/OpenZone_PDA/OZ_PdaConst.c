@@ -31,6 +31,7 @@ class OZ_PdaConst
     // Види модулів. Рядками, бо ці ж слова стоять у JSON і їх читає адмін.
     static const string MOD_ANTENNA    = "antenna";
     static const string MOD_RADIOMETER = "radiometer";
+    static const string MOD_DECRYPTOR  = "decryptor";
     static const string MOD_DOSIMETER  = "dosimeter";
 
     // Id меню для EnterScriptedMenu.

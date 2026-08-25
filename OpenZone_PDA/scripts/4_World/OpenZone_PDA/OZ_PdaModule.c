@@ -23,6 +23,12 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         if (op == "setpin")
             return SetPin(json, sender, ok, error);
 
+        if (op == "crack")
+            return Crack(sender, ok, error);
+
+        if (op == "sealed")
+            return Sealed(sender, ok, error);
+
         return "";
     }
 
@@ -50,6 +56,9 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         PlayerBase player = OZ_PdaLookup.PlayerOf(sender);
         OZ_PlayerData pd = OZ_PlayerStore.Load(sender.GetPlainId());
         pda.OZ_EvaluateLock(prof.LockAfterMinutes);
+        // Ліниво, як і замок: рахунок дешифратора добігає саме тоді, коли на
+        // пристрій дивляться.
+        pda.OZ_EvaluateCrack();
 
         // ЧИСТИЙ пристрій прив'язується до того, хто перший його відкрив.
         // Без цього КПК без піна назавжди лишався б офлайном: сесію відкривав
@@ -133,6 +142,11 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         st.ForceAutoLock = prof.ForceAutoLock;
         st.LockedOut = pda.OZ_IsLockedOut(sender.GetPlainId());
 
+        st.Sealed       = pda.OZ_IsSealed();
+        st.HasDecryptor = pda.OZ_HasDecryptor();
+        st.Cracking     = pda.OZ_IsCracking();
+        st.CrackLeftSec = pda.OZ_CrackLeftSec();
+
         st.Online      = pda.OZ_IsOnline(pd.SessionEpoch);
         st.SessionMine = pda.OZ_HasSession(sender.GetPlainId(), pd.SessionEpoch);
         if (!st.Online)
@@ -198,6 +212,74 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         // Відімкнув -- значить сесія на цьому пристрої тепер його.
         OZ_PlayerData pd = OZ_PlayerStore.Load(sender.GetPlainId());
         pda.OZ_OpenSession(sender.GetPlainId(), pd.SessionEpoch);
+
+        ok = true;
+        error = "";
+        return "";
+    }
+
+    // Що можна сказати про ЗАМКНЕНИЙ пристрій, не відмикаючи його.
+    //
+    // Рівно чотири речі, і жодна з них нічого не видає: чи він запечатаний,
+    // чи є чим його зламати, чи вже ламають і скільки лишилось. Усе решта --
+    // ім'я, профіль, вміст -- лишається за замком, бо саме за цим замок і є.
+    private string Sealed(PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        if (!pda)
+        {
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return "";
+        }
+
+        pda.OZ_EvaluateCrack();
+
+        OZ_PdaDeviceStatus st = new OZ_PdaDeviceStatus();
+        st.Sealed       = pda.OZ_IsSealed();
+        st.HasDecryptor = pda.OZ_HasDecryptor();
+        st.Cracking     = pda.OZ_IsCracking();
+        st.CrackLeftSec = pda.OZ_CrackLeftSec();
+
+        string outJson;
+        string err;
+        if (!JsonFileLoader<OZ_PdaDeviceStatus>.MakeData(st, outJson, err, false))
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        ok = true;
+        error = "";
+        return outJson;
+    }
+
+    // Почати злам запечатаного пристрою.
+    private string Crack(PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        if (!pda)
+        {
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return "";
+        }
+
+        OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(pda.GetType());
+        if (!prof)
+        {
+            error = "STR_OZ_ERR_NO_PROFILE";
+            return "";
+        }
+
+        string why = pda.OZ_StartCrack(prof.CrackSeconds);
+        if (why != "")
+        {
+            error = why;
+            return "";
+        }
 
         ok = true;
         error = "";

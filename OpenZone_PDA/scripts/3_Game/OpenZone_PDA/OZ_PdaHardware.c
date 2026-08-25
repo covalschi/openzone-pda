@@ -104,6 +104,16 @@ class OZ_PdaHardwareConfig : OZ_ConfigBase
         ant.EnablesPages = new array<string>();
         Modules.Insert(ant);
 
+        // Дешифратор. Відкриває запечатані КПК -- і тільки їх; на звичайному
+        // пристрої він просто займає відсік. Їсть багато: він рахує.
+        OZ_ModuleSpec dec = new OZ_ModuleSpec();
+        dec.ClassName    = "OZ_Module_Decryptor";
+        dec.DisplayName  = "#STR_OZ_MOD_DECRYPTOR";
+        dec.Kind         = "decryptor";
+        dec.PowerFactor  = 2.0;
+        dec.EnablesPages = new array<string>();
+        Modules.Insert(dec);
+
         OZ_CarrierSpec chip = new OZ_CarrierSpec();
         chip.ClassName   = "OZ_DataCarrier_Chip";
         chip.DisplayName = "#STR_OZ_CARRIER_CHIP";

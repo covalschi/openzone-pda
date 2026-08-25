@@ -43,6 +43,23 @@ class OZ_PdaProfile
     // Сторінки, які просять код ЩЕ РАЗ, навіть на відімкненому пристрої.
     // Порожньо -- нічого не просить.
     ref array<string> PinProtectedPages;
+
+    // --- запечатаний пристрій ---
+    //
+    // Це КПК із чужої історії: мертвого сталкера, кинутої схованки, квесту.
+    // Він приходить у світ із кодом, якого НІХТО не знає -- сервер ставить
+    // випадковий і нікому його не каже. Підібрати його не можна: він не
+    // «складний», його просто не існує в жодній голові.
+    //
+    // Відкрити можна ЛИШЕ дешифратором, і тільки часом. Тому в такого КПК
+    // цінність не в залізі, а в тому, що на ньому записано.
+    bool  Sealed       = false;
+    float CrackSeconds = 120;
+
+    // Що на ньому вже записано, коли він з'явився у світі. Пишеться ОДИН раз,
+    // при першій появі предмета -- інакше кожен рестарт відновлював би
+    // стерті гравцем мітки.
+    ref array<ref OZ_MapMarker> PresetMarkers;
 }
 
 class OZ_PdaVirtualDevice
@@ -116,9 +133,38 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
         a.LockAfterMinutes  = 5;
         Profiles.Insert(a);
 
+        // Запечатаний КПК: приклад, який одразу працює, і водночас зразок
+        // для моддера. Класнейм навмисно окремий -- профілі шукають за
+        // класом, і «квестовий» КПК мусить бути іншим предметом, а не
+        // позначкою на звичайному.
+        OZ_PdaProfile q = new OZ_PdaProfile();
+        q.Id          = "sealed";
+        q.DisplayName = "#STR_OZ_PDA_SEALED";
+
+        q.ClassNames = new array<string>();
+        q.ClassNames.Insert("OZ_PDA_Sealed");
+
+        q.Pages = new array<string>();
+        q.Pages.Insert(OZ_PdaConst.PAGE_DEVICE);
+        q.Pages.Insert(OZ_PdaConst.PAGE_MAP);
+        q.Pages.Insert(OZ_PdaConst.PAGE_NOTES);
+
+        q.BatteryClassNames = new array<string>();
+        q.BatteryClassNames.Insert("Battery9V");
+
+        q.Limits            = new OZ_PdaLimits();
+        q.Limits.Markers    = 20;
+        q.PinProtectedPages = new array<string>();
+        q.ModuleSlots       = 2;
+        q.LockAfterMinutes  = 1;
+        q.Sealed            = true;
+        q.CrackSeconds      = 90;
+
+        q.PresetMarkers = new array<ref OZ_MapMarker>();
         VirtualDevice = new OZ_PdaVirtualDevice();
         VirtualDevice.Pages    = new array<string>();
         VirtualDevice.Factions = new array<string>();
+        Profiles.Insert(q);
     }
 
     override bool Migrate(int from)
@@ -181,6 +227,15 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
                 p.BatteryClassNames = new array<string>();
             if (!p.PinProtectedPages)
                 p.PinProtectedPages = new array<string>();
+            if (!p.PresetMarkers)
+                p.PresetMarkers = new array<ref OZ_MapMarker>();
+
+            if (p.CrackSeconds < 0)
+            {
+                OZ_Log.Warn("profile \"" + p.Id + "\" has a negative CrackSeconds, clamped to 0");
+                p.CrackSeconds = 0;
+                warnings++;
+            }
 
             if (p.ModuleSlots < 0 || p.ModuleSlots > OZ_PdaConst.MODULE_SLOTS_MAX)
             {
