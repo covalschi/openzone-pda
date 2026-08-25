@@ -186,6 +186,17 @@ class OZ_PdaHardware
 {
     private static ref OZ_PdaHardwareConfig s_Cfg;
 
+    // Черга чужих оголошень.
+    //
+    // ПОРЯДОК МОДУЛІВ CF НЕ ГАРАНТОВАНИЙ. Виміряно на стенді: мод рації
+    // отримав OnMissionStart РАНІШЕ за КПК, конфіг заліза ще не був
+    // завантажений, і всі його оголошення пішли в нікуди -- тихо, з
+    // «modules=0» у власному ж рядку готовності.
+    //
+    // Тому Declare нічого не вимагає від порядку: якщо конфіга ще немає,
+    // оголошення чекає в черзі, а ServerLoad його забирає.
+    private static ref array<ref OZ_ModuleSpec> s_Pending;
+
     static OZ_PdaHardwareConfig Get()      { return s_Cfg; }
 
     static int ModuleCount()
@@ -206,6 +217,56 @@ class OZ_PdaHardware
     {
         s_Cfg = new OZ_PdaHardwareConfig();
         OZ_ConfigLoader<OZ_PdaHardwareConfig>.Load(OZ_PdaConst.HARDWARE, "Hardware", s_Cfg);
+
+        // Ті, хто оголосив себе до нас, чекають у черзі. Забираємо їх ПІСЛЯ
+        // завантаження конфіга -- адмін лишається головнішим.
+        for (int i = 0; s_Pending && i < s_Pending.Count(); i++)
+            Insert(s_Pending[i]);
+
+        s_Pending = null;
+    }
+
+    // Чуже залізо. Мод, що приносить свій модуль, оголошує його ОДНИМ рядком
+    // зі свого OnMissionStart -- після ServerLoad КПК:
+    //
+    //     OZ_PdaHardware.Declare(spec);
+    //
+    // АДМІН ГОЛОВНІШИЙ. Якщо в Hardware.json уже є запис із таким класнеймом,
+    // ми його не чіпаємо: власник сервера мусить мати змогу перенастроїти
+    // чужий модуль, не правлячи чужий мод. Тому це «оголосити, якщо ще нема»,
+    // а не «записати».
+    static bool Declare(OZ_ModuleSpec spec)
+    {
+        if (!spec || spec.ClassName == "")
+            return false;
+
+        if (!spec.EnablesPages)
+            spec.EnablesPages = new array<string>();
+
+        // Конфіга ще немає -- станемо в чергу. Відповідаємо true: оголошення
+        // ПРИЙНЯТО, і мод, який його зробив, має право так і вважати.
+        if (!s_Cfg)
+        {
+            if (!s_Pending)
+                s_Pending = new array<ref OZ_ModuleSpec>();
+            s_Pending.Insert(spec);
+            return true;
+        }
+
+        return Insert(spec);
+    }
+
+    private static bool Insert(OZ_ModuleSpec spec)
+    {
+        if (!s_Cfg || !spec)
+            return false;
+
+        if (ModuleFor(spec.ClassName))
+            return false;
+
+        s_Cfg.Modules.Insert(spec);
+        OZ_Log.Dbg("module declared by another mod: " + spec.ClassName);
+        return true;
     }
 
     static OZ_ModuleSpec ModuleFor(string cls)
