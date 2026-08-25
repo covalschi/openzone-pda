@@ -96,6 +96,34 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 st.Pages.Insert(prof.Pages[i]);
         }
 
+        // І сторінки, які приносить ЗАЛІЗО.
+        //
+        // Профіль описує ПРИСТРІЙ, а не те, що в нього вставили, тож без
+        // цього договір EnablesPages лишався б обіцянкою, якої КПК не
+        // виконує. Саме так і сталося з рацією: гейт операцій уже питав
+        // модулі (OZ_PdaAccess.ModuleEnables), а перелік вкладок -- ні, і
+        // вставлена плата працювала б, якби до неї було як дійти.
+        for (int m = 0; m < OZ_PdaConst.MODULE_SLOTS_MAX; m++)
+        {
+            string mcls = pda.OZ_ModuleClass(m);
+            if (mcls == "")
+                continue;
+
+            OZ_ModuleSpec mspec = OZ_PdaHardware.ModuleFor(mcls);
+            if (!mspec || !mspec.EnablesPages)
+                continue;
+
+            for (int e = 0; e < mspec.EnablesPages.Count(); e++)
+            {
+                string extra = mspec.EnablesPages[e];
+                if (!OZ_PageRegistry.Has(extra))
+                    continue;
+                if (st.Pages.Find(extra) != -1)
+                    continue;
+                st.Pages.Insert(extra);
+            }
+        }
+
         st.Powered    = pda.OZ_IsOn();
         st.HasBattery = pda.OZ_HasBattery();
         st.Charge01   = pda.OZ_Charge01();
