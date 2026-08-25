@@ -262,20 +262,14 @@ class OZ_MarkerRef
 // По проводу їдуть ІМЕНА, а не Steam64: клієнт чужих id не бачить ніде, і
 // чат тут не виняток.
 
-class OZ_ChatMsg
-{
-    string At       = "";
-    string FromUid  = "";   // лишається на СЕРВЕРІ, клієнту не їде
-    string FromName = "";
-    string Text     = "";
-}
-
+// Рядок переліку розмов. Лічильника повідомлень тут немає навмисно: у
+// Discord їх стільки, скільки їх там є, а міст тримає лише хвіст -- назвати
+// довжину хвоста «кількістю повідомлень» означало б збрехати.
 class OZ_ChatHead
 {
     string Id       = "";
     string Kind     = "direct";
     string Title    = "";
-    int    Count    = 0;
     string LastAt   = "";
     string LastText = "";
 }

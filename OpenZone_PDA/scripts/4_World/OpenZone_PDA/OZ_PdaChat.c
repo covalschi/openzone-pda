@@ -1,328 +1,298 @@
 // Сторінка «Зв'язок»: особисті й групові розмови.
 //
-// ЧАТ ЖИВЕ В ГРІ, а не в Discord. Міст приїде й дзеркалитиме розмови в
-// приватні треди, але джерелом правди лишиться сервер. Причина проста: якщо
-// чат існує ЛИШЕ в Discord, то на сервері без бота КПК -- порожня коробка, а
-// мод має працювати сам по собі.
+// ДЖЕРЕЛО ПРАВДИ -- DISCORD. Сервер розмов не тримає взагалі: ні файлів, ні
+// пам'яті. Він перекладає прохання гравця мостові й віддає назад те, що
+// відповів Discord.
 //
-// ХТО КОМУ МОЖЕ ПИСАТИ. Особисту розмову можна почати лише з КОНТАКТОМ --
-// тим, з ким уже потиснули руки (див. OZ_PdaContacts: контакти заводяться
-// зблизька й за згодою). Це не обмеження заради обмеження: без нього кожен
-// міг би написати кожному, знаючи лише ім'я, і «особиста переписка сталкерів»
-// перетворилась би на дошку оголошень.
+// Найважливіше наслідок: власне повідомлення НЕ з'являється в розмові
+// одразу. Воно йде в Discord, і в розмову його вносить ЕХО, яке приїжджає
+// довгим опитом за кілька мілісекунд. Це не затримка, яку треба обійти
+// оптимістичним показом -- це і є визначення «Discord є правдою». Показати
+// рядок раніше означало б показати те, чого в розмові ще немає, а якщо
+// Discord його не прийме -- то й не буде.
 //
-// ФАЙЛ НА РОЗМОВУ, а не на гравця: розмову бачать двоє (або більше), і
-// тримати дві копії однієї переписки означало б, що вони розійдуться.
+// ХТО КОМУ МОЖЕ ПИСАТИ вирішує СЕРВЕР, а не міст. Особисту розмову можна
+// почати лише з КОНТАКТОМ -- тим, з ким уже потиснули руки (див.
+// OZ_PdaContacts). Це не обмеження заради обмеження: без нього кожен міг би
+// написати кожному, знаючи лише ім'я. Розмови належать Discord, але право
+// їх заводити -- ігровій механіці, і воно лишається тут.
 //
-// Id розмови -- це і ім'я файлу, тому в ньому немає двокрапок: Windows їх у
-// іменах не приймає, і виявилось би це вже на чужому сервері.
+// ВІДПОВІДІ ВІДКЛАДЕНІ. RestContext асинхронний, тож Handle() не має чого
+// повернути: він каже OZ_Const.DEFER і відповідає сам, коли міст озветься.
 
-class OZ_ChatLog : OZ_ConfigBase
+// ------------------------------------------------------- листи до моста
+
+class OZ_ChatAskMine
 {
-    string Id    = "";
-    string Kind  = "direct";   // direct | group
-    string Title = "";         // лише для групових
+    string Uid;
+}
 
-    ref array<string> Members;              // Steam64 учасників
-    ref array<ref OZ_ChatMsg> Messages;
+class OZ_ChatAskOpen
+{
+    string Uid;
+    string Id;
+    int    Limit;
+}
 
-    override int LatestVersion()
+class OZ_ChatAskSend
+{
+    string Uid;
+    string Name;
+    string Id;
+    string Text;
+}
+
+class OZ_ChatAskStart
+{
+    string Uid;
+    string Name;
+    string OtherUid;
+    string OtherName;
+}
+
+class OZ_ChatAskGroup
+{
+    string Uid;
+    string Title;
+}
+
+class OZ_ChatAskInvite
+{
+    string Uid;
+    string Id;
+    string OtherUid;
+}
+
+// Відмова моста. Код -- машинний («no_chat»), а не готове речення: мова
+// гравця відома лише клієнтові, і рядки для неї лежать у stringtable.
+class OZ_ChatFail
+{
+    string Error;
+
+    static string KeyOf(string code)
     {
-        return 1;
-    }
-
-    override void LoadDefaults()
-    {
-        Version  = LatestVersion();
-        Id       = "";
-        Kind     = "direct";
-        Title    = "";
-        Members  = new array<string>();
-        Messages = new array<ref OZ_ChatMsg>();
-    }
-
-    override void Validate(out int warnings)
-    {
-        warnings = 0;
-        if (!Members)
-            Members = new array<string>();
-        if (!Messages)
-            Messages = new array<ref OZ_ChatMsg>();
+        if (code == "no_chat")
+            return "STR_OZ_ERR_NO_CHAT";
+        if (code == "not_group")
+            return "STR_OZ_ERR_NOT_GROUP";
+        if (code == "already_in")
+            return "STR_OZ_ERR_ALREADY_IN";
+        return "STR_OZ_ERR_INTERNAL";
     }
 }
 
-class OZ_ChatStore
+// Рядок, який приїхав опитом. Uid тут -- сам одержувач, тому клієнтові його
+// віддавати не шкода: свій же Steam64 він і так знає.
+class OZ_ChatPush
 {
-    static const string DIR = OZ_Const.PROFILE_DIR + "\\chats";
+    string Uid;
+    string Id;
+    string At;
+    string Who;
+    string Text;
+    bool   Mine;
+}
 
-    static void EnsureDir()
-    {
-        OZ_Json.EnsureDir(DIR);
-    }
+// ------------------------------------------------------------ адресат
 
-    static string PathOf(string id)
+class OZ_ChatWho
+{
+    // Особу шукаємо серед тих, хто ЗАРАЗ на сервері, а не тримаємо посилання
+    // з моменту запиту: поки відповідь їхала до Discord і назад, гравець міг
+    // вийти, і збережена PlayerIdentity вказувала б у порожнечу.
+    static PlayerIdentity Online(string uid)
     {
-        return DIR + "\\" + id + ".json";
-    }
+        array<Man> players = new array<Man>();
+        GetGame().GetPlayers(players);
 
-    static OZ_ChatLog Load(string id)
-    {
-        OZ_ChatLog c = new OZ_ChatLog();
-        OZ_ConfigLoader<OZ_ChatLog>.Load(PathOf(id), "chat_" + id, c, false);
-        if (c.Id == "")
-            c.Id = id;
-        return c;
-    }
-
-    static void Save(OZ_ChatLog c)
-    {
-        OZ_ConfigLoader<OZ_ChatLog>.Save(PathOf(c.Id), "chat_" + c.Id, c, false);
-    }
-
-    static bool Exists(string id)
-    {
-        return FileExist(PathOf(id));
-    }
-
-    // Id особистої розмови не зберігається ніде: він ОБЧИСЛЮЄТЬСЯ з двох
-    // Steam64, відсортованих між собою. Тому обидва боки завжди приходять до
-    // одного файлу, і жодного реєстру розмов вести не треба.
-    static string DirectId(string a, string b)
-    {
-        string lo = a;
-        string hi = b;
-        if (a > b)
+        for (int i = 0; i < players.Count(); i++)
         {
-            lo = b;
-            hi = a;
+            Man m = players[i];
+            if (!m)
+                continue;
+
+            PlayerIdentity id = m.GetIdentity();
+            if (id && id.GetPlainId() == uid)
+                return id;
         }
-        return "d_" + lo + "_" + hi;
+
+        return NULL;
     }
 }
+
+// ------------------------------------------------------------ відповіді
+
+class OZ_ChatReply : OZ_BridgeReply
+{
+    protected string m_Uid;
+    protected string m_Op;
+    protected bool   m_Body;
+
+    // body=true -- віддати клієнтові тіло відповіді як є. Форма, якою
+    // говорить міст, і форма, якої чекає сторінка, збігаються навмисно:
+    // перекладати їх туди-сюди означало б тримати два описи одного й того ж.
+    void OZ_ChatReply(string uid, string op, bool body)
+    {
+        m_Uid  = uid;
+        m_Op   = op;
+        m_Body = body;
+    }
+
+    override void OnBody(string json)
+    {
+        PlayerIdentity to = OZ_ChatWho.Online(m_Uid);
+        if (!to)
+            return;
+
+        OZ_ChatFail fail;
+        string err;
+        if (JsonFileLoader<OZ_ChatFail>.LoadData(json, fail, err) && fail && fail.Error != "")
+        {
+            OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_CHAT, m_Op, false, "", OZ_ChatFail.KeyOf(fail.Error));
+            return;
+        }
+
+        string body = "";
+        if (m_Body)
+            body = json;
+
+        OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_CHAT, m_Op, true, body, "");
+    }
+
+    override void OnFail(int code)
+    {
+        PlayerIdentity to = OZ_ChatWho.Online(m_Uid);
+        if (!to)
+            return;
+
+        OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_CHAT, m_Op, false, "", "STR_OZ_ERR_NO_BRIDGE");
+    }
+}
+
+// Вхідні рядки з Discord. Один конверт -- один одержувач: міст уже розклав
+// розмову по її учасниках, і сервер лише доносить.
+class OZ_ChatSink : OZ_BridgeSink
+{
+    override void Deliver(string json)
+    {
+        OZ_ChatPush p;
+        string err;
+        if (!JsonFileLoader<OZ_ChatPush>.LoadData(json, p, err) || !p)
+        {
+            OZ_Log.Warn("chat: unreadable line from the bridge: " + err);
+            return;
+        }
+
+        PlayerIdentity to = OZ_ChatWho.Online(p.Uid);
+        if (!to)
+            return;
+
+        OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_CHAT, "line", true, json, "");
+    }
+}
+
+// -------------------------------------------------------------- сторінка
 
 class OZ_PdaHandlerChat : OZ_PageHandler
 {
-    private static int s_Seq = 0;
-
     override string Handle(string op, string json, PlayerIdentity sender, out bool ok, out string error)
     {
-        ok = false;
+        ok    = false;
         error = "STR_OZ_ERR_UNKNOWN_OP";
 
+        if (!OZ_BridgeClient.IsRunning())
+        {
+            error = "STR_OZ_ERR_NO_BRIDGE";
+            return "";
+        }
+
         if (op == "list")
-            return List(sender, ok, error);
+            return List(sender, error);
 
         if (op == "open")
-            return Open(json, sender, ok, error);
+            return Open(json, sender, error);
 
         if (op == "send")
-            return Send(json, sender, ok, error);
+            return Send(json, sender, error);
 
         if (op == "start")
-            return Start(json, sender, ok, error);
+            return Start(json, sender, error);
 
         if (op == "group_new")
-            return GroupNew(json, sender, ok, error);
+            return GroupNew(json, sender, error);
 
         if (op == "group_add")
-            return GroupAdd(json, sender, ok, error);
+            return GroupAdd(json, sender, error);
 
         return "";
     }
 
-    // ------------------------------------------------------------- перелік
-
-    private string List(PlayerIdentity sender, out bool ok, out string error)
-    {
-        ok = false;
-
-        string myUid = sender.GetPlainId();
-        OZ_PlayerData me = OZ_PlayerStore.Load(myUid);
-
-        // Змінна НЕ зветься out: це зарезервоване слово, і парсер лається
-        // на рядок, у якому воно вжите, а не на оголошення.
-        OZ_ChatList reply = new OZ_ChatList();
-
-        // Особисті розмови -- з кожним контактом, у якого вже щось написано.
-        // Порожню розмову в переліку не показуємо: перелік має відповідати на
-        // «з ким я говорив», а не «з ким міг би».
-        for (int i = 0; me.Friends && i < me.Friends.Count(); i++)
-        {
-            string id = OZ_ChatStore.DirectId(myUid, me.Friends[i]);
-            if (!OZ_ChatStore.Exists(id))
-                continue;
-
-            OZ_ChatLog c = OZ_ChatStore.Load(id);
-            reply.Items.Insert(MakeHead(c, myUid));
-        }
-
-        // Групові -- ті, які гравець носить у своєму файлі. Тут реєстр таки
-        // потрібен: id групи не обчислюється з учасників, бо вони міняються.
-        for (int g = 0; me.Chats && g < me.Chats.Count(); g++)
-        {
-            string gid = me.Chats[g];
-            if (!OZ_ChatStore.Exists(gid))
-                continue;
-
-            OZ_ChatLog gc = OZ_ChatStore.Load(gid);
-            reply.Items.Insert(MakeHead(gc, myUid));
-        }
-
-        string outJson;
-        string err;
-        if (!JsonFileLoader<OZ_ChatList>.MakeData(reply, outJson, err, false))
-        {
-            OZ_Log.Error("chat list serialise failed: " + err);
-            error = "STR_OZ_ERR_INTERNAL";
-            return "";
-        }
-
-        ok = true;
-        error = "";
-        return outJson;
-    }
-
-    // НЕ Head(): це ім'я вже зайняте вище по ієрархії, і парсер лається
-    // «Method 'Object' is private» -- тобто не про те, що насправді сталось.
-    private OZ_ChatHead MakeHead(OZ_ChatLog c, string myUid)
-    {
-        OZ_ChatHead h = new OZ_ChatHead();
-        h.Id    = c.Id;
-        h.Kind  = c.Kind;
-        h.Title = TitleFor(c, myUid);
-        h.Count = c.Messages.Count();
-
-        if (c.Messages.Count() > 0)
-        {
-            OZ_ChatMsg last = c.Messages[c.Messages.Count() - 1];
-            h.LastAt   = last.At;
-            h.LastText = last.Text;
-        }
-
-        return h;
-    }
-
-    // Назва особистої розмови -- це ім'я ІНШОГО. Своє ім'я в переліку своїх
-    // же розмов не каже нічого.
-    private string TitleFor(OZ_ChatLog c, string myUid)
-    {
-        if (c.Kind == "group")
-            return c.Title;
-
-        for (int i = 0; i < c.Members.Count(); i++)
-        {
-            if (c.Members[i] == myUid)
-                continue;
-
-            OZ_PlayerData d = OZ_PlayerStore.Load(c.Members[i]);
-            if (d.Name != "")
-                return d.Name;
-            return "---";
-        }
-        return "---";
-    }
-
     // ------------------------------------------------------------ читання
 
-    private string Open(string json, PlayerIdentity sender, out bool ok, out string error)
+    private string List(PlayerIdentity sender, out string error)
     {
-        ok = false;
-
-        OZ_ChatRef r;
+        string uid = sender.GetPlainId();
         string err;
-        if (!JsonFileLoader<OZ_ChatRef>.LoadData(json, r, err))
+
+        OZ_ChatAskMine a = new OZ_ChatAskMine();
+        a.Uid = uid;
+
+        string letter;
+        if (!JsonFileLoader<OZ_ChatAskMine>.MakeData(a, letter, err, false))
         {
+            OZ_Log.Error("chat: cannot build the letter: " + err);
             error = "STR_OZ_ERR_INTERNAL";
             return "";
         }
 
-        string myUid = sender.GetPlainId();
+        OZ_BridgeClient.Call("v1/chat/list", letter, new OZ_ChatReply(uid, "list", true));
 
-        OZ_ChatLog c;
-        if (!MineOrRefuse(r.Id, myUid, c, error))
-            return "";
-
-        OZ_ChatView v = new OZ_ChatView();
-        v.Id    = c.Id;
-        v.Kind  = c.Kind;
-        v.Title = TitleFor(c, myUid);
-
-        for (int i = 0; i < c.Messages.Count(); i++)
-        {
-            OZ_ChatMsg m = c.Messages[i];
-
-            OZ_ChatLine line = new OZ_ChatLine();
-            line.At   = m.At;
-            line.Who  = m.FromName;
-            line.Text = m.Text;
-            line.Mine = (m.FromUid == myUid);
-            v.Lines.Insert(line);
-        }
-
-        for (int k = 0; k < c.Members.Count(); k++)
-        {
-            OZ_PlayerData d = OZ_PlayerStore.Load(c.Members[k]);
-            if (d.Name != "")
-                v.Members.Insert(d.Name);
-        }
-
-        string outJson;
-        string oerr;
-        if (!JsonFileLoader<OZ_ChatView>.MakeData(v, outJson, oerr, false))
-        {
-            OZ_Log.Error("chat view serialise failed: " + oerr);
-            error = "STR_OZ_ERR_INTERNAL";
-            return "";
-        }
-
-        ok = true;
-        error = "";
-        return outJson;
+        error = OZ_Const.DEFER;
+        return "";
     }
 
-    // Читати й писати можна ЛИШЕ свої розмови. Перевіряється тут, один раз,
-    // і без цього рядка id чужої розмови був би ключем до чужої переписки --
-    // а id особистої розмови обчислюється з двох Steam64, тобто вгадується.
-    private bool MineOrRefuse(string id, string myUid, out OZ_ChatLog c, out string error)
+    private string Open(string json, PlayerIdentity sender, out string error)
     {
-        if (id == "" || !OZ_ChatStore.Exists(id))
+        OZ_ChatRef r;
+        string err;
+        if (!JsonFileLoader<OZ_ChatRef>.LoadData(json, r, err) || !r)
         {
-            error = "STR_OZ_ERR_NO_CHAT";
-            return false;
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
         }
 
-        c = OZ_ChatStore.Load(id);
+        string uid = sender.GetPlainId();
 
-        if (c.Members.Find(myUid) == -1)
+        OZ_ChatAskOpen a = new OZ_ChatAskOpen();
+        a.Uid   = uid;
+        a.Id    = r.Id;
+        a.Limit = OZ_PdaConst.CHAT_KEEP;
+
+        string letter;
+        if (!JsonFileLoader<OZ_ChatAskOpen>.MakeData(a, letter, err, false))
         {
-            OZ_Log.Warn("chat " + id + " asked for by " + myUid + ", who is not in it");
-            error = "STR_OZ_ERR_NO_CHAT";
-            return false;
+            OZ_Log.Error("chat: cannot build the letter: " + err);
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
         }
 
-        error = "";
-        return true;
+        OZ_BridgeClient.Call("v1/chat/open", letter, new OZ_ChatReply(uid, "open", true));
+
+        error = OZ_Const.DEFER;
+        return "";
     }
 
     // -------------------------------------------------------------- запис
 
-    private string Send(string json, PlayerIdentity sender, out bool ok, out string error)
+    private string Send(string json, PlayerIdentity sender, out string error)
     {
-        ok = false;
-
         OZ_ChatSend s;
         string err;
-        if (!JsonFileLoader<OZ_ChatSend>.LoadData(json, s, err))
+        if (!JsonFileLoader<OZ_ChatSend>.LoadData(json, s, err) || !s)
         {
             error = "STR_OZ_ERR_INTERNAL";
             return "";
         }
-
-        string myUid = sender.GetPlainId();
-
-        OZ_ChatLog c;
-        if (!MineOrRefuse(s.Id, myUid, c, error))
-            return "";
 
         string text = MiscGameplayFunctions.SanitizeString(s.Text);
         if (text == "")
@@ -334,43 +304,44 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         if (text.Length() > OZ_PdaConst.CHAT_MSG_MAX)
             text = text.Substring(0, OZ_PdaConst.CHAT_MSG_MAX);
 
-        OZ_ChatMsg m = new OZ_ChatMsg();
-        m.At       = OZ_Time.NowUtc();
-        m.FromUid  = myUid;
-        m.FromName = sender.GetName();
-        m.Text     = text;
+        string uid = sender.GetPlainId();
 
-        c.Messages.Insert(m);
+        OZ_ChatAskSend a = new OZ_ChatAskSend();
+        a.Uid  = uid;
+        a.Name = sender.GetName();
+        a.Id   = s.Id;
+        a.Text = text;
 
-        // Хвіст обрізаємо ЗВЕРХУ: старе першим. Файл розмови інакше росте
-        // без стелі, а прочитати переписку річної давності однаково нікому
-        // не спаде на думку.
-        while (c.Messages.Count() > OZ_PdaConst.CHAT_KEEP)
-            c.Messages.Remove(0);
+        string letter;
+        if (!JsonFileLoader<OZ_ChatAskSend>.MakeData(a, letter, err, false))
+        {
+            OZ_Log.Error("chat: cannot build the letter: " + err);
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
 
-        OZ_ChatStore.Save(c);
+        // Тіла у відповіді немає навмисно: рядок з'явиться в розмові тоді,
+        // коли його поверне Discord, а не коли міст підтвердить прийом.
+        OZ_BridgeClient.Call("v1/chat/send", letter, new OZ_ChatReply(uid, "send", false));
 
-        ok = true;
-        error = "";
+        error = OZ_Const.DEFER;
         return "";
     }
 
     // ------------------------------------------------------- нові розмови
 
-    private string Start(string json, PlayerIdentity sender, out bool ok, out string error)
+    private string Start(string json, PlayerIdentity sender, out string error)
     {
-        ok = false;
-
         OZ_NameRef r;
         string err;
-        if (!JsonFileLoader<OZ_NameRef>.LoadData(json, r, err))
+        if (!JsonFileLoader<OZ_NameRef>.LoadData(json, r, err) || !r)
         {
             error = "STR_OZ_ERR_INTERNAL";
             return "";
         }
 
-        string myUid = sender.GetPlainId();
-        OZ_PlayerData me = OZ_PlayerStore.Load(myUid);
+        string uid = sender.GetPlainId();
+        OZ_PlayerData me = OZ_PlayerStore.Load(uid);
 
         string theirUid = UidByNameIn(me.Friends, r.Name);
         if (theirUid == "")
@@ -380,29 +351,31 @@ class OZ_PdaHandlerChat : OZ_PageHandler
             return "";
         }
 
-        string id = OZ_ChatStore.DirectId(myUid, theirUid);
+        OZ_ChatAskStart a = new OZ_ChatAskStart();
+        a.Uid       = uid;
+        a.Name      = sender.GetName();
+        a.OtherUid  = theirUid;
+        a.OtherName = OZ_PlayerStore.Load(theirUid).Name;
 
-        OZ_ChatLog c = OZ_ChatStore.Load(id);
-        c.Id   = id;
-        c.Kind = "direct";
-        if (c.Members.Find(myUid) == -1)
-            c.Members.Insert(myUid);
-        if (c.Members.Find(theirUid) == -1)
-            c.Members.Insert(theirUid);
-        OZ_ChatStore.Save(c);
+        string letter;
+        if (!JsonFileLoader<OZ_ChatAskStart>.MakeData(a, letter, err, false))
+        {
+            OZ_Log.Error("chat: cannot build the letter: " + err);
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
 
-        ok = true;
-        error = "";
-        return IdReply(id);
+        OZ_BridgeClient.Call("v1/chat/start", letter, new OZ_ChatReply(uid, "start", true));
+
+        error = OZ_Const.DEFER;
+        return "";
     }
 
-    private string GroupNew(string json, PlayerIdentity sender, out bool ok, out string error)
+    private string GroupNew(string json, PlayerIdentity sender, out string error)
     {
-        ok = false;
-
         OZ_NameRef r;
         string err;
-        if (!JsonFileLoader<OZ_NameRef>.LoadData(json, r, err))
+        if (!JsonFileLoader<OZ_NameRef>.LoadData(json, r, err) || !r)
         {
             error = "STR_OZ_ERR_INTERNAL";
             return "";
@@ -414,107 +387,70 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         if (title.Length() > OZ_PdaConst.CHAT_TITLE_MAX)
             title = title.Substring(0, OZ_PdaConst.CHAT_TITLE_MAX);
 
-        string myUid = sender.GetPlainId();
+        string uid = sender.GetPlainId();
 
-        s_Seq++;
-        string id = "g_" + myUid;
-        id += "_" + s_Seq.ToString();
+        OZ_ChatAskGroup a = new OZ_ChatAskGroup();
+        a.Uid   = uid;
+        a.Title = title;
 
-        OZ_ChatLog c = new OZ_ChatLog();
-        c.LoadDefaults();
-        c.Id    = id;
-        c.Kind  = "group";
-        c.Title = title;
-        c.Members.Insert(myUid);
-        OZ_ChatStore.Save(c);
+        string letter;
+        if (!JsonFileLoader<OZ_ChatAskGroup>.MakeData(a, letter, err, false))
+        {
+            OZ_Log.Error("chat: cannot build the letter: " + err);
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
 
-        Remember(myUid, id);
+        OZ_BridgeClient.Call("v1/chat/group_new", letter, new OZ_ChatReply(uid, "group_new", true));
 
-        ok = true;
-        error = "";
-        return IdReply(id);
+        error = OZ_Const.DEFER;
+        return "";
     }
 
-    private string GroupAdd(string json, PlayerIdentity sender, out bool ok, out string error)
+    private string GroupAdd(string json, PlayerIdentity sender, out string error)
     {
-        ok = false;
-
-        OZ_ChatAdd a;
+        OZ_ChatAdd add;
         string err;
-        if (!JsonFileLoader<OZ_ChatAdd>.LoadData(json, a, err))
+        if (!JsonFileLoader<OZ_ChatAdd>.LoadData(json, add, err) || !add)
         {
             error = "STR_OZ_ERR_INTERNAL";
             return "";
         }
 
-        string myUid = sender.GetPlainId();
-
-        OZ_ChatLog c;
-        if (!MineOrRefuse(a.Id, myUid, c, error))
-            return "";
-
-        if (c.Kind != "group")
-        {
-            error = "STR_OZ_ERR_NOT_GROUP";
-            return "";
-        }
-
-        if (c.Members.Count() >= OZ_PdaConst.CHAT_GROUP_MAX)
-        {
-            error = "STR_OZ_ERR_GROUP_FULL";
-            return "";
-        }
+        string uid = sender.GetPlainId();
 
         // Кликати можна лише СВОГО контакта. Інакше в групу можна було б
         // затягти будь-кого, знаючи ім'я, і група стала б способом писати
-        // тим, хто цього не хотів.
-        OZ_PlayerData me = OZ_PlayerStore.Load(myUid);
-        string theirUid = UidByNameIn(me.Friends, a.Name);
+        // тим, хто цього не хотів. Чи має право сам запрошувач -- звіряє
+        // міст: склад розмови знає він.
+        OZ_PlayerData me = OZ_PlayerStore.Load(uid);
+        string theirUid = UidByNameIn(me.Friends, add.Name);
         if (theirUid == "")
         {
             error = "STR_OZ_ERR_NOT_CONTACT";
             return "";
         }
 
-        if (c.Members.Find(theirUid) != -1)
+        OZ_ChatAskInvite a = new OZ_ChatAskInvite();
+        a.Uid      = uid;
+        a.Id       = add.Id;
+        a.OtherUid = theirUid;
+
+        string letter;
+        if (!JsonFileLoader<OZ_ChatAskInvite>.MakeData(a, letter, err, false))
         {
-            error = "STR_OZ_ERR_ALREADY_IN";
+            OZ_Log.Error("chat: cannot build the letter: " + err);
+            error = "STR_OZ_ERR_INTERNAL";
             return "";
         }
 
-        c.Members.Insert(theirUid);
-        OZ_ChatStore.Save(c);
+        OZ_BridgeClient.Call("v1/chat/group_add", letter, new OZ_ChatReply(uid, "group_add", false));
 
-        Remember(theirUid, a.Id);
-
-        ok = true;
-        error = "";
+        error = OZ_Const.DEFER;
         return "";
     }
 
-    // Групу треба ЗАПАМ'ЯТАТИ в файлі гравця: id групи не обчислюється з
-    // учасників (вони міняються), тож інакше знайти її буде нічим.
-    private void Remember(string uid, string chatId)
-    {
-        OZ_PlayerData d = OZ_PlayerStore.Load(uid);
-        if (!d.Chats)
-            d.Chats = new array<string>();
-        if (d.Chats.Find(chatId) == -1)
-            d.Chats.Insert(chatId);
-        OZ_PlayerStore.MarkDirty(uid);
-    }
-
-    private string IdReply(string id)
-    {
-        OZ_ChatRef r = new OZ_ChatRef();
-        r.Id = id;
-
-        string json;
-        string err;
-        if (!JsonFileLoader<OZ_ChatRef>.MakeData(r, json, err, false))
-            return "";
-        return json;
-    }
+    // ------------------------------------------------------------ дрібне
 
     private string UidByNameIn(array<string> uids, string name)
     {
