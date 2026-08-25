@@ -152,7 +152,7 @@ class OZ_PdaMenu : UIScriptedMenu
             }
             else
             {
-                OnBadPin();
+                OnBadPin(error);
             }
         }
 
@@ -168,7 +168,7 @@ class OZ_PdaMenu : UIScriptedMenu
             }
             else
             {
-                OnBadPin();
+                OnBadPin(error);
             }
         }
     }
@@ -596,7 +596,11 @@ class OZ_PdaMenu : UIScriptedMenu
         dots.SetText(s);
     }
 
-    private void OnBadPin()
+    // Причину каже СЕРВЕР, і показувати треба саме її. Раніше тут завжди
+    // писалось «Wrong code», і через це «пристрою немає» -- гравець помер, а
+    // КПК лишився на трупі -- виглядало як невірний код. Півгодини пішло на
+    // те, щоб зрозуміти, що вводити нема куди.
+    private void OnBadPin(string error)
     {
         m_PinBuffer = "";
         PaintPinDots();
@@ -610,7 +614,10 @@ class OZ_PdaMenu : UIScriptedMenu
             m_PinNew  = "";
         }
 
-        PaintPinPrompt("#STR_OZ_LOCK_WRONG");
+        string why = "#STR_OZ_LOCK_WRONG";
+        if (error != "")
+            why = "#" + error;
+        PaintPinPrompt(why);
     }
 
     override bool OnKeyPress(Widget w, int x, int y, int key)

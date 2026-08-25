@@ -306,10 +306,14 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             return them.TransponderTo.Find(toUid) != -1;
         }
 
-        // "friends" -- список друзів ще не існує, і поки його немає, режим
-        // чесно не показує нікому. Мовчазне «як public» тут було б витоком.
-        //
-        // "off" і будь-що незнайоме -- теж нікому.
+        if (them.TransponderMode == "friends")
+        {
+            if (!them.Friends)
+                return false;
+            return them.Friends.Find(toUid) != -1;
+        }
+
+        // "off" і будь-що незнайоме -- нікому.
         return false;
     }
 

@@ -36,7 +36,7 @@ FrameWidgetClass OZ_PageContacts {
   // віджетів, і напис усередині зникає.
   ButtonWidgetClass BtnHide {
    visible 1
-   position 861 12
+   position 861 380
    size 168 24
    hexactpos 1
    vexactpos 1
@@ -79,12 +79,106 @@ FrameWidgetClass OZ_PageContacts {
    }
   }
 
+  // Дія над обраним рядком. Що саме вона робить -- залежить від стосунків,
+  // і напис на ній це каже: просити, прийняти, відмовити, викреслити.
+  ButtonWidgetClass BtnFriend {
+   visible 1
+   position 661 380
+   size 192 24
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnFriendBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 192 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnFriendText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 192 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
+  // Друга дія: відмовити на запит. Показується лише коли є на що відмовляти
+  // -- кнопка, яка нічого не робить, гірша за її відсутність.
+  ButtonWidgetClass BtnDecline {
+   visible 0
+   position 461 380
+   size 192 24
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnDeclineBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 192 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnDeclineText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 192 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.788 0.478 0.478 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
   // "colums" -- саме так, з одним m: помилка в самому рушії, і виправляти її
   // тут означає лишитись без колонок. "lines" обов'язковий.
   TextListboxWidgetClass ContactList {
    visible 1
    position 16 46
-   size 1013 320
+   size 1013 322
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -94,7 +188,9 @@ FrameWidgetClass OZ_PageContacts {
    // де смуга не потрібна (debug/day_z_debug_remoteinfo.layout).
    style NoScrollBar
    "title visible" 0
-   "highlight row" 0
+   // Рядок ОБИРАЄТЬСЯ: усі дії тут стосуються когось конкретного, і без
+   // видимого виділення гравець не знає, кого саме зачепить кнопка.
+   "highlight row" 1
    // Формат ванільний: "назва;ширина у відсотках;". Одна колонка на весь ряд.
    colums "text;100;"
    lines 14
@@ -108,9 +204,9 @@ FrameWidgetClass OZ_PageContacts {
   TextWidgetClass ContactsHint {
    visible 1
    ignorepointer 1
-   halign center_ref
-   position 0 374
-   size 900 24
+   halign left_ref
+   position 16 380
+   size 430 24
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -120,7 +216,7 @@ FrameWidgetClass OZ_PageContacts {
    font "gui/fonts/sdf_MetronBook24"
    "exact text" 1
    "exact text size" 14
-   "text halign" center
+   "text halign" left
    "text valign" center
    priority 2
   }
