@@ -15,6 +15,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
     private ButtonWidget m_BtnHide;
     private ButtonWidget m_BtnFriend;
     private ButtonWidget m_BtnDecline;
+    private ButtonWidget m_BtnMsg;
 
     private ref OZ_ContactList m_Data;
 
@@ -33,6 +34,9 @@ class OZ_PdaPageContacts : OZ_PdaPage
         m_BtnHide    = ButtonWidget.Cast(Wgt("BtnHide"));
         m_BtnFriend  = ButtonWidget.Cast(Wgt("BtnFriend"));
         m_BtnDecline = ButtonWidget.Cast(Wgt("BtnDecline"));
+        m_BtnMsg     = ButtonWidget.Cast(Wgt("BtnMsg"));
+
+        SetText("BtnMsgText", "#STR_OZ_CHAT_MSG");
     }
 
     override void OnSelected()
@@ -95,6 +99,31 @@ class OZ_PdaPageContacts : OZ_PdaPage
         if (w == m_BtnDecline)
         {
             Send("friend_decline");
+            return true;
+        }
+
+        if (w == m_BtnMsg)
+        {
+            // Просимо СТОРІНКУ ЧАТУ почати розмову й одразу переходимо на неї.
+            // Другого списку контактів у чаті через це не треба -- а два
+            // списки про те саме розійшлися б.
+            if (m_Picked == "")
+            {
+                SetText("ContactsHint", "#STR_OZ_FRIEND_PICK");
+                return true;
+            }
+
+            OZ_NameRef r = new OZ_NameRef();
+            r.Name = m_Picked;
+
+            string mjson;
+            string merr;
+            if (JsonFileLoader<OZ_NameRef>.MakeData(r, mjson, merr, false))
+                OZ_Rpc.Request(OZ_PdaConst.PAGE_CHAT, "start", mjson);
+
+            OZ_PdaMenu menu = OZ_PdaMenu.Cast(GetGame().GetUIManager().FindMenu(OZ_PdaConst.MENU_PDA));
+            if (menu)
+                menu.Select(OZ_PdaConst.PAGE_CHAT);
             return true;
         }
 
@@ -288,8 +317,14 @@ class OZ_PdaPageContacts : OZ_PdaPage
                 m_BtnFriend.Show(false);
             if (m_BtnDecline)
                 m_BtnDecline.Show(false);
+            if (m_BtnMsg)
+                m_BtnMsg.Show(false);
             return;
         }
+
+        // Писати можна лише контакту -- саме тому контакти й заводять.
+        if (m_BtnMsg)
+            m_BtnMsg.Show(e.Rel == "friend");
 
         if (m_BtnFriend)
             m_BtnFriend.Show(true);

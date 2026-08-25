@@ -1,0 +1,252 @@
+// Сторінка «Зв'язок»: перелік розмов ліворуч, сама розмова праворуч.
+//
+// Кладеться скриптом у PageHost меню (1045x414 одиниць розмітки).
+// Імена читає OZ_PdaPageChat.c: ChatList, BtnGroup, BtnGroupText, ChatTitle,
+// ChatLines, ChatInput, BtnSend, BtnSendText, BtnInvite, BtnInviteText,
+// ChatHint.
+
+FrameWidgetClass OZ_PageChat {
+ visible 1
+ position 0 0
+ size 1045 414
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ {
+  // --- ліва колонка: з ким ---
+  TextListboxWidgetClass ChatList {
+   visible 1
+   position 16 12
+   size 300 356
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   style NoScrollBar
+   "title visible" 0
+   "highlight row" 1
+   colums "text;100;"
+   lines 14
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 13
+   color 0.788 0.788 0.816 1
+   priority 2
+  }
+
+  // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
+  // віджетів, і напис усередині зникає.
+  ButtonWidgetClass BtnGroup {
+   visible 1
+   position 16 376
+   size 300 26
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnGroupBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 300 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnGroupText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 300 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
+  // --- права колонка: сама розмова ---
+  TextWidgetClass ChatTitle {
+   visible 1
+   ignorepointer 1
+   position 332 12
+   size 500 24
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 1 0.478 0.102 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 16
+   "text halign" left
+   "text valign" center
+   priority 2
+  }
+
+  ButtonWidgetClass BtnInvite {
+   visible 0
+   position 849 12
+   size 180 24
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnInviteBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 180 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnInviteText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 180 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
+  TextListboxWidgetClass ChatLines {
+   visible 1
+   position 332 42
+   size 697 296
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   style NoScrollBar
+   "title visible" 0
+   "highlight row" 0
+   colums "text;100;"
+   lines 12
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 13
+   color 0.788 0.788 0.816 1
+   priority 2
+  }
+
+  // Рядок вводу. EditBoxWidget ловить клавіатуру сам -- так само, як на
+  // сторінці записок, і з тієї ж причини.
+  EditBoxWidgetClass ChatInput {
+   visible 1
+   position 332 346
+   size 537 26
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 13
+   color 0.788 0.788 0.816 1
+   priority 3
+  }
+
+  ButtonWidgetClass BtnSend {
+   visible 1
+   position 881 346
+   size 148 26
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnSendBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 148 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnSendText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 148 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
+  TextWidgetClass ChatHint {
+   visible 1
+   ignorepointer 1
+   position 332 378
+   size 697 24
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.463 0.463 0.494 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 13
+   "text halign" left
+   "text valign" center
+   priority 2
+  }
+ }
+}

@@ -389,6 +389,13 @@ class OZ_PdaModule : CF_ModuleWorld
                                  "set:oz_pda image:map",
                                  new OZ_PdaHandlerMap());
 
+        OZ_PageRegistry.Register(OZ_PdaConst.PAGE_CHAT,
+                                 "#STR_OZ_PAGE_CHAT",
+                                 "set:oz_pda image:chat",
+                                 new OZ_PdaHandlerChat());
+
+        OZ_ChatStore.EnsureDir();
+
         // Каталог записок -- наш, і створити його мусимо ми: ядро про нього
         // не знає.
         OZ_NoteStore.EnsureDir();

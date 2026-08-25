@@ -242,3 +242,76 @@ class OZ_MarkerRef
 {
     string Id = "";
 }
+
+// --- сторінка «Зв'язок» ---
+//
+// По проводу їдуть ІМЕНА, а не Steam64: клієнт чужих id не бачить ніде, і
+// чат тут не виняток.
+
+class OZ_ChatMsg
+{
+    string At       = "";
+    string FromUid  = "";   // лишається на СЕРВЕРІ, клієнту не їде
+    string FromName = "";
+    string Text     = "";
+}
+
+class OZ_ChatHead
+{
+    string Id       = "";
+    string Kind     = "direct";
+    string Title    = "";
+    int    Count    = 0;
+    string LastAt   = "";
+    string LastText = "";
+}
+
+class OZ_ChatList
+{
+    ref array<ref OZ_ChatHead> Items;
+
+    void OZ_ChatList()
+    {
+        Items = new array<ref OZ_ChatHead>();
+    }
+}
+
+class OZ_ChatLine
+{
+    string At   = "";
+    string Who  = "";
+    string Text = "";
+    bool   Mine = false;
+}
+
+class OZ_ChatView
+{
+    string Id    = "";
+    string Kind  = "direct";
+    string Title = "";
+    ref array<ref OZ_ChatLine> Lines;
+    ref array<string> Members;
+
+    void OZ_ChatView()
+    {
+        Lines   = new array<ref OZ_ChatLine>();
+        Members = new array<string>();
+    }
+}
+
+class OZ_ChatRef
+{
+    string Id = "";
+}
+
+class OZ_ChatSend
+{
+    string Id   = "";
+    string Text = "";
+}
+
+class OZ_ChatAdd
+{
+    string Id   = "";
+    string Name = "";
+}

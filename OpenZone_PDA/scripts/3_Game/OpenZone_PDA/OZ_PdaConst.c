@@ -60,6 +60,7 @@ class OZ_PdaConst
     static const string PAGE_CONTACTS = "contacts";
     static const string PAGE_NOTES    = "notes";
     static const string PAGE_MAP      = "map";
+    static const string PAGE_CHAT     = "chat";
 
     // Межі записок. Не смак, а захист: текст їде в JSON на диску, а згодом у
     // тред Discord, у якого своя межа повідомлення.
@@ -78,4 +79,11 @@ class OZ_PdaConst
     // На якій відстані можна попросити в друзі. У Зоні знайомляться в очі:
     // 12 метрів -- це «стоїмо поруч», а не «бачу на схилі».
     static const float FRIEND_REACH_M = 12;
+
+    // Межі розмов. Довжина повідомлення -- не смак: текст їде в JSON на диску
+    // і згодом у тред Discord, у якого своя межа.
+    static const int CHAT_MSG_MAX   = 220;
+    static const int CHAT_TITLE_MAX = 32;
+    static const int CHAT_KEEP      = 100;
+    static const int CHAT_GROUP_MAX = 16;
 }
