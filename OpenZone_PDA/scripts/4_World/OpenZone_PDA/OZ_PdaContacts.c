@@ -81,10 +81,11 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
             }
 
             OZ_ContactEntry e = new OZ_ContactEntry();
-            e.Name = id.GetName();
-            e.Me   = isMe;
-            e.Rel  = RelOf(me, uid, isFriend);
-            e.Near = !isMe && WithinReach(mePlayer, players[i]);
+            e.Name    = id.GetName();
+            e.Me      = isMe;
+            e.Rel     = RelOf(me, uid, isFriend);
+            e.Near    = !isMe && WithinReach(mePlayer, players[i]);
+            e.Faction = OZ_Factions.NameOf(OZ_Factions.Of(PlayerBase.Cast(players[i]), uid));
 
             list.Entries.Insert(e);
             seen.Insert(uid);
@@ -118,6 +119,9 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
                 e.Name = "---";
             e.Rel  = rel;
             e.Near = false;
+            // Гравця немає на сервері -- постачальника питати нема про кого,
+            // лишається останнє відоме з його файлу.
+            e.Faction = OZ_Factions.NameOf(OZ_Factions.Of(null, uid));
 
             list.Entries.Insert(e);
             seen.Insert(uid);

@@ -268,6 +268,11 @@ class OZ_PdaPageContacts : OZ_PdaPage
                     row += "   " + tag;
             }
 
+            // Фракція йде після всього: вона про людину, а не про стосунки, і
+            // плутати ці два повідомлення в одному рядку не варто.
+            if (e.Faction != "")
+                row += "   - " + e.Faction;
+
             if (m_List)
                 m_List.AddItem(row, NULL, 0);
 

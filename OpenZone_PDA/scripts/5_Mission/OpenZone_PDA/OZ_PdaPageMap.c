@@ -120,6 +120,8 @@ class OZ_PdaPageMap : OZ_PdaPage
         if (cur == "public")
             return "friends";
         if (cur == "friends")
+            return "faction";
+        if (cur == "faction")
             return "contacts";
         return "off";
     }
@@ -377,6 +379,8 @@ class OZ_PdaPageMap : OZ_PdaPage
             return "#STR_OZ_TRANS_FRIENDS";
         if (mode == "contacts")
             return "#STR_OZ_TRANS_CONTACTS";
+        if (mode == "faction")
+            return "#STR_OZ_TRANS_FACTION";
         return "#STR_OZ_TRANS_OFF";
     }
 }

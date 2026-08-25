@@ -402,6 +402,7 @@ class OZ_PdaModule : CF_ModuleWorld
 
         OZ_PdaProfiles.ServerLoad();
         OZ_PdaHardware.ServerLoad();
+        OZ_Factions.ServerLoad();
 
         // Ядро пускало всі сторінки, бо пристроїв не має. Тепер вирішує той,
         // хто їх приносить.
@@ -412,6 +413,7 @@ class OZ_PdaModule : CF_ModuleWorld
         string summary = "pda loaded: profiles=" + OZ_PdaProfiles.Count().ToString();
         summary += " pages=" + OZ_PageRegistry.Count().ToString();
         summary += " modules=" + OZ_PdaHardware.ModuleCount().ToString();
+        summary += " factions=" + OZ_Factions.Count().ToString();
         summary += " carriers=" + OZ_PdaHardware.CarrierCount().ToString();
         OZ_Log.Info(summary);
     }

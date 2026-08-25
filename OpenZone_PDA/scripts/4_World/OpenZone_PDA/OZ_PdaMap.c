@@ -313,6 +313,16 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             return them.Friends.Find(toUid) != -1;
         }
 
+        if (them.TransponderMode == "faction")
+        {
+            // Своїм по фракції. Одинакам цей режим не дає нічого, і це
+            // правильно: одинак -- не фракція, а її відсутність.
+            string theirs = OZ_Factions.Of(null, them.SteamId);
+            if (theirs == "")
+                return false;
+            return OZ_Factions.Of(null, toUid) == theirs;
+        }
+
         // "off" і будь-що незнайоме -- нікому.
         return false;
     }
@@ -366,7 +376,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         // Перелік режимів закритий. Чуже слово в TransponderMode згодом
         // прочитав би Broadcasts() і не впізнав -- тобто маячок мовчав би, а
         // гравець вважав би, що веде.
-        if (t.Mode != "off" && t.Mode != "public" && t.Mode != "friends" && t.Mode != "contacts")
+        if (t.Mode != "off" && t.Mode != "public" && t.Mode != "friends" && t.Mode != "contacts" && t.Mode != "faction")
         {
             error = "STR_OZ_ERR_REFUSED";
             return "";
