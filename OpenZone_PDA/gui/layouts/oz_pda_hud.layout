@@ -1,0 +1,74 @@
+// Смужка КПК у кутку екрана.
+//
+// Створюється ПРЯМО НА РОБОЧІЙ ОБЛАСТІ, повз меню -- вона мусить жити, поки
+// гравець ходить, а не поки дивиться в пристрій.
+//
+// Імена читає OZ_PdaHud.c: HudPower, HudMark.
+//
+// priority нижче 256: ItemPreviewWidget тут не потрібен, але правило
+// стосується всього дерева (див. §13 у скилі), і ламати його заради кута
+// екрана немає причин.
+
+FrameWidgetClass OZ_PdaHudRoot {
+ visible 0
+ clipchildren 0
+ inheritalpha 0
+ ignorepointer 1
+ position 0.845 0.845
+ size 0.14 0.05
+ hexactpos 0
+ vexactpos 0
+ hexactsize 0
+ vexactsize 0
+ priority 8
+ {
+  PanelWidgetClass HudBg {
+   visible 1
+   ignorepointer 1
+   color 0.055 0.055 0.062 0.62
+   position 0 0
+   size 1 1
+   hexactpos 0
+   vexactpos 0
+   hexactsize 0
+   vexactsize 0
+   priority 1
+   style rover_sim_colorable
+  }
+
+  // Оранжева риска ліворуч -- та сама, що на корпусі. Смужку впізнають по
+  // ній, а не по тексту: текст на периферії зору не читають.
+  PanelWidgetClass HudMark {
+   visible 1
+   ignorepointer 1
+   color 1 0.478 0.102 1
+   position 0 0
+   size 3 1
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 0
+   priority 2
+   style rover_sim_colorable
+  }
+
+  TextWidgetClass HudPower {
+   visible 1
+   ignorepointer 1
+   position 10 0
+   size 1 1
+   hexactpos 1
+   vexactpos 1
+   hexactsize 0
+   vexactsize 0
+   color 0.788 0.788 0.816 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 14
+   "text halign" left
+   "text valign" center
+   priority 3
+  }
+ }
+}

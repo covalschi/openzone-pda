@@ -41,6 +41,7 @@ modded class MissionGameplay
     {
         super.OnUpdate(timeslice);
         OZ_PdaInput.Poll();
+        OZ_PdaHud.Update(timeslice);
     }
 
     override UIScriptedMenu CreateScriptedMenu(int id)
