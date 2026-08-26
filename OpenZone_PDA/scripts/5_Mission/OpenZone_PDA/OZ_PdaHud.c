@@ -63,6 +63,11 @@ class OZ_PdaHud
     // Той самий пристрій, про який говорить меню: спершу руки, потім
     // інвентар. Правило одне на весь мод -- інакше смужка й екран говорили б
     // про різні речі.
+    // ВЛАСНИЙ буфер, не спільний з OZ_PdaLookup: у розміщеній грі обидва
+    // живуть в одній скриптовій машині, і один масив на двох ходоків -- це
+    // тиха поломка того дня, коли один із них покличе другого.
+    private static ref array<EntityAI> s_Walk;
+
     private static EntityAI Device()
     {
         PlayerBase p = PlayerBase.Cast(GetGame().GetPlayer());
@@ -73,11 +78,22 @@ class OZ_PdaHud
         if (inHands)
             return inHands;
 
-        array<EntityAI> items = new array<EntityAI>();
-        p.GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER, items);
-        for (int i = 0; i < items.Count(); i++)
+        GameInventory inv = p.GetInventory();
+        if (!inv)
+            return null;
+
+        // Смужка тікає двічі на секунду в КОЖНОГО гравця, і кожен такт
+        // алокував новий масив -- на порожніх руках це дві алокації й два
+        // повні обходи інвентаря за секунду, вічно, заради відсотка заряду.
+        // Буфер прибирає алокації; обхід лишається, бо кеш пристрою -- це
+        // окрема робота зі своїми правилами вивітрювання.
+        if (!s_Walk)
+            s_Walk = new array<EntityAI>();
+
+        inv.EnumerateInventory(InventoryTraversalType.PREORDER, s_Walk);
+        for (int i = 0; i < s_Walk.Count(); i++)
         {
-            OZ_PDA_Base pda = OZ_PDA_Base.Cast(items[i]);
+            OZ_PDA_Base pda = OZ_PDA_Base.Cast(s_Walk[i]);
             if (pda)
                 return pda;
         }

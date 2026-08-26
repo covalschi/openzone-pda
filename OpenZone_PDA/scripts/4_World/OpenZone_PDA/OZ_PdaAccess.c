@@ -83,13 +83,40 @@ class OZ_PdaAccess : OZ_PageAccess
 
 class OZ_PdaLookup
 {
+    // Буфер під обхід інвентаря: один на цього ходока, а не new на кожен
+    // виклик. EnumerateInventory оголошений як `out array<EntityAI> items`
+    // (inventory.c:127) -- він ЗАПОВНЮЄ переданий масив, а не повертає свій,
+    // тож алокація на кожен виклик була чистою витратою: на сорока гравцях
+    // це порядку 2400 масивів за хвилину.
+    //
+    // ПРАВИЛО ДО БУФЕРА: не тримати його між викликами. Він спільний, і
+    // вкладений виклик перезаповнить його під ногами того, хто ітерує.
+    // Сьогодні вкладених немає -- перевірено по всіх дванадцяти місцях
+    // виклику HeldBy. `ref` стоїть на МАСИВІ (він наш), а не на елементах:
+    // сутності належать рушію, і ref на них тримав би їх живими після
+    // знищення.
+    private static ref array<EntityAI> s_Walk;
+
     // Знайти КПК, який гравець тримає або несе.
     //
     // Спершу руки, потім інвентар: пристрій у руках -- це той, з яким гравець
     // працює зараз, і якщо їх два, брати треба саме його.
     static OZ_PDA_Base HeldBy(PlayerIdentity who)
     {
-        PlayerBase player = OZ_PdaLookup.PlayerOf(who);
+        return HeldByPlayer(OZ_PdaLookup.PlayerOf(who));
+    }
+
+    // Для тих, хто вже ТРИМАЄ гравця. Прохід по онлайну, який на кожному
+    // кроці добуває особу лише щоб тут-таки перетворити її назад на гравця,
+    // -- це зайвий круг; OZR_Set.Sync робить саме так, для кожного гравця
+    // кожні дві секунди. Рація припаркована, тож правка там окрема, але
+    // точка, куди їй звертатись, є вже зараз.
+    //
+    // Живість тут НЕ перевіряється навмисне: труп із КПК у рюкзаку -- це
+    // законне питання для того, хто його обшукує. Фільтрувати мертвих
+    // мусить той, хто обходить онлайн, і кожен за своїм правилом.
+    static OZ_PDA_Base HeldByPlayer(PlayerBase player)
+    {
         if (!player)
             return null;
 
@@ -97,12 +124,21 @@ class OZ_PdaLookup
         if (inHands)
             return inHands;
 
-        array<EntityAI> items = new array<EntityAI>();
-        player.GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER, items);
+        // Ваниль сама перевіряє GetInventory() на сутностях у русі
+        // (weapon_base.c:1163), і після цієї правки сюди заходить більше
+        // викликів, ніж раніше.
+        GameInventory inv = player.GetInventory();
+        if (!inv)
+            return null;
 
-        for (int i = 0; i < items.Count(); i++)
+        if (!s_Walk)
+            s_Walk = new array<EntityAI>();
+
+        inv.EnumerateInventory(InventoryTraversalType.PREORDER, s_Walk);
+
+        for (int i = 0; i < s_Walk.Count(); i++)
         {
-            OZ_PDA_Base pda = OZ_PDA_Base.Cast(items[i]);
+            OZ_PDA_Base pda = OZ_PDA_Base.Cast(s_Walk[i]);
             if (pda)
                 return pda;
         }
@@ -115,17 +151,29 @@ class OZ_PdaLookup
         if (!who)
             return null;
 
-        array<Man> players = new array<Man>();
-        GetGame().GetPlayers(players);
-
-        for (int i = 0; i < players.Count(); i++)
-        {
-            PlayerBase p = PlayerBase.Cast(players[i]);
-            if (p && p.GetIdentity() && p.GetIdentity().GetPlainId() == who.GetPlainId())
-                return p;
-        }
-
-        return null;
+        // Рушій сам знає, кому належить особа: `proto Man GetPlayer()` на
+        // PlayerIdentityBase (gameplay.c:374). Один перехід.
+        //
+        // Тут стояв обхід GetPlayers() зі звіркою GetPlainId(). Кожна
+        // ітерація коштувала переходів І ДВОХ АЛОКАЦІЙ РЯДКІВ -- GetPlainId
+        // оголошений `proto string`, тобто щоразу породжує рядок, і права
+        // частина порівняння стояла всередині циклу. На сорока гравцях це
+        // близько сорока рядків сміття на виклик при понад трьох тисячах
+        // викликів за хвилину. Не арифметика була дорога, а сміття: воно
+        // приходить до збирача ривком, і ривок -- це і є лагспайк.
+        //
+        // ДОГОВІР МІНЯЄТЬСЯ В ОДНОМУ МІСЦІ, і це навмисне. За УСТАРІЛОЮ
+        // особою обхід знаходив гравця, який ПЕРЕПІДКЛЮЧИВСЯ -- Steam-id той
+        // самий, тож звірка збігалась, -- а GetPlayer() поверне null, бо
+        // особа більше нікому не належить. Друге правильніше: діяти за
+        // протухлою особою не можна. Але це зміна поведінки, а не чиста
+        // оптимізація, і вона записана тут, а не лишена на виявлення.
+        //
+        // Перевірка `!who` лишається першим рядком: HeldBy -- публічний
+        // static із дванадцятьма місцями виклику, а звернення до null у
+        // Enforce обриває виконання посеред обробника, лишаючи вже зроблені
+        // зміни застосованими наполовину.
+        return PlayerBase.Cast(who.GetPlayer());
     }
 
     static bool VirtualAllows(string pageId)
