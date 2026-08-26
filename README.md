@@ -1,7 +1,8 @@
 # OpenZone PDA
 
-A S.T.A.L.K.E.R.-style PDA for DayZ. One device in your pocket that carries the map,
-your faction, your contacts, shared markers, chat, and the radio.
+A S.T.A.L.K.E.R.-style PDA for DayZ. One device you carry that holds the map, your
+faction, your contacts, your notes and your conversations — and takes modules that
+give it a Geiger counter, a dosimeter, an antenna, or a radio from another mod.
 
 Built on [OpenZone Core](https://github.com/covalschi/openzone-core). Designed to run
 on **any server and any map**, configured entirely from JSON.
@@ -33,7 +34,19 @@ they are offline.
 
 ## Status
 
-Early development. Nothing is published to the Workshop yet.
+Early development. Nothing is published to the Workshop yet, and the items are not in
+the central economy — an admin has to spawn them.
+
+Working and exercised on a test server: the device itself (battery, power, PIN, lazy
+auto-lock), sealed quest devices opened with a decryptor on a countdown, the six-page
+shell with a tab strip built from the device's own profile, per-device map markers,
+the contacts list with proximity-gated friend requests, notes, and the hardware
+contract that lets another mod add its own module, tab and page.
+
+Built but not yet connected, so honestly: shared markers, module behaviours (the
+Geiger counter and dosimeter read "no data" until a mod supplies one), tiered battery
+drain, data carriers, and Discord account linking. The list under **Planned features**
+describes where this is going, not what it does today.
 
 ## Licence
 
