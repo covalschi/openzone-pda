@@ -29,6 +29,9 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         if (op == "sealed")
             return Sealed(sender, ok, error);
 
+        if (op == "link")
+            return LinkAccount(sender, ok, error);
+
         return "";
     }
 
@@ -291,6 +294,35 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
     }
 
     // Почати злам запечатаного пристрою.
+    // Прив'язати акаунт Discord.
+    //
+    // Пристрій тут ні до чого: прив'язка належить ГРАВЦЕВІ, а не апарату, і
+    // переживає будь-яку його втрату. Тому HeldBy не питаємо -- досить того,
+    // що гейт уже пропустив запит на сторінку «Пристрій».
+    private string LinkAccount(PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        string uid = sender.GetPlainId();
+
+        OZ_PlayerData pd = OZ_PlayerStore.Load(uid);
+        if (pd.DiscordId != "")
+        {
+            error = "STR_OZ_ERR_ALREADY_LINKED";
+            return "";
+        }
+
+        // Друге натискання, поки перше ще чекає, нового посилання не дає:
+        // старе живе десять хвилин і працює.
+        if (OZ_PdaLink.IsWaiting(uid))
+        {
+            error = "STR_OZ_ERR_LINK_PENDING";
+            return "";
+        }
+
+        return OZ_PdaLink.Begin(uid, error);
+    }
+
     private string Crack(PlayerIdentity sender, out bool ok, out string error)
     {
         ok = false;

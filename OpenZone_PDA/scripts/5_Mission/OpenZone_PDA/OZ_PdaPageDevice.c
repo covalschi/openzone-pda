@@ -11,6 +11,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
     private ButtonWidget m_BtnPin;
     private ButtonWidget m_BtnPinClear;
     private ButtonWidget m_BtnAutoLock;
+    private ButtonWidget m_BtnLink;
     private ref OZ_PdaDeviceStatus m_Status;
 
     override string LayoutPath()
@@ -26,6 +27,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
         m_BtnPin       = ButtonWidget.Cast(Wgt("BtnPin"));
         m_BtnPinClear  = ButtonWidget.Cast(Wgt("BtnPinClear"));
         m_BtnAutoLock  = ButtonWidget.Cast(Wgt("BtnAutoLock"));
+        m_BtnLink      = ButtonWidget.Cast(Wgt("BtnLink"));
     }
 
     override void OnSelected()
@@ -105,6 +107,16 @@ class OZ_PdaPageDevice : OZ_PdaPage
             return true;
         }
 
+        if (w && w == m_BtnLink)
+        {
+            // Тіла немає: сервер знає, ХТО просить, із самого запиту, і
+            // приймати тут поле від клієнта не можна -- інакше можна було б
+            // попросити посилання на чужий акаунт.
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "link", "{}");
+            SetHintSticky("LinkText", "#STR_OZ_LINK_ASKING");
+            return true;
+        }
+
         return false;
     }
 
@@ -122,6 +134,26 @@ class OZ_PdaPageDevice : OZ_PdaPage
 
         // Пін і автоблокування самі нічого не несуть: перепитуємо стан.
         // Причину відмови по піну малює екран коду, він же її й ловить.
+        // Посилання на прив'язку. Показуємо ЙОГО САМЕ, а не «дивись у
+        // браузері»: гравець переписує адресу з екрана руками, іншого шляху
+        // з гри назовні немає.
+        if (op == "link")
+        {
+            if (!ok)
+            {
+                SetHintSticky("LinkText", "#" + error);
+                return;
+            }
+
+            OZ_LinkUrl u;
+            string uerr;
+            if (JsonFileLoader<OZ_LinkUrl>.LoadData(json, u, uerr) && u && u.Url != "")
+                SetHintSticky("LinkText", u.Url);
+            else
+                SetHintSticky("LinkText", "#STR_OZ_ERR_INTERNAL");
+            return;
+        }
+
         if (op == "setpin" || op == "autolock")
         {
             if (!ok && op == "autolock")
@@ -347,6 +379,23 @@ class OZ_PdaPageDevice : OZ_PdaPage
             }
         }
         SetHint("AutoLockText", al);
+
+        // Прив'язка Discord. Кнопку ховаємо, коли тиснути нема чого: уже
+        // прив'язаний, або моста немає й посилання взяти нізвідки.
+        if (st.DiscordLinked)
+        {
+            SetHint("LinkText", "#STR_OZ_LINK_DONE");
+            if (m_BtnLink)
+                m_BtnLink.Show(false);
+        }
+        else
+        {
+            SetHint("LinkText", "#STR_OZ_LINK_NONE");
+            if (m_BtnLink)
+                m_BtnLink.Show(true);
+        }
+
+        SetText("BtnLinkText", "#STR_OZ_LINK_BTN");
 
         // Написи на кнопках -- це те, що станеться після натискання.
         if (st.HasPin)
