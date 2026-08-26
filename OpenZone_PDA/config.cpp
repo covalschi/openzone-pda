@@ -24,32 +24,38 @@ class CfgSlots
 {
     // The class is Slot_<name>; the bare `name` is what attachments[] and
     // inventorySlot[] match on.
+    //
+    // No ghostIcon on any of these, deliberately. The names this file used to
+    // carry -- `memorycard` and `cable` -- do not exist: a scan of every
+    // ghostIcon string in the shipped game yields only `cookingequipment`,
+    // `cat_vehicle_*`, `cat_fp_*`, `cat_bb_*`, `cat_common_cargo` and their
+    // siblings, and nothing among them means "chip" or "module". A name the
+    // imageset does not carry draws nothing, so the old lines bought no icon
+    // and cost a reader the belief that one was configured. Our own icons
+    // arrive with the rest of the art from dayz-3d; until then the bays are
+    // labelled by displayName alone.
     class Slot_OZ_DataCarrier
     {
         name = "OZ_DataCarrier";
         displayName = "$STR_OZ_SLOT_CARRIER";
-        ghostIcon = "set:dayz_inventory image:memorycard";
     };
 
     class Slot_OZ_Module1
     {
         name = "OZ_Module1";
         displayName = "$STR_OZ_SLOT_MODULE";
-        ghostIcon = "set:dayz_inventory image:cable";
     };
 
     class Slot_OZ_Module2
     {
         name = "OZ_Module2";
         displayName = "$STR_OZ_SLOT_MODULE";
-        ghostIcon = "set:dayz_inventory image:cable";
     };
 
     class Slot_OZ_Module3
     {
         name = "OZ_Module3";
         displayName = "$STR_OZ_SLOT_MODULE";
-        ghostIcon = "set:dayz_inventory image:cable";
     };
 };
 
@@ -57,13 +63,20 @@ class CfgPatches
 {
     class OpenZone_PDA
     {
+        // Every scope=2 class belongs here. The three that used to be missing
+        // -- OZ_PDA_Sealed, OZ_Module_Antenna, OZ_Module_Decryptor -- were
+        // between them the whole sealed-device feature: the quest PDA and the
+        // tool that opens it.
         units[] =
         {
             "OZ_PDA_Novice",
             "OZ_PDA_Advanced",
+            "OZ_PDA_Sealed",
             "OZ_DataCarrier_Chip",
             "OZ_Module_Radiometer",
-            "OZ_Module_Dosimeter"
+            "OZ_Module_Dosimeter",
+            "OZ_Module_Antenna",
+            "OZ_Module_Decryptor"
         };
         weapons[] = {};
         requiredVersion = 0.1;
@@ -76,8 +89,13 @@ class CfgPatches
             // identity, and nothing else resolves to it.
             "OpenZone_Core",
             // Vanilla models borrowed until dayz-3d delivers our own.
+            // Consumables is here for \dz\gear\consumables\9v_battery.p3d --
+            // the module placeholder. It is easy to miss because the battery
+            // SLOT is vanilla while the battery MODEL lives in a different
+            // addon from the one the name suggests.
             "DZ_Gear_Navigation",
-            "DZ_Gear_Tools"
+            "DZ_Gear_Tools",
+            "DZ_Gear_Consumables"
         };
     };
 };
@@ -193,7 +211,11 @@ class CfgVehicles
     class OZ_DataCarrier_Base : Inventory_Base
     {
         scope = 0;
-        model = "\dz\gear\navigation\Map.p3d";
+        // Placeholder. gear_navigation.pbo carries GPSReceiver, compass,
+        // compass_modern and Map_chernarus_animated -- there is no plain
+        // Map.p3d, so the old path resolved to nothing. A small electronic
+        // prop stands in until dayz-3d delivers the chip.
+        model = "\dz\gear\tools\RemoteDetonator_Receiver.p3d";
         itemSize[] = {1, 1};
         weight = 20;
         rotationFlags = 1;
@@ -215,7 +237,10 @@ class CfgVehicles
     class OZ_Module_Base : Inventory_Base
     {
         scope = 0;
-        model = "\dz\gear\tools\Battery9V.p3d";
+        // Placeholder, and the path is not the obvious one: gear_tools.pbo
+        // holds no battery model at all -- the 9V lives under consumables.
+        // The old \dz\gear\tools\Battery9V.p3d resolved to nothing.
+        model = "\dz\gear\consumables\9v_battery.p3d";
         itemSize[] = {1, 1};
         weight = 60;
         rotationFlags = 1;
