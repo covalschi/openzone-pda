@@ -69,7 +69,7 @@ class OZ_PdaPageNotes : OZ_PdaPage
             if (m_Title)
                 m_Title.SetText("");
             if (m_Body)
-                m_Body.SetLine(0, "");
+                m_Body.SetText("");
             SetText("NotesHint", "#STR_OZ_NOTES_DRAFT");
             return true;
         }
@@ -90,7 +90,7 @@ class OZ_PdaPageNotes : OZ_PdaPage
                 if (m_Title)
                     m_Title.SetText("");
                 if (m_Body)
-                    m_Body.SetLine(0, "");
+                    m_Body.SetText("");
                 SetText("NotesHint", "");
                 return true;
             }
@@ -131,7 +131,7 @@ class OZ_PdaPageNotes : OZ_PdaPage
         if (m_Title)
             m_Title.SetText(n.Title);
         if (m_Body)
-            m_Body.SetLine(0, n.Body);
+            m_Body.SetText(n.Body);
 
         string when = "#STR_OZ_NOTES_EDITED";
         when += "  " + n.EditedAt;
@@ -177,9 +177,7 @@ class OZ_PdaPageNotes : OZ_PdaPage
                 return;
             }
 
-            // Видалили -- редактор порожній; зберегли -- лишається відкритим,
-            // але id новоствореної записки знає лише сервер, тож після
-            // збереження чернетки перелік сам покаже її останньою.
+            // Видалили -- редактор порожній.
             if (op == "delete")
             {
                 m_CurrentId = "";
@@ -187,8 +185,27 @@ class OZ_PdaPageNotes : OZ_PdaPage
                 if (m_Title)
                     m_Title.SetText("");
                 if (m_Body)
-                    m_Body.SetLine(0, "");
+                    m_Body.SetText("");
+
+                SetText("NotesHint", "#STR_OZ_NOTES_DELETED");
+                Request();
+                return;
             }
+
+            // Зберегли -- редактор лишається відкритим, але тепер він знає,
+            // ЩО саме відкрито. Сервер повертає id збереженої записки, і поки
+            // він сюди не доїхав, друге натискання «Зберегти» слало порожній
+            // id, тобто просило створити ще одну. Чернетка, збережена двічі,
+            // ставала двома записками.
+            //
+            // Ветка редагування теж проходить тут: id той самий, присвоєння
+            // безпечне, а чернеткою запис перестає бути в обох випадках.
+            OZ_NoteRef saved;
+            string refErr;
+            if (JsonFileLoader<OZ_NoteRef>.LoadData(json, saved, refErr) && saved && saved.Id != "")
+                m_CurrentId = saved.Id;
+
+            m_Draft = false;
 
             SetText("NotesHint", "#STR_OZ_NOTES_SAVED");
             Request();

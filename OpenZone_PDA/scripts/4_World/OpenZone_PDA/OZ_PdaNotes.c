@@ -172,9 +172,29 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
 
         OZ_NoteStore.Save(uid, b);
 
+        // Id ЇДЕ НАЗАД, і без цього створення записки було одноразовим у
+        // найгіршому сенсі: сервер карбував id, лишав його собі й повертав
+        // порожнє тіло, тож клієнт так і тримав m_CurrentId порожнім. Друге
+        // натискання «Зберегти» знову йшло гілкою створення -- і чернетка,
+        // збережена двічі, ставала двома записками, аж до стелі в 50.
+        OZ_NoteRef saved = new OZ_NoteRef();
+        saved.Id = incoming.Id;
+
+        string refJson;
+        if (!JsonFileLoader<OZ_NoteRef>.MakeData(saved, refJson, err, false))
+        {
+            // Записка ВЖЕ на диску: провалилась відповідь, а не збереження.
+            // Кажемо про це чесно, а не вдаємо невдале збереження -- інакше
+            // гравець натисне ще раз і отримає дубль, тобто рівно те, від
+            // чого цей блок і рятує.
+            OZ_Log.Error("note saved but id serialise failed: " + err);
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
         ok = true;
         error = "";
-        return "";
+        return refJson;
     }
 
     private string Delete(string json, PlayerIdentity sender, out bool ok, out string error)
