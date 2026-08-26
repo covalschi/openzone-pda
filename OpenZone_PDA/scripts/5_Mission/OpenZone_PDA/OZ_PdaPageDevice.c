@@ -11,17 +11,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
     private ButtonWidget m_BtnPin;
     private ButtonWidget m_BtnPinClear;
     private ButtonWidget m_BtnAutoLock;
-    private ButtonWidget m_BtnLink;
 
-    // Код прив'язки тримається ТУТ, а не в липкій підказці.
-    //
-    // Липка живе кілька секунд -- цього досить для відмови, яку треба
-    // прочитати, і замало для коду, який ПЕРЕПИСУЮТЬ. Перша ж перемальовка
-    // статусу затирала його, і кнопка виглядала зламаною: натиснув, майнуло,
-    // зникло. Спіймано на живому клієнті, а не вигадано.
-    //
-    // Код живе, поки акаунт не прив'яжеться або поки гравець не піде з вкладки.
-    private string m_LinkCode;
     private ref OZ_PdaDeviceStatus m_Status;
 
     override string LayoutPath()
@@ -37,7 +27,6 @@ class OZ_PdaPageDevice : OZ_PdaPage
         m_BtnPin       = ButtonWidget.Cast(Wgt("BtnPin"));
         m_BtnPinClear  = ButtonWidget.Cast(Wgt("BtnPinClear"));
         m_BtnAutoLock  = ButtonWidget.Cast(Wgt("BtnAutoLock"));
-        m_BtnLink      = ButtonWidget.Cast(Wgt("BtnLink"));
     }
 
     override void OnSelected()
@@ -46,39 +35,16 @@ class OZ_PdaPageDevice : OZ_PdaPage
         Request();
     }
 
-    // Один малювальник на всі три стани прив'язки, щоб рядок і кнопка ніколи
-    // не розійшлись: код на екрані при схованій кнопці або «не прив'язано»
-    // поверх щойно виданого коду -- це дві половини одного бага.
+    // Прив'язка ТІЛЬКИ показується. Володіє нею ядро: вона належить гравцеві,
+    // а не апарату, переживає втрату КПК і потрібна рації, квестам та ІІ, яким
+    // екран ні до чого. Ворота прив'язки -- окреме вікно ядра, і КПК для них
+    // не потрібен зовсім.
     private void PaintLink(bool linked)
     {
         if (linked)
-        {
-            // Прив'язались -- код більше не потрібен нікому, і тримати його
-            // на екрані означало б лишити чинним запрошення для того, хто
-            // подивиться через плече.
-            m_LinkCode = "";
             SetHint("LinkText", "#STR_OZ_LINK_DONE");
-            if (m_BtnLink)
-                m_BtnLink.Show(false);
-            return;
-        }
-
-        if (m_LinkCode != "")
-        {
-            // Код -- це ВСЯ інструкція: що набрати і де. Гравець стоїть із
-            // телефоном у руці, і посилати його читати документацію ніколи.
-            string line = "#STR_OZ_LINK_CODE";
-            line += "   /link " + m_LinkCode;
-            SetHint("LinkText", line);
-            if (m_BtnLink)
-                m_BtnLink.Show(false);
-            return;
-        }
-
-        SetHint("LinkText", "#STR_OZ_LINK_NONE");
-        if (m_BtnLink)
-            m_BtnLink.Show(true);
-        SetText("BtnLinkText", "#STR_OZ_LINK_BTN");
+        else
+            SetHint("LinkText", "#STR_OZ_LINK_NONE");
     }
 
     // Раз на секунду: заряд і радіація змінюються самі, і сторінка мусить це
@@ -152,16 +118,6 @@ class OZ_PdaPageDevice : OZ_PdaPage
             return true;
         }
 
-        if (w && w == m_BtnLink)
-        {
-            // Тіла немає: сервер знає, ХТО просить, із самого запиту, і
-            // приймати тут поле від клієнта не можна -- інакше можна було б
-            // попросити посилання на чужий акаунт.
-            OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "link", "{}");
-            SetHintSticky("LinkText", "#STR_OZ_LINK_ASKING");
-            return true;
-        }
-
         return false;
     }
 
@@ -179,31 +135,6 @@ class OZ_PdaPageDevice : OZ_PdaPage
 
         // Пін і автоблокування самі нічого не несуть: перепитуємо стан.
         // Причину відмови по піну малює екран коду, він же її й ловить.
-        // Посилання на прив'язку. Показуємо ЙОГО САМЕ, а не «дивись у
-        // браузері»: гравець переписує адресу з екрана руками, іншого шляху
-        // з гри назовні немає.
-        if (op == "link")
-        {
-            if (!ok)
-            {
-                SetHintSticky("LinkText", "#" + error);
-                return;
-            }
-
-            OZ_LinkGrant g;
-            string uerr;
-            if (JsonFileLoader<OZ_LinkGrant>.LoadData(json, g, uerr) && g && g.Code != "")
-            {
-                m_LinkCode = g.Code;
-                PaintLink(false);
-            }
-            else
-            {
-                SetHintSticky("LinkText", "#STR_OZ_ERR_INTERNAL");
-            }
-            return;
-        }
-
         if (op == "setpin" || op == "autolock")
         {
             if (!ok && op == "autolock")
