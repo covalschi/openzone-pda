@@ -29,6 +29,16 @@ class OZ_PdaHud
             return;
         s_Acc = 0;
 
+        // Гасне разом із ванільним інтерфейсом, а не світиться поверх нього.
+        // Досі Show() не мав ЖОДНОГО вызивающего, тож смужка малювалась і
+        // поверх відкритого КПК, і в інвентарі, і над непритомним гравцем.
+        if (!Visible())
+        {
+            if (s_Root)
+                s_Root.Show(false);
+            return;
+        }
+
         EntityAI dev = Device();
 
         if (!dev)
@@ -121,5 +131,74 @@ class OZ_PdaHud
     {
         if (s_Root)
             s_Root.Show(show);
+    }
+
+    // Чи має смужка бути видимою ЗАРАЗ. Одна функція на всі причини гасіння
+    // -- інакше кожне нове місце гасило б по-своєму, і одне з них рано чи
+    // пізно розійшлося б з рештою.
+    private static bool Visible()
+    {
+        PlayerBase p = PlayerBase.Cast(GetGame().GetPlayer());
+        if (!p || !p.IsAlive())
+            return false;
+
+        UIManager ui = GetGame().GetUIManager();
+        if (!ui)
+            return false;
+
+        // Наш власний КПК відкритий -- екран каже все те саме, і краще.
+        if (ui.FindMenu(OZ_PdaConst.MENU_PDA))
+            return false;
+
+        // Будь-яке інше меню поверх світу: пауза, налаштування, чуже вікно.
+        if (ui.GetMenu())
+            return false;
+
+        // Прапорці ванільного інтерфейсу. IngameHud.Cast -- саме так до них
+        // ходить і сама ваниль (gesturesmenu.c:228, continuousactionprogress.c:60).
+        IngameHud hud = IngameHud.Cast(GetGame().GetMission().GetHud());
+        if (hud)
+        {
+            IngameHudVisibility vis = hud.GetHudVisibility();
+            if (vis)
+            {
+                // По одній перевірці на рядок, і це не стиль. Умова `if`
+                // у Enforce мусить уміщатися в ОДИН рядок: перенесення дає
+                // "Expected ')', not a '||'" незалежно від того, стоїть
+                // оператор наприкінці рядка чи на початку наступного.
+                // Перевірено на стенді 2026-08-26, обидва варіанти.
+                if (vis.IsContextFlagActive(EHudContextFlags.HUD_HIDE))
+                    return false;
+                if (vis.IsContextFlagActive(EHudContextFlags.HUD_DISABLE))
+                    return false;
+                if (vis.IsContextFlagActive(EHudContextFlags.INVENTORY_OPEN))
+                    return false;
+                if (vis.IsContextFlagActive(EHudContextFlags.MENU_OPEN))
+                    return false;
+                if (vis.IsContextFlagActive(EHudContextFlags.UNCONSCIOUS))
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Знімає корінь із робочої області.
+    //
+    // Ensure() створює віджет ПРЯМО на робочій області, а не всередині чийогось
+    // дерева, тож ніхто, крім нас, його не прибере. Досі мод не мав
+    // OnMissionFinish узагалі -- отже кожен перезапуск місії лишав по одній
+    // смужці назавжди.
+    static void Teardown()
+    {
+        if (s_Root)
+        {
+            s_Root.Unlink();
+            s_Root = null;
+        }
+
+        s_Power = null;
+        s_Acc   = 0;
+        s_Walk  = null;
     }
 }

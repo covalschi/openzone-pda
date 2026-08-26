@@ -44,6 +44,15 @@ modded class MissionGameplay
         OZ_PdaHud.Update(timeslice);
     }
 
+    // Мод не мав цього хука взагалі, а смужка живе прямо на робочій області
+    // -- отже кожен перезапуск місії лишав по одній назавжди. Тепер знімаємо
+    // за собою.
+    override void OnMissionFinish()
+    {
+        OZ_PdaHud.Teardown();
+        super.OnMissionFinish();
+    }
+
     override UIScriptedMenu CreateScriptedMenu(int id)
     {
         // super ПЕРШИЙ і вихід одразу, якщо він щось віддав: саме це тримає
