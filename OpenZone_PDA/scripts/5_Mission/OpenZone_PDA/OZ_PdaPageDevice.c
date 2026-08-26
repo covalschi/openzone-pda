@@ -12,6 +12,16 @@ class OZ_PdaPageDevice : OZ_PdaPage
     private ButtonWidget m_BtnPinClear;
     private ButtonWidget m_BtnAutoLock;
     private ButtonWidget m_BtnLink;
+
+    // Код прив'язки тримається ТУТ, а не в липкій підказці.
+    //
+    // Липка живе кілька секунд -- цього досить для відмови, яку треба
+    // прочитати, і замало для коду, який ПЕРЕПИСУЮТЬ. Перша ж перемальовка
+    // статусу затирала його, і кнопка виглядала зламаною: натиснув, майнуло,
+    // зникло. Спіймано на живому клієнті, а не вигадано.
+    //
+    // Код живе, поки акаунт не прив'яжеться або поки гравець не піде з вкладки.
+    private string m_LinkCode;
     private ref OZ_PdaDeviceStatus m_Status;
 
     override string LayoutPath()
@@ -34,6 +44,41 @@ class OZ_PdaPageDevice : OZ_PdaPage
     {
         ClearHintHold();
         Request();
+    }
+
+    // Один малювальник на всі три стани прив'язки, щоб рядок і кнопка ніколи
+    // не розійшлись: код на екрані при схованій кнопці або «не прив'язано»
+    // поверх щойно виданого коду -- це дві половини одного бага.
+    private void PaintLink(bool linked)
+    {
+        if (linked)
+        {
+            // Прив'язались -- код більше не потрібен нікому, і тримати його
+            // на екрані означало б лишити чинним запрошення для того, хто
+            // подивиться через плече.
+            m_LinkCode = "";
+            SetHint("LinkText", "#STR_OZ_LINK_DONE");
+            if (m_BtnLink)
+                m_BtnLink.Show(false);
+            return;
+        }
+
+        if (m_LinkCode != "")
+        {
+            // Код -- це ВСЯ інструкція: що набрати і де. Гравець стоїть із
+            // телефоном у руці, і посилати його читати документацію ніколи.
+            string line = "#STR_OZ_LINK_CODE";
+            line += "   /link " + m_LinkCode;
+            SetHint("LinkText", line);
+            if (m_BtnLink)
+                m_BtnLink.Show(false);
+            return;
+        }
+
+        SetHint("LinkText", "#STR_OZ_LINK_NONE");
+        if (m_BtnLink)
+            m_BtnLink.Show(true);
+        SetText("BtnLinkText", "#STR_OZ_LINK_BTN");
     }
 
     // Раз на секунду: заряд і радіація змінюються самі, і сторінка мусить це
@@ -145,12 +190,17 @@ class OZ_PdaPageDevice : OZ_PdaPage
                 return;
             }
 
-            OZ_LinkUrl u;
+            OZ_LinkGrant g;
             string uerr;
-            if (JsonFileLoader<OZ_LinkUrl>.LoadData(json, u, uerr) && u && u.Url != "")
-                SetHintSticky("LinkText", u.Url);
+            if (JsonFileLoader<OZ_LinkGrant>.LoadData(json, g, uerr) && g && g.Code != "")
+            {
+                m_LinkCode = g.Code;
+                PaintLink(false);
+            }
             else
+            {
                 SetHintSticky("LinkText", "#STR_OZ_ERR_INTERNAL");
+            }
             return;
         }
 
@@ -380,22 +430,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
         }
         SetHint("AutoLockText", al);
 
-        // Прив'язка Discord. Кнопку ховаємо, коли тиснути нема чого: уже
-        // прив'язаний, або моста немає й посилання взяти нізвідки.
-        if (st.DiscordLinked)
-        {
-            SetHint("LinkText", "#STR_OZ_LINK_DONE");
-            if (m_BtnLink)
-                m_BtnLink.Show(false);
-        }
-        else
-        {
-            SetHint("LinkText", "#STR_OZ_LINK_NONE");
-            if (m_BtnLink)
-                m_BtnLink.Show(true);
-        }
-
-        SetText("BtnLinkText", "#STR_OZ_LINK_BTN");
+        PaintLink(st.DiscordLinked);
 
         // Написи на кнопках -- це те, що станеться після натискання.
         if (st.HasPin)

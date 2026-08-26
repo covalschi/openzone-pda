@@ -26,14 +26,23 @@ class OZ_LinkAsk
     string Uid = "";
 }
 
-class OZ_LinkUrl
+
+
+// Що видав міст: КОРОТКИЙ КОД, який гравець переписує з екрана КПК у Discord.
+//
+// Не посилання OAuth. Двісті символів адреси, які людина переписує очима з
+// ігрового екрана в браузер, -- найгірша частина будь-якого потоку, де вона
+// зустрічається. Шість символів у чат Discord -- ні.
+class OZ_LinkGrant
 {
-    string Url = "";
+    string Code         = "";
+    int    ExpiresInSec = 0;
 }
 
 class OZ_LinkState
 {
     bool   Linked      = false;
+    string DiscordId   = "";
     string DiscordName = "";
 }
 
@@ -53,15 +62,15 @@ class OZ_LinkBeginReply : OZ_BridgeReply
         if (!to)
             return;
 
-        OZ_LinkUrl u;
+        OZ_LinkGrant g;
         string err;
-        if (!JsonFileLoader<OZ_LinkUrl>.LoadData(json, u, err) || !u || u.Url == "")
+        if (!JsonFileLoader<OZ_LinkGrant>.LoadData(json, g, err) || !g || g.Code == "")
         {
             OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "link", false, "", "STR_OZ_ERR_INTERNAL");
             return;
         }
 
-        // Посилання доїхало -- отже з цієї миті є сенс питати статус.
+        // Код доїхав -- отже з цієї миті є сенс питати статус.
         OZ_PdaLink.Watch(m_Uid);
 
         OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "link", true, json, "");
@@ -99,7 +108,7 @@ class OZ_LinkStatusReply : OZ_BridgeReply
         if (!st.Linked)
             return;
 
-        OZ_PdaLink.Confirm(m_Uid, st.DiscordName);
+        OZ_PdaLink.Confirm(m_Uid, st.DiscordId, st.DiscordName);
     }
 
     override void OnFail(int code)
@@ -175,19 +184,23 @@ class OZ_PdaLink
     }
 
     // Міст сказав «прив'язано». Пишемо у файл акаунта й перестаємо чекати.
-    static void Confirm(string uid, string discordName)
+    static void Confirm(string uid, string discordId, string discordName)
     {
         if (!GetGame().IsServer())
             return;
 
+        // Порожній id -- це НЕ прив'язка. Раніше сюди писався сам uid гравця,
+        // і поле під назвою DiscordId тримало Steam64: прапорець ставав true,
+        // а значення було вигадкою. Міст тепер віддає справжній id, і без
+        // нього писати нічого.
+        if (discordId == "")
+            return;
+
         OZ_PlayerData d = OZ_PlayerStore.Load(uid);
 
-        // Ім'я Discord нам НЕ потрібне для роботи -- воно лише для очей, і
-        // сховище його не тримає. Пишемо сам факт прив'язки; хто саме за нею
-        // стоїть, знає міст, і він же єдиний, хто має це знати.
-        if (d.DiscordId != uid)
+        if (d.DiscordId != discordId)
         {
-            d.DiscordId = uid;
+            d.DiscordId = discordId;
             OZ_PlayerStore.MarkDirty(uid);
 
             string m = "link: " + uid;
