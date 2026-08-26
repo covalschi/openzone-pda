@@ -48,6 +48,9 @@ class OZ_PdaPageMap : OZ_PdaPage
 
     override void OnSelected()
     {
+        // Відмова на дію, якої гравець уже не пам'ятає, ні до чого:
+        // вкладку перемкнули -- тримати підказку більше нема сенсу.
+        ClearHintHold();
         Request();
     }
 
@@ -181,7 +184,7 @@ class OZ_PdaPageMap : OZ_PdaPage
 
         if (at == "")
         {
-            SetText("MapHint", "#STR_OZ_MAP_MARK_HINT");
+            SetHintSticky("MapHint", "#STR_OZ_MAP_MARK_HINT");
             return;
         }
 
@@ -229,7 +232,7 @@ class OZ_PdaPageMap : OZ_PdaPage
         {
             if (!ok)
             {
-                SetText("MapHint", "#" + error);
+                SetHintSticky("MapHint", "#" + error);
             }
             else if (op == "marker_add")
             {
@@ -254,7 +257,7 @@ class OZ_PdaPageMap : OZ_PdaPage
 
         if (!ok)
         {
-            SetText("MapHint", "#" + error);
+            SetHintSticky("MapHint", "#" + error);
             return;
         }
 
@@ -318,7 +321,7 @@ class OZ_PdaPageMap : OZ_PdaPage
         }
 
         PaintMarkButton();
-        SetText("MapHint", Hint());
+        SetHint("MapHint", Hint());
     }
 
     // Три різні «нікого не видно», і гравець мусить розрізняти їх:

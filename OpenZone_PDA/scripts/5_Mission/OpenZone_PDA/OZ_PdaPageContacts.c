@@ -41,6 +41,9 @@ class OZ_PdaPageContacts : OZ_PdaPage
 
     override void OnSelected()
     {
+        // Відмова на дію, якої гравець уже не пам'ятає, ні до чого:
+        // вкладку перемкнули -- тримати підказку більше нема сенсу.
+        ClearHintHold();
         Request();
     }
 
@@ -109,7 +112,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
             // списки про те саме розійшлися б.
             if (m_Picked == "")
             {
-                SetText("ContactsHint", "#STR_OZ_FRIEND_PICK");
+                SetHintSticky("ContactsHint", "#STR_OZ_FRIEND_PICK");
                 return true;
             }
 
@@ -137,7 +140,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
         OZ_ContactEntry e = Picked();
         if (!e)
         {
-            SetText("ContactsHint", "#STR_OZ_FRIEND_PICK");
+            SetHintSticky("ContactsHint", "#STR_OZ_FRIEND_PICK");
             return;
         }
 
@@ -157,13 +160,13 @@ class OZ_PdaPageContacts : OZ_PdaPage
         {
             // Чекаємо відповіді -- натискати нема чого, і сказати про це
             // краще, ніж мовчки нічого не зробити.
-            SetText("ContactsHint", "#STR_OZ_FRIEND_WAIT");
+            SetHintSticky("ContactsHint", "#STR_OZ_FRIEND_WAIT");
             return;
         }
 
         if (!e.Near)
         {
-            SetText("ContactsHint", "#STR_OZ_FRIEND_TOOFAR");
+            SetHintSticky("ContactsHint", "#STR_OZ_FRIEND_TOOFAR");
             return;
         }
 
@@ -174,7 +177,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
     {
         if (m_Picked == "")
         {
-            SetText("ContactsHint", "#STR_OZ_FRIEND_PICK");
+            SetHintSticky("ContactsHint", "#STR_OZ_FRIEND_PICK");
             return;
         }
 
@@ -206,14 +209,14 @@ class OZ_PdaPageContacts : OZ_PdaPage
         if (op != "list")
         {
             if (!ok)
-                SetText("ContactsHint", "#" + error);
+                SetHintSticky("ContactsHint", "#" + error);
             Request();
             return;
         }
 
         if (!ok)
         {
-            SetText("ContactsHint", "#" + error);
+            SetHintSticky("ContactsHint", "#" + error);
             return;
         }
 
@@ -292,9 +295,9 @@ class OZ_PdaPageContacts : OZ_PdaPage
         // Один у списку -- це ти сам, і сказати про це треба словами: порожній
         // на вигляд список і сервер без людей -- різні речі.
         if (n <= 1)
-            SetText("ContactsHint", "#STR_OZ_CONTACTS_ALONE");
+            SetHint("ContactsHint", "#STR_OZ_CONTACTS_ALONE");
         else
-            SetText("ContactsHint", "");
+            SetHint("ContactsHint", "");
     }
 
     private string Tag(OZ_ContactEntry e)

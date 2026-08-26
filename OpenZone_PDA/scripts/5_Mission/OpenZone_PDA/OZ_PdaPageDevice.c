@@ -30,6 +30,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
 
     override void OnSelected()
     {
+        ClearHintHold();
         Request();
     }
 
@@ -114,7 +115,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
         if (op == "power")
         {
             if (!ok)
-                SetText("ChargeLabel", "#" + error);
+                SetHintSticky("ChargeLabel", "#" + error);
             Request();
             return;
         }
@@ -124,7 +125,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
         if (op == "setpin" || op == "autolock")
         {
             if (!ok && op == "autolock")
-                SetText("AutoLockText", "#" + error);
+                SetHintSticky("AutoLockText", "#" + error);
             Request();
             return;
         }
@@ -219,7 +220,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
             label = "#STR_OZ_DEV_POWER";
             label += "  " + pct.ToString() + "%";
         }
-        SetText("ChargeLabel", label);
+        SetHint("ChargeLabel", label);
 
         // Напис на кнопці -- це те, що станеться після натискання, а не те,
         // що є зараз. Без батареї вмикати нічого, і кнопка про це й пише.
@@ -345,7 +346,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
                 al += " (" + m.ToString() + " min)";
             }
         }
-        SetText("AutoLockText", al);
+        SetHint("AutoLockText", al);
 
         // Написи на кнопках -- це те, що станеться після натискання.
         if (st.HasPin)
