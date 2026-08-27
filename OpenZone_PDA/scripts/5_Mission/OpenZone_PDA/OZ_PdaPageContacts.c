@@ -18,7 +18,10 @@ class OZ_PdaPageContacts : OZ_PdaPage
     private ref array<Widget> m_Rows;
     private ButtonWidget m_BtnHide;
     private ButtonWidget m_BtnFriend;
-    private ButtonWidget m_BtnDecline;
+    private ButtonWidget m_BtnFaction;
+    private ButtonWidget m_BtnLead;
+    private ButtonWidget m_BtnJoin;
+    private ButtonWidget m_BtnRefuse;
     private ButtonWidget m_BtnMsg;
 
     private ref OZ_ContactList m_Data;
@@ -38,7 +41,10 @@ class OZ_PdaPageContacts : OZ_PdaPage
         m_Rows       = new array<Widget>();
         m_BtnHide    = ButtonWidget.Cast(Wgt("BtnHide"));
         m_BtnFriend  = ButtonWidget.Cast(Wgt("BtnFriend"));
-        m_BtnDecline = ButtonWidget.Cast(Wgt("BtnDecline"));
+        m_BtnFaction = ButtonWidget.Cast(Wgt("BtnFaction"));
+        m_BtnLead    = ButtonWidget.Cast(Wgt("BtnLead"));
+        m_BtnJoin    = ButtonWidget.Cast(Wgt("BtnJoin"));
+        m_BtnRefuse  = ButtonWidget.Cast(Wgt("BtnRefuse"));
         m_BtnMsg     = ButtonWidget.Cast(Wgt("BtnMsg"));
 
         SetText("BtnMsgText", "#STR_OZ_CHAT_MSG");
@@ -105,6 +111,43 @@ class OZ_PdaPageContacts : OZ_PdaPage
         if (w == m_BtnFriend)
         {
             SendByRel();
+            return true;
+        }
+
+        // Запрошення до МЕНЕ -- воно не про обраний рядок, тому й перевіряємо
+        // першим: інакше «прийняти» вимагало б спершу когось обрати.
+        if (w == m_BtnJoin)
+        {
+            OZ_Rpc.RoleRequest("accept", "", "");
+            return true;
+        }
+
+        if (w == m_BtnRefuse)
+        {
+            OZ_Rpc.RoleRequest("decline", "", "");
+            return true;
+        }
+
+        if (w == m_BtnFaction)
+        {
+            OZ_ContactEntry pf = Picked();
+            if (!pf)
+                return true;
+
+            // Свій -- вигнати, чужий -- покликати. Одна кнопка, бо це одна
+            // думка: «цей у моїй фракції чи ні».
+            if (pf.Mine)
+                OZ_Rpc.RoleRequest(OZ_RoleOp.FACTION_CLEAR, pf.Name, "");
+            else
+                OZ_Rpc.RoleRequest("invite", pf.Name, "");
+            return true;
+        }
+
+        if (w == m_BtnLead)
+        {
+            OZ_ContactEntry pl = Picked();
+            if (pl)
+                OZ_Rpc.RoleRequest(OZ_RoleOp.LEADER_TRANSFER, pl.Name, "");
             return true;
         }
 
@@ -258,6 +301,16 @@ class OZ_PdaPageContacts : OZ_PdaPage
         // Протухла проекція має ПЕРЕВАГУ над усіма іншими підказками: усе, що
         // намальовано вище, може бути застарілим, і мовчати про це гірше, ніж
         // не сказати про самотність.
+        // Запрошення -- найважливіше, що може бути на цьому екрані.
+        if (m_Data.InviteFaction != "")
+        {
+            string inv = m_Data.InviteFrom;
+            inv += "  ->  ";
+            inv += m_Data.InviteFaction;
+            SetHint("ContactsHint", inv);
+            return;
+        }
+
         if (m_Data.Stale)
         {
             SetHint("ContactsHint", "#STR_OZ_CONTACTS_STALE");
@@ -408,16 +461,44 @@ class OZ_PdaPageContacts : OZ_PdaPage
     {
         OZ_ContactEntry e = Picked();
 
+        // ЗАПРОШЕННЯ ПЕРЕБИВАЄ ВСЕ. Воно про мене, а не про обраний рядок, і
+        // поки воно висить -- це найважливіше, що є на екрані. Дії над
+        // контактом ховаємо, щоб не пропонувати два різні рішення поруч.
+        bool invited = m_Data && m_Data.InviteFaction != "";
+
+        if (m_BtnJoin)
+            m_BtnJoin.Show(invited);
+        if (m_BtnRefuse)
+            m_BtnRefuse.Show(invited);
+
+        SetText("BtnJoinText",   "#STR_OZ_FACTION_JOIN");
+        SetText("BtnRefuseText", "#STR_OZ_FACTION_REFUSE");
+
+        if (invited)
+        {
+            if (m_BtnFriend)
+                m_BtnFriend.Show(false);
+            if (m_BtnMsg)
+                m_BtnMsg.Show(false);
+            if (m_BtnFaction)
+                m_BtnFaction.Show(false);
+            if (m_BtnLead)
+                m_BtnLead.Show(false);
+            return;
+        }
+
         // Нікого не обрано або обрано себе -- дій немає. Кнопка, яка завжди
         // відмовляє, гірша за кнопку, якої немає.
         if (!e || e.Me)
         {
             if (m_BtnFriend)
                 m_BtnFriend.Show(false);
-            if (m_BtnDecline)
-                m_BtnDecline.Show(false);
             if (m_BtnMsg)
                 m_BtnMsg.Show(false);
+            if (m_BtnFaction)
+                m_BtnFaction.Show(false);
+            if (m_BtnLead)
+                m_BtnLead.Show(false);
             return;
         }
 
@@ -431,7 +512,26 @@ class OZ_PdaPageContacts : OZ_PdaPage
             m_BtnFriend.Show(true);
         SetText("BtnFriendText", "#STR_OZ_CONTACT_DROP");
 
-        if (m_BtnDecline)
-            m_BtnDecline.Show(false);
+        // ЛІДЕРСЬКІ ДІЇ. Малюємо лише лідерові й лише на чужому рядку:
+        // кнопка, яка завжди відмовляє, гірша за кнопку, якої немає.
+        bool lead = m_Data && m_Data.MeLeader && !e.Me;
+
+        if (m_BtnFaction)
+            m_BtnFaction.Show(lead);
+
+        if (lead)
+        {
+            if (e.Mine)
+                SetText("BtnFactionText", "#STR_OZ_FACTION_EXPEL");
+            else
+                SetText("BtnFactionText", "#STR_OZ_FACTION_INVITE");
+        }
+
+        // Передати лідерство можна лише СВОЄМУ: чужого спершу треба взяти у
+        // фракцію, і зробити це однією кнопкою означало б прийняти людину
+        // й тут-таки віддати їй усе.
+        if (m_BtnLead)
+            m_BtnLead.Show(lead && e.Mine);
+        SetText("BtnLeadText", "#STR_OZ_FACTION_HANDOVER");
     }
 }

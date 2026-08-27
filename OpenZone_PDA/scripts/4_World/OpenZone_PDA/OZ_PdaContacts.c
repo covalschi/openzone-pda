@@ -60,6 +60,14 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         // мусить розуміти, що бачить останнє відоме, а не «нікого немає».
         list.Stale = OZ_Identity.Stale();
 
+        // Чи хтось кличе мене у фракцію. Прострочене Pending прибирає само.
+        OZ_FactionInvite inv = OZ_FactionInvites.Pending(myUid);
+        if (inv)
+        {
+            list.InviteFaction = OZ_Factions.NameOf(inv.Faction);
+            list.InviteFrom    = inv.FromName;
+        }
+
         // 1. Ті, хто на сервері. Себе -- завжди, друга -- завжди, решту --
         //    якщо не сховались.
         array<Man> players = new array<Man>();

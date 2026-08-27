@@ -36,7 +36,7 @@ FrameWidgetClass OZ_PageContacts {
   // віджетів, і напис усередині зникає.
   ButtonWidgetClass BtnHide {
    visible 1
-   position 861 380
+   position 816 386
    size 168 24
    hexactpos 1
    vexactpos 1
@@ -82,7 +82,7 @@ FrameWidgetClass OZ_PageContacts {
   // Написати обраному контакту. Лише контакту: чат починається з рукостискання.
   ButtonWidgetClass BtnMsg {
    visible 0
-   position 261 380
+   position 416 386
    size 192 24
    hexactpos 1
    vexactpos 1
@@ -129,7 +129,7 @@ FrameWidgetClass OZ_PageContacts {
   // і напис на ній це каже: просити, прийняти, відмовити, викреслити.
   ButtonWidgetClass BtnFriend {
    visible 1
-   position 661 380
+   position 616 386
    size 192 24
    hexactpos 1
    vexactpos 1
@@ -174,9 +174,9 @@ FrameWidgetClass OZ_PageContacts {
 
   // Друга дія: відмовити на запит. Показується лише коли є на що відмовляти
   // -- кнопка, яка нічого не робить, гірша за її відсутність.
-  ButtonWidgetClass BtnDecline {
+  ButtonWidgetClass BtnFaction {
    visible 0
-   position 461 380
+   position 216 386
    size 192 24
    hexactpos 1
    vexactpos 1
@@ -185,7 +185,7 @@ FrameWidgetClass OZ_PageContacts {
    text ""
    priority 3
    {
-    PanelWidgetClass BtnDeclineBg {
+    PanelWidgetClass BtnFactionBg {
      visible 1
      ignorepointer 1
      color 0.145 0.145 0.161 1
@@ -198,7 +198,139 @@ FrameWidgetClass OZ_PageContacts {
      priority 1
      style rover_sim_colorable
     }
-    TextWidgetClass BtnDeclineText {
+    TextWidgetClass BtnFactionText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 192 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+  ButtonWidgetClass BtnLead {
+   visible 0
+   position 16 386
+   size 192 24
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnLeadBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 192 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnLeadText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 192 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+  ButtonWidgetClass BtnJoin {
+   visible 0
+   position 416 386
+   size 192 24
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnJoinBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 192 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnJoinText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 192 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.478 0.788 0.478 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+  ButtonWidgetClass BtnRefuse {
+   visible 0
+   position 616 386
+   size 192 24
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnRefuseBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 192 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnRefuseText {
      visible 1
      ignorepointer 1
      position 0 0
@@ -230,7 +362,7 @@ FrameWidgetClass OZ_PageContacts {
   ScrollWidgetClass ContactScroll {
    visible 1
    position 16 46
-   size 1013 322
+   size 1013 316
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -241,7 +373,7 @@ FrameWidgetClass OZ_PageContacts {
     WrapSpacerWidgetClass ContactList {
      visible 1
      position 0 0
-     size 1013 322
+     size 1013 316
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -257,8 +389,8 @@ FrameWidgetClass OZ_PageContacts {
    visible 1
    ignorepointer 1
    halign left_ref
-   position 16 380
-   size 820 24
+   position 16 366
+   size 1013 18
    hexactpos 1
    vexactpos 1
    hexactsize 1
