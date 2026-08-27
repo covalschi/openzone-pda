@@ -19,8 +19,16 @@ class OZ_PdaContactSwap
     // а не «поки ви обидва на сервері».
     private static const int TTL_MS = 60000;
 
-    // uid, кому запропонували -> коли пропозиція протухне.
-    // Пара тримається в файлі акаунта; тут лише строк.
+    // ПАРА «хто -> кому» -> коли пропозиція протухне.
+    //
+    // Ключем був сам отримувач, і це ламало строк рівно там, де він потрібен.
+    // Пропозиція A для B протухала за хвилину -- аж поки повз не проходив C і
+    // не тикав приладом у того ж B: його пропозиція клала НОВИЙ строк під той
+    // самий ключ, і разом із нею оживала стара, забута пропозиція A. B тикав
+    // у відповідь -- і опинявся в контактах у A, з яким розминувся годину тому.
+    //
+    // Пара -- те, чого строк насправді стосується. Список у файлі акаунта від
+    // цього не міняється; тут лише час.
     private static ref map<string, int> s_Until;
 
     static void Offer(PlayerIdentity from, PlayerIdentity to)
@@ -48,7 +56,7 @@ class OZ_PdaContactSwap
         // ЗУСТРІЧНИЙ ТИК: він уже пропонував мені -- замикаємо.
         if (Has(me.FriendReq, theirUid))
         {
-            if (!Fresh(myUid))
+            if (!Fresh(theirUid, myUid))
             {
                 // Пропозиція протухла. Прибираємо й починаємо як з нуля --
                 // цей самий тик стає новою пропозицією з мого боку.
@@ -58,7 +66,7 @@ class OZ_PdaContactSwap
             else
             {
                 Drop(me.FriendReq, theirUid);
-                Forget(myUid);
+                Forget(theirUid, myUid);
 
                 // Пишемо ОБОМ. Контакт взаємний, і однобокий запис зробив би
                 // його видимим лише з одного боку -- тобто зламаним там, де
@@ -77,6 +85,15 @@ class OZ_PdaContactSwap
             }
         }
 
+        // ПРИБИРАЄМО ЗА СОБОЮ.
+        //
+        // FriendReq писався й ніколи не чистився: кожен тик приладом у
+        // незнайомця лишав у ЙОГО файлі рядок, і той рядок не прибирало ніщо
+        // -- ні строк, ні відмова. Через місяць гри у файлі активного гравця
+        // лежали сотні протухлих пропозицій, які нічого не означають, але
+        // їдуть із ним у кожне збереження.
+        Prune(them);
+
         // ПЕРШИЙ ТИК: лишаємо пропозицію в нього.
         if (!Has(them.FriendReq, myUid))
         {
@@ -84,7 +101,7 @@ class OZ_PdaContactSwap
             OZ_PlayerStore.MarkDirty(theirUid);
         }
 
-        Remember(theirUid);
+        Remember(myUid, theirUid);
 
         Say(from, "STR_OZ_SWAP_OFFERED");
         Say(to,   "STR_OZ_SWAP_ASKED");
@@ -92,32 +109,61 @@ class OZ_PdaContactSwap
 
     // ------------------------------------------------------------- строк
 
-    private static void Remember(string uid)
+    private static string Pair(string fromUid, string toUid)
+    {
+        return fromUid + ">" + toUid;
+    }
+
+    private static void Remember(string fromUid, string toUid)
     {
         if (!s_Until)
             s_Until = new map<string, int>();
-        s_Until.Set(uid, GetGame().GetTime() + TTL_MS);
+        s_Until.Set(Pair(fromUid, toUid), GetGame().GetTime() + TTL_MS);
     }
 
-    private static void Forget(string uid)
+    private static void Forget(string fromUid, string toUid)
     {
-        if (s_Until && s_Until.Contains(uid))
-            s_Until.Remove(uid);
+        string k = Pair(fromUid, toUid);
+        if (s_Until && s_Until.Contains(k))
+            s_Until.Remove(k);
     }
 
     // Строку немає -- пропозиція пережила перезапуск сервера. Вважаємо
     // протухлою: тримати в силі те, про що ми не пам'ятаємо, коли воно було
     // зроблене, -- це і є пастка, від якої строк узагалі заведено.
-    private static bool Fresh(string uid)
+    private static bool Fresh(string fromUid, string toUid)
     {
         if (!s_Until)
             return false;
 
         int until;
-        if (!s_Until.Find(uid, until))
+        if (!s_Until.Find(Pair(fromUid, toUid), until))
             return false;
 
         return GetGame().GetTime() < until;
+    }
+
+    // Викинути з його списку все, чий строк вийшов. Дешево: список короткий,
+    // а виклик трапляється лише коли хтось справді тикнув приладом.
+    private static void Prune(OZ_PlayerData them)
+    {
+        if (!them || !them.FriendReq)
+            return;
+
+        bool touched = false;
+
+        for (int i = them.FriendReq.Count() - 1; i >= 0; i--)
+        {
+            if (Fresh(them.FriendReq[i], them.SteamId))
+                continue;
+
+            Forget(them.FriendReq[i], them.SteamId);
+            them.FriendReq.Remove(i);
+            touched = true;
+        }
+
+        if (touched)
+            OZ_PlayerStore.MarkDirty(them.SteamId);
     }
 
     // ------------------------------------------------------------ дрібне

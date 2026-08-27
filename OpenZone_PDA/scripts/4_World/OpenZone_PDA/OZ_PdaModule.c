@@ -192,8 +192,10 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
 
         // Радіацію питаємо ЛИШЕ якщо є чим міряти. Питати те, чого нема чим
         // виміряти, і малювати відповідь -- це вигадувати цифри.
-        bool wantAmbient = pda.OZ_HasModuleKind(OZ_PdaConst.MOD_RADIOMETER);
-        bool wantDose    = pda.OZ_HasModuleKind(OZ_PdaConst.MOD_DOSIMETER);
+        // ...і лише якщо пристрій УВІМКНЕНО. Замірник живиться від нього, і
+        // вимкнений КПК, який показує поточний фон, -- це не прилад.
+        bool wantAmbient = st.Powered && pda.OZ_HasModuleKind(OZ_PdaConst.MOD_RADIOMETER);
+        bool wantDose    = st.Powered && pda.OZ_HasModuleKind(OZ_PdaConst.MOD_DOSIMETER);
         if (wantAmbient || wantDose)
         {
             OZ_RadiationReading rr = OZ_PdaRadiation.Read(player, wantAmbient, wantDose);

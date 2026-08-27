@@ -22,7 +22,7 @@ class OZ_PdaAccess : OZ_PageAccess
         {
             // Пристрою немає -- лишається «віртуальний КПК», якщо його
             // увімкнув адмін.
-            return OZ_PdaLookup.VirtualAllows(pageId);
+            return OZ_PdaLookup.VirtualAllows(who.GetPlainId(), pageId);
         }
 
         OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(pda.GetType());
@@ -48,12 +48,20 @@ class OZ_PdaAccess : OZ_PageAccess
         // до клієнта, просто не потрапили б на екран, і вимкнути КПК було б
         // способом не бачити, а не способом не знати.
         //
-        // Панель самого пристрою -- єдиний виняток, і він вимушений: саме на
-        // ній кнопка «увімкнути». Без винятку прилад не можна було б увімкнути
-        // ніколи.
+        // Виняток -- ДВІ ОПЕРАЦІЇ, а не ціла сторінка.
+        //
+        // Виняток стояв на всю панель пристрою, і крізь нього проходило все,
+        // що на ній є: мертвий КПК далі міряв радіацію (st.AmbientUSvH
+        // рахується живим замірником при вимкненому екрані), приймав спроби
+        // коду й крутив дешифратор. Прилад без живлення не робить нічого --
+        // це не режим показу, це вимкнений прилад.
+        //
+        // Лишаємо рівно те, без чого його не можна ввімкнути: сам вимикач і
+        // стан, з якого малюється кнопка. Решта -- як на будь-якій іншій
+        // сторінці: відмова, і відмовляє СЕРВЕР.
         if (!pda.OZ_IsOn())
         {
-            if (pageId != OZ_PdaConst.PAGE_DEVICE)
+            if (pageId != OZ_PdaConst.PAGE_DEVICE || !IsOffOp(op))
             {
                 why = "STR_OZ_ERR_POWERED_DOWN";
                 return false;
@@ -78,6 +86,17 @@ class OZ_PdaAccess : OZ_PageAccess
         // Друге питання коду для окремих сторінок -- поки що просто вимагає
         // відімкненого пристрою; окреме підтвердження приїде разом із UI.
         return true;
+    }
+
+    // Що мусить працювати на вимкненому пристрої.
+    //
+    // status -- бо з нього малюється сама кнопка живлення; він і при
+    // вимкненому екрані віддає лише те, що видно ззовні: клас, заряд, чи є
+    // батарея. Живі заміри в ньому обчислюються ЛИШЕ коли пристрій увімкнено
+    // (див. Status()).
+    private bool IsOffOp(string op)
+    {
+        return op == "power" || op == "status";
     }
 
     private bool IsLockOp(string op)
@@ -202,13 +221,30 @@ class OZ_PdaLookup
         return PlayerBase.Cast(who.GetPlayer());
     }
 
-    static bool VirtualAllows(string pageId)
+    static bool VirtualAllows(string uid, string pageId)
     {
         OZ_PdaProfilesConfig cfg = OZ_PdaProfiles.Get();
         if (!cfg || !cfg.VirtualDevice || !cfg.VirtualDevice.Enabled)
             return false;
         if (!cfg.VirtualDevice.Pages)
             return false;
-        return cfg.VirtualDevice.Pages.Find(pageId) != -1;
+        if (cfg.VirtualDevice.Pages.Find(pageId) == -1)
+            return false;
+
+        // ОБМЕЖЕННЯ ПО ФРАКЦІЯХ -- те, заради чого поле й заводили.
+        //
+        // VirtualDevice.Factions лежав у конфізі з першого дня, потрапляв у
+        // приклад і в опис, і не читався НІДЕ. Адмін вписував туди «ecolog» --
+        // і віртуальний КПК діставався всьому серверу, мовчки. Конфіг, що
+        // обіцяє й не робить, гірший за конфіг, якого немає.
+        //
+        // Порожній список означає «всім»: інакше вмикання віртуального
+        // пристрою вимагало б ще й перелічити геть усі фракції.
+        if (!cfg.VirtualDevice.Factions)
+            return true;
+        if (cfg.VirtualDevice.Factions.Count() == 0)
+            return true;
+
+        return cfg.VirtualDevice.Factions.Find(OZ_Factions.OfUid(uid)) != -1;
     }
 }

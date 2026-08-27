@@ -28,6 +28,9 @@ class OZ_PdaPageContacts : OZ_PdaPage
 
     // Обраний рядок. Тримаємо ІМ'Я, а не номер: список перебудовується
     // щосекунди, і номер після цього вказував би вже на іншу людину.
+    // КЛЮЧ обраного, не ім'я: два однакових імені в списку -- і дія йшла в
+    // першого-ліпшого з двох, а контакт без кешованого імені не обирався
+    // взагалі. Ім'я лишається тим, чим і є: підписом на екрані.
     private string m_Picked = "";
 
     override string LayoutPath()
@@ -37,6 +40,13 @@ class OZ_PdaPageContacts : OZ_PdaPage
 
     override void OnBuilt()
     {
+        // ВІДПОВІДІ НА ЛІДЕРСЬКІ ДІЇ. Без цієї підписки кожна з них -- запросив,
+        // вигнав, передав лідерство, прийняв, обмінявся контактами в світі --
+        // не казала гравцеві НІЧОГО: сервер чесно відповідав, ядро чесно
+        // роздавало, і не було кому взяти. «Не вдалося, бо мосту немає»
+        // виглядало точно так само, як «готово».
+        OZ_RoleNotice.OnAnswer.Insert(OnRoleAnswer);
+
         m_List       = Wgt("ContactList");
         m_Rows       = new array<Widget>();
         m_BtnHide    = ButtonWidget.Cast(Wgt("BtnHide"));
@@ -48,6 +58,15 @@ class OZ_PdaPageContacts : OZ_PdaPage
         m_BtnMsg     = ButtonWidget.Cast(Wgt("BtnMsg"));
 
         SetText("BtnMsgText", "#STR_OZ_CHAT_MSG");
+    }
+
+    // Сервер відповів на дію. Малюємо ЙОГО слова -- і свої ключі, і готовий
+    // текст від моста -- і перепитуємо список: після вступу, вигнання чи
+    // передачі лідерства він змінився.
+    void OnRoleAnswer(string op, bool ok, string why)
+    {
+        SetHintSticky("ContactsHint", OZ_RoleNotice.Text());
+        Request();
     }
 
     override void OnSelected()
@@ -87,7 +106,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
         // іншу людину.
         if (w.GetUserID() == 2)
         {
-            m_Picked = w.GetName();
+            m_Picked = w.GetName();   // ім'я віджета -- це ключ, див. Row()
             Paint();
             return true;
         }
@@ -165,7 +184,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
             }
 
             OZ_NameRef r = new OZ_NameRef();
-            r.Name = m_Picked;
+            r.Key = m_Picked;
 
             string mjson;
             string merr;
@@ -208,7 +227,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
         }
 
         OZ_NameRef r = new OZ_NameRef();
-        r.Name = m_Picked;
+        r.Key = m_Picked;
 
         string json;
         string err;
@@ -223,7 +242,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
 
         for (int i = 0; i < m_Data.Entries.Count(); i++)
         {
-            if (m_Data.Entries[i].Name == m_Picked)
+            if (m_Data.Entries[i].Key == m_Picked)
                 return m_Data.Entries[i];
         }
         return null;
@@ -348,11 +367,14 @@ class OZ_PdaPageContacts : OZ_PdaPage
         if (!w)
             return false;
 
-        w.SetName(e.Name);
+        // Ім'ям ВІДЖЕТА робимо ключ: саме його читає OnClick, і саме він
+        // мусить означати «хто це». Підпис на екрані ставиться нижче, у
+        // текстовий віджет, і на впізнання не впливає.
+        w.SetName(e.Key);
         w.SetUserID(2);   // так OnClick відрізняє рядок від вкладки й кнопок
         m_Rows.Insert(w);
 
-        bool picked = (e.Name == m_Picked);
+        bool picked = (e.Key == m_Picked);
 
         Widget pick = w.FindAnyWidget("RowPick");
         if (pick)

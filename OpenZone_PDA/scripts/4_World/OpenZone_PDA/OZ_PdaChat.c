@@ -343,7 +343,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         string uid = sender.GetPlainId();
         OZ_PlayerData me = OZ_PlayerStore.Load(uid);
 
-        string theirUid = UidByNameIn(me.Friends, r.Name);
+        string theirUid = UidByKeyIn(me.Friends, r.Key);
         if (theirUid == "")
         {
             // Не контакт -- писати нема кому. Саме тому контакти й заводять.
@@ -452,14 +452,38 @@ class OZ_PdaHandlerChat : OZ_PageHandler
 
     // ------------------------------------------------------------ дрібне
 
+    // Розмову ПОЧИНАЮТЬ з обраного в списку -- там є ключ, і питання «хто це»
+    // не стоїть.
+    private string UidByKeyIn(array<string> uids, string key)
+    {
+        return OZ_Names.PickIn(uids, key);
+    }
+
+    // А в групу ЗАПРОШУЮТЬ за набраним ім'ям -- ключа в людини, яку щойно
+    // надрукували, взятись нема звідки.
+    //
+    // Тому тут ім'я лишається, але з двома правилами, яких раніше не було:
+    // порожнє не збігається ні з чим (інакше воно ловило б кожного, чиє ім'я
+    // ще не кешоване), і двоє однакових -- це відмова, а не перший-ліпший.
     private string UidByNameIn(array<string> uids, string name)
     {
+        if (name == "")
+            return "";
+
+        string found = "";
+
         for (int i = 0; uids && i < uids.Count(); i++)
         {
             OZ_PlayerData d = OZ_PlayerStore.Load(uids[i]);
-            if (d.Name == name)
-                return uids[i];
+            if (!d || d.Name != name)
+                continue;
+
+            if (found != "")
+                return "";
+
+            found = uids[i];
         }
-        return "";
+
+        return found;
     }
 }

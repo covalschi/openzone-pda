@@ -36,6 +36,17 @@ modded class MissionGameplay
         // Ядро розносить команди «покажи це»; нас цікавить одна.
         OZ_Show.OnShow.Insert(OZ_PdaShow);
 
+        // ВІДПОВІДІ, ЯКІ ТРЕБА ПОКАЗАТИ БЕЗ КПК.
+        //
+        // Обмін контактами відбувається в світі, з ЗАКРИТИМ приладом: сторінка
+        // контактів у цей момент не існує й почути нічого не може. Двоє
+        // стояли, тикали приладами один в одного й не бачили ані «запропоновано»,
+        // ані «обмінялись» -- взагалі нічого.
+        //
+        // Тут -- місія, вона жива завжди. Показуємо тим самим сповіщенням,
+        // яким гра говорить про все інше.
+        OZ_RoleNotice.OnAnswer.Insert(OZ_PdaNotice);
+
         OZ_PdaMenuGate.Bind(new OZ_PdaMenuOpener());
         OZ_PdaInput.Init();
     }
@@ -54,6 +65,17 @@ modded class MissionGameplay
     {
         OZ_PdaHud.Teardown();
         super.OnMissionFinish();
+    }
+
+    // Показуємо лише те, що стосується світу, а не меню: коли КПК відкритий,
+    // сторінка контактів скаже те саме своєю підказкою, і два повідомлення про
+    // одне гірші за одне.
+    void OZ_PdaNotice(string op, bool ok, string why)
+    {
+        if (op != "swap")
+            return;
+
+        NotificationSystem.AddNotificationExtended(4, "#STR_OZ_PDA_NAME", OZ_RoleNotice.Text(), "");
     }
 
     void OZ_PdaShow(string what)

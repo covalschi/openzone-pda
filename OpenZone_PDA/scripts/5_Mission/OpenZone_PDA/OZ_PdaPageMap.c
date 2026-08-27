@@ -17,6 +17,7 @@ class OZ_PdaPageMap : OZ_PdaPage
 
     // Адмінська кнопка: поставити зону спавна там, де я стою.
     private ButtonWidget m_BtnSpawn;
+    private ButtonWidget m_BtnSpawnOff;
 
     private ref OZ_MapState m_State;
     private bool m_Centred = false;
@@ -46,12 +47,16 @@ class OZ_PdaPageMap : OZ_PdaPage
         m_Name      = EditBoxWidget.Cast(Wgt("MarkName"));
         m_BtnMark   = ButtonWidget.Cast(Wgt("BtnMark"));
         m_BtnSpawn  = ButtonWidget.Cast(Wgt("BtnSpawn"));
+        m_BtnSpawnOff = ButtonWidget.Cast(Wgt("BtnSpawnOff"));
 
         // Малюється лише адмінові. Прапорець приходить із сервера тим самим
         // конвертом синхронізації -- клієнт про свої права не здогадується.
         if (m_BtnSpawn)
             m_BtnSpawn.Show(OZ_ClientState.IsAdmin());
+        if (m_BtnSpawnOff)
+            m_BtnSpawnOff.Show(OZ_ClientState.IsAdmin());
         SetText("BtnSpawnText", "#STR_OZ_MAP_SETSPAWN");
+        SetText("BtnSpawnOffText", "#STR_OZ_MAP_CLEARSPAWN");
 
         SetText("BtnCenterText", "#STR_OZ_MAP_CENTER");
     }
@@ -115,6 +120,23 @@ class OZ_PdaPageMap : OZ_PdaPage
             }
 
             OZ_Rpc.RoleRequest(OZ_RoleOp.SPAWN_HERE, "", slug);
+            SetHintSticky("MapHint", "#STR_OZ_MAP_SPAWN_SENT");
+            return true;
+        }
+
+        // Та сама домовленість про поле, що й у кнопки поруч: порожнє --
+        // запасна зона, "*" -- стейджинґ, інакше слаг фракції.
+        if (w == m_BtnSpawnOff)
+        {
+            string off = "-";
+            if (m_Name)
+            {
+                string typedOff = m_Name.GetText();
+                if (typedOff != "")
+                    off = typedOff;
+            }
+
+            OZ_Rpc.RoleRequest(OZ_RoleOp.SPAWN_CLEAR, "", off);
             SetHintSticky("MapHint", "#STR_OZ_MAP_SPAWN_SENT");
             return true;
         }

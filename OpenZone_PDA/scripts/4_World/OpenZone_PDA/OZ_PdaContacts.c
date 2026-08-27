@@ -107,6 +107,7 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
 
             OZ_ContactEntry e = new OZ_ContactEntry();
             e.Name = id.GetName();
+            e.Key  = OZ_Names.KeyOf(uid);
             e.Me   = isMe;
             e.Rel  = "";
             if (isFriend)
@@ -160,7 +161,8 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
             // тоді краще чесний прочерк, ніж Steam64 на екрані.
             e.Name = d.Name;
             if (e.Name == "")
-                e.Name = "---";
+                e.Name = "#STR_OZ_CONTACT_NONAME";
+            e.Key  = OZ_Names.KeyOf(uid);
             e.Rel  = rel;
             e.Near = false;
 
@@ -170,10 +172,10 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
             {
                 // Гравця немає на сервері -- постачальника питати нема про
                 // кого, лишається останнє відоме з його файлу.
-                string ofid    = OZ_Factions.Of(null, uid);
+                string ofid    = OZ_Identity.SeenFactionId(uid);
                 e.Faction      = OZ_Factions.NameOf(ofid);
                 e.FactionColor = OZ_Factions.ColorARGB(ofid);
-                Identify(e, uid, myFaction);
+                IdentifySeen(e, uid, myFaction, ofid);
             }
 
             list.Entries.Insert(e);
@@ -195,6 +197,24 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         // Порівнюємо СЛАГИ, а не назви: дві однакові назви -- право адміна, і
         // це не привід зарахувати чужого в свої.
         e.Mine = myFaction != "" && OZ_Factions.OfUid(uid) == myFaction;
+    }
+
+    // Те саме для того, кого немає на сервері. Проекція ролей живе рівно
+    // стільки, скільки гравець у мережі: щойно він вийшов, Forget прибирає
+    // запис -- і офлайновий контакт ставав голим ім'ям. Свій сержант з Боргу
+    // виглядав як випадковий перехожий, і лідерові пропонували «запросити»
+    // того, хто вже рік у фракції.
+    //
+    // Беремо знімок останнього входу. Він може бути застарілим -- список і
+    // так каже про це рядком угорі, коли міст мовчить.
+    private void IdentifySeen(OZ_ContactEntry e, string uid, string myFaction, string ofid)
+    {
+        e.Rank = OZ_Identity.SeenRankName(uid);
+
+        OZ_Identity.SeenPostNames(uid, e.Posts);
+        OZ_Identity.SeenTraitNames(uid, e.Traits);
+
+        e.Mine = myFaction != "" && ofid == myFaction;
     }
 
     private string RelOf(OZ_PlayerData me, string uid, bool isFriend)
@@ -288,7 +308,7 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         string myUid = sender.GetPlainId();
         OZ_PlayerData me = OZ_PlayerStore.Load(myUid);
 
-        string theirUid = UidByNameIn(me.Friends, r.Name);
+        string theirUid = UidByKeyIn(me.Friends, r.Key);
         if (theirUid == "")
         {
             error = "STR_OZ_ERR_NO_FRIEND";
@@ -315,14 +335,9 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         return "";
     }
 
-    private string UidByNameIn(array<string> uids, string name)
+    // Шукаємо за КЛЮЧЕМ, а не за іменем: чому саме так -- у OZ_Names.
+    private string UidByKeyIn(array<string> uids, string key)
     {
-        for (int i = 0; uids && i < uids.Count(); i++)
-        {
-            OZ_PlayerData d = OZ_PlayerStore.Load(uids[i]);
-            if (d.Name == name)
-                return uids[i];
-        }
-        return "";
+        return OZ_Names.PickIn(uids, key);
     }
 }

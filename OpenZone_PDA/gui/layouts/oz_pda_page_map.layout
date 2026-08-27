@@ -230,6 +230,54 @@ FrameWidgetClass OZ_PageMap {
    }
   }
 
+  // ПРИБРАТИ зону. Поставити її було чим, а прибрати -- нічим: команда
+  // на сервері була з першого дня, і не існувало жодної кнопки, яка б її
+  // послала. Помилково поставлена зона лишалась назавжди.
+  ButtonWidgetClass BtnSpawnOff {
+   visible 1
+   position 876 348
+   size 160 26
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnSpawnOffBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 160 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnSpawnOffText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 160 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
   // Смуга під картою. Своя підкладка ОБОВ'ЯЗКОВА: сірий текст поверх білої
   // карти не читається, а карта біла майже всюди.
   PanelWidgetClass HintStrip {
