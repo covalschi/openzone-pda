@@ -216,6 +216,17 @@ class OZ_PdaPageContacts : OZ_PdaPage
 
         if (!ok)
         {
+            // ЗАБУВАЄМО показане. Сервер відмовив -- вимкнули прилад, вийняли
+            // батарею, замкнувся, -- і лишити на екрані попередній список
+            // означало б показувати Зону з мертвого приладу. Саме та поведінка,
+            // яку гейт живлення й прибирає.
+            m_Data = null;
+            m_Picked = "";
+            if (m_List)
+                m_List.ClearItems();
+            SetText("ContactsHeader", "");
+            PaintButtons();
+
             SetHintSticky("ContactsHint", "#" + error);
             return;
         }
