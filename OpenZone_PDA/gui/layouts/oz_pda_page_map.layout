@@ -235,7 +235,7 @@ FrameWidgetClass OZ_PageMap {
   // послала. Помилково поставлена зона лишалась назавжди.
   ButtonWidgetClass BtnSpawnOff {
    visible 1
-   position 876 348
+   position 432 378
    size 160 26
    hexactpos 1
    vexactpos 1
