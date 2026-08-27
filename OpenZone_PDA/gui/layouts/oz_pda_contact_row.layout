@@ -1,0 +1,151 @@
+// Один рядок списку контактів. Створюється скриптом по одному на людину.
+//
+// Замість одного TextListbox, у якому все зліплювалось в один рядок через
+// коми: «Survivor (you) - Долг, Лідер Долга». Ролі -- це три різні речі про
+// людину, і в один рядок вони не складаються, скільки ком не постав.
+//
+// Тепер рядок читається зверху вниз: ім'я й фракція -- велике, все інше --
+// дрібним під ними. Смужка ліворуч пофарбована в КОЛІР ФРАКЦІЇ, тож список
+// упізнається ще до читання.
+//
+// Ім'я КОРЕНЯ скрипт перезаписує на ім'я гравця (SetName), а SetUserID(2)
+// відрізняє рядок контакту від вкладки (1) в OnClick.
+
+ButtonWidgetClass OZ_ContactRow {
+ visible 1
+ position 0 0
+ size 1013 44
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ text ""
+ {
+  // Підсвітка обраного. Малюється ПІД усім іншим.
+  PanelWidgetClass RowPick {
+   visible 0
+   ignorepointer 1
+   color 1 0.478 0.102 0.14
+   position 0 0
+   size 1013 44
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 1
+   style rover_sim_colorable
+  }
+
+  // Смужка кольору фракції. Без фракції лишається невидимою -- порожня
+  // сіра риска сказала б, що фракція є, просто безбарвна.
+  PanelWidgetClass RowChip {
+   visible 0
+   ignorepointer 1
+   color 1 1 1 1
+   position 0 0
+   size 3 44
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 2
+   style rover_sim_colorable
+  }
+
+  TextWidgetClass RowName {
+   visible 1
+   ignorepointer 1
+   position 18 5
+   size 330 20
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.918 0.918 0.933 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 16
+   "text halign" left
+   "text valign" center
+   priority 3
+  }
+
+  // Фракція фарбується В СВІЙ КОЛІР -- той самий, що й смужка. Колір
+  // приходить із реєстру бота, тож підпис і колір завжди з одного джерела.
+  TextWidgetClass RowFaction {
+   visible 1
+   ignorepointer 1
+   position 356 5
+   size 320 20
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.788 0.788 0.816 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 15
+   "text halign" left
+   "text valign" center
+   priority 3
+  }
+
+  // Праворуч -- де людина: поруч, у Зоні, чи взагалі немає.
+  TextWidgetClass RowWhere {
+   visible 1
+   ignorepointer 1
+   position 693 5
+   size 304 20
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.549 0.549 0.576 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 13
+   "text halign" right
+   "text valign" center
+   priority 3
+  }
+
+  // Другий рядок: звання, посада, мітки. Дрібним і приглушеним -- це
+  // подробиці, а не заголовок.
+  TextWidgetClass RowDetail {
+   visible 1
+   ignorepointer 1
+   position 18 25
+   size 979 16
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.549 0.549 0.576 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 13
+   "text halign" left
+   "text valign" center
+   priority 3
+  }
+
+  // Розділювач унизу. Саме він робить із стовпчика тексту список.
+  PanelWidgetClass RowLine {
+   visible 1
+   ignorepointer 1
+   color 1 1 1 0.07
+   position 18 43
+   size 979 1
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 2
+   style rover_sim_colorable
+  }
+ }
+}

@@ -903,6 +903,14 @@ class OZ_PDA_Base : ItemBase
 
         AddAction(ActionTurnOnWhileInHands);
         AddAction(ActionTurnOffWhileInHands);
+
+        // Відкриття -- ДІЄЮ, а не клавішею. Прилад треба взяти в руки й
+        // застосувати, як будь-яку річ у Зоні; хоткей робив із нього вкладку
+        // браузера, яку видно з рюкзака.
+        AddAction(OZ_ActionOpenPda);
+
+        // Обмін контактами -- теж дія, і теж по цілі: наводиш на людину.
+        AddAction(OZ_ActionExchangeContacts);
         AddAction(OZ_ActionOpenPda);
     }
 }

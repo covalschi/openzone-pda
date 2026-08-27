@@ -28,15 +28,10 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         if (op == "hide")
             return Hide(json, sender, ok, error);
 
-        if (op == "friend_ask")
-            return FriendAsk(json, sender, ok, error);
-
-        if (op == "friend_accept")
-            return FriendAnswer(json, sender, true, ok, error);
-
-        if (op == "friend_decline")
-            return FriendAnswer(json, sender, false, ok, error);
-
+        // ask / accept / decline ЗНЯТІ. Обмін відбувається в світі -- дією з
+        // приладом у руках, наведеною на людину (OZ_ActionExchangeContacts),
+        // -- і сервер більше не приймає їх навіть від підробленого запиту:
+        // операції, якої немає в інтерфейсі, не мусить бути й на межі.
         if (op == "friend_drop")
             return FriendDrop(json, sender, ok, error);
 
@@ -89,29 +84,26 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
                     continue;
             }
 
-            string rel  = RelOf(me, uid, isFriend);
-            bool   near = !isMe && WithinReach(mePlayer, players[i]);
-
-            // КОГО ВЗАГАЛІ ВИДНО. Раніше -- усіх, хто в Зоні, і це було
-            // рівнозначно списку гравців сервера в кожного в кишені.
+            // У СПИСКУ -- ТІЛЬКИ КОНТАКТИ. І ти сам.
             //
-            // Тепер видно того, з ким тебе ЩОСЬ ПОВ'ЯЗУЄ:
-            //   -- себе;
-            //   -- контакт;
-            //   -- незавершений обмін (він попросив або я попросив) -- інакше
-            //      відповісти не було б кому;
-            //   -- того, хто ПРОСТО ЗАРАЗ поруч, бо ти його бачиш очима, і
-            //      без цього познайомитись не було б де.
+            // Ані чужих, ані тих, хто поруч, ані незавершених обмінів. Обмін
+            // тепер відбувається В СВІТІ -- дією з приладом у руках, наведеною
+            // на людину, -- тож у меню йому нема чого показувати: ні кого
+            // додавати, ні кого приймати.
             //
-            // Решта Зони -- ні. Незнайомець за кілометр у списку не з'явиться.
-            if (!isMe && !isFriend && rel == "" && !near)
+            // Раніше тут був увесь сервер, і це робило КПК списком гравців у
+            // кожного в кишені. Тепер це записник: у ньому ті, з ким ти справді
+            // зустрічався.
+            if (!isMe && !isFriend)
                 continue;
 
             OZ_ContactEntry e = new OZ_ContactEntry();
             e.Name = id.GetName();
             e.Me   = isMe;
-            e.Rel  = rel;
-            e.Near = near;
+            e.Rel  = "";
+            if (isFriend)
+                e.Rel = "friend";
+            e.Near = !isMe && WithinReach(mePlayer, players[i]);
 
             // РОЛІ -- ЛИШЕ СВОЇМ. Хто він у Зоні -- фракція, звання, посади,
             // мітки -- видно тільки собі й контактам.
@@ -120,9 +112,13 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
             // незнайомець, і дізнатись, що перед тобою борговець, можна лише
             // обмінявшись КПК. Список гравців з фракціями всіх присутніх
             // перетворював би розвідку на читання екрана.
+            e.Online = true;
+
             if (isMe || isFriend)
             {
-                e.Faction = OZ_Factions.NameOf(OZ_Factions.Of(PlayerBase.Cast(players[i]), uid));
+                string fid   = OZ_Factions.Of(PlayerBase.Cast(players[i]), uid);
+                e.Faction      = OZ_Factions.NameOf(fid);
+                e.FactionColor = OZ_Factions.ColorARGB(fid);
                 Identify(e, uid, myFaction);
             }
 
@@ -133,8 +129,9 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         // 2. Друзі та ті, хто просився, але зараз офлайн. Пропустити їх
         //    означало б втратити вхідний запит: попросили й вийшли -- і
         //    відповісти нема кому.
+        // Лише контакти. Вхідні пропозиції в списку більше не з'являються --
+        // на них не відповідають з меню.
         AddOffline(list, me.Friends, seen, "friend", myFaction);
-        AddOffline(list, me.FriendReq, seen, "got", myFaction);
 
         return Serialise(list, ok, error);
     }
@@ -165,7 +162,9 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
             {
                 // Гравця немає на сервері -- постачальника питати нема про
                 // кого, лишається останнє відоме з його файлу.
-                e.Faction = OZ_Factions.NameOf(OZ_Factions.Of(null, uid));
+                string ofid    = OZ_Factions.Of(null, uid);
+                e.Faction      = OZ_Factions.NameOf(ofid);
+                e.FactionColor = OZ_Factions.ColorARGB(ofid);
                 Identify(e, uid, myFaction);
             }
 
@@ -266,140 +265,6 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
 
     // -------------------------------------------------------------- друзі
 
-    // Попросити в друзі того, хто стоїть поруч.
-    private string FriendAsk(string json, PlayerIdentity sender, out bool ok, out string error)
-    {
-        ok = false;
-
-        OZ_NameRef r;
-        string err;
-        if (!JsonFileLoader<OZ_NameRef>.LoadData(json, r, err))
-        {
-            error = "STR_OZ_ERR_INTERNAL";
-            return "";
-        }
-
-        PlayerBase mePlayer = OZ_PdaLookup.PlayerOf(sender);
-        string myUid = sender.GetPlainId();
-
-        // Шукаємо серед ТИХ, ХТО ПОРУЧ, а не серед усіх: ім'я з клієнта --
-        // це прохання, а не адреса, і сервер сам вирішує, кому воно
-        // належить. Далекого однофамільця так не зачепиш.
-        PlayerIdentity target = NearbyByName(mePlayer, r.Name, myUid);
-        if (!target)
-        {
-            error = "STR_OZ_ERR_NOT_NEAR";
-            return "";
-        }
-
-        string theirUid = target.GetPlainId();
-
-        OZ_PlayerData me = OZ_PlayerStore.Load(myUid);
-        if (Has(me.Friends, theirUid))
-        {
-            error = "STR_OZ_ERR_ALREADY_FRIEND";
-            return "";
-        }
-
-        OZ_PlayerData them = OZ_PlayerStore.Load(theirUid);
-
-        // Він уже просився до мене -- тоді це не новий запит, а згода.
-        // Змушувати двох людей, які обидва натиснули «додати», ще й шукати
-        // кнопку «прийняти», було б безглуздо.
-        if (Has(me.FriendReq, theirUid))
-            return FriendAnswerUid(myUid, theirUid, true, ok, error);
-
-        if (Has(them.FriendReq, myUid))
-        {
-            error = "STR_OZ_ERR_ALREADY_ASKED";
-            return "";
-        }
-
-        them.FriendReq.Insert(myUid);
-        OZ_PlayerStore.MarkDirty(theirUid);
-
-        ok = true;
-        error = "";
-        return "";
-    }
-
-    private string FriendAnswer(string json, PlayerIdentity sender, bool accept, out bool ok, out string error)
-    {
-        ok = false;
-
-        OZ_NameRef r;
-        string err;
-        if (!JsonFileLoader<OZ_NameRef>.LoadData(json, r, err))
-        {
-            error = "STR_OZ_ERR_INTERNAL";
-            return "";
-        }
-
-        string myUid = sender.GetPlainId();
-        OZ_PlayerData me = OZ_PlayerStore.Load(myUid);
-
-        string theirUid = UidByNameIn(me.FriendReq, r.Name);
-        if (theirUid == "")
-        {
-            error = "STR_OZ_ERR_NO_REQUEST";
-            return "";
-        }
-
-        // ПРИЙНЯТИ -- ЛИШЕ ВІЧ-НА-ВІЧ, так само як і попросити.
-        //
-        // Обмін контактами -- це дія в світі, а не в меню: двоє стоять поруч і
-        // тикають приладами. Дозволити приймати здалеку означало б, що
-        // половина обміну відбувається в світі, а половина -- ні, і тоді
-        // перша половина взагалі ні на що не впливає.
-        //
-        // ВІДМОВИТИ можна звідки завгодно: сказати «ні» -- не зустріч, і
-        // тримати людину заручником чужого запиту, поки вона його не
-        // наздожене, було б знущанням.
-        if (accept)
-        {
-            PlayerBase mePlayer = OZ_PdaLookup.PlayerOf(sender);
-            if (!NearbyUid(mePlayer, theirUid, myUid))
-            {
-                error = "STR_OZ_ERR_NOT_NEAR";
-                return "";
-            }
-        }
-
-        return FriendAnswerUid(myUid, theirUid, accept, ok, error);
-    }
-
-    private string FriendAnswerUid(string myUid, string theirUid, bool accept, out bool ok, out string error)
-    {
-        ok = false;
-
-        OZ_PlayerData me = OZ_PlayerStore.Load(myUid);
-
-        int at = me.FriendReq.Find(theirUid);
-        if (at != -1)
-            me.FriendReq.Remove(at);
-
-        if (accept)
-        {
-            // Записуємо ОБОМ. Дружба взаємна, і однобокий запис зробив би її
-            // видимою лише з одного боку -- тобто зламаною там, де це
-            // найважче помітити.
-            if (!Has(me.Friends, theirUid))
-                me.Friends.Insert(theirUid);
-
-            OZ_PlayerData them = OZ_PlayerStore.Load(theirUid);
-            if (!Has(them.Friends, myUid))
-                them.Friends.Insert(myUid);
-
-            OZ_PlayerStore.MarkDirty(theirUid);
-        }
-
-        OZ_PlayerStore.MarkDirty(myUid);
-
-        ok = true;
-        error = "";
-        return "";
-    }
-
     private string FriendDrop(string json, PlayerIdentity sender, out bool ok, out string error)
     {
         ok = false;
@@ -440,56 +305,6 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         ok = true;
         error = "";
         return "";
-    }
-
-    // Чи цей конкретний гравець зараз у межах простягнутої руки.
-    //
-    // За uid, а не за іменем: тут ми вже знаємо, кого шукаємо, і двоє
-    // однакових імен не мусять вирішувати, кого приймають у друзі.
-    private bool NearbyUid(PlayerBase me, string uid, string myUid)
-    {
-        if (!me || uid == "" || uid == myUid)
-            return false;
-
-        array<Man> players = new array<Man>();
-        GetGame().GetPlayers(players);
-
-        for (int i = 0; i < players.Count(); i++)
-        {
-            if (!players[i])
-                continue;
-
-            PlayerIdentity id = players[i].GetIdentity();
-            if (!id)
-                continue;
-            if (id.GetPlainId() != uid)
-                continue;
-
-            return WithinReach(me, players[i]);
-        }
-        return false;
-    }
-
-    private PlayerIdentity NearbyByName(PlayerBase me, string name, string myUid)
-    {
-        if (!me || name == "")
-            return null;
-
-        array<Man> players = new array<Man>();
-        GetGame().GetPlayers(players);
-
-        for (int i = 0; i < players.Count(); i++)
-        {
-            PlayerIdentity id = players[i].GetIdentity();
-            if (!id || id.GetPlainId() == myUid)
-                continue;
-            if (id.GetName() != name)
-                continue;
-            if (!WithinReach(me, players[i]))
-                continue;
-            return id;
-        }
-        return null;
     }
 
     private string UidByNameIn(array<string> uids, string name)

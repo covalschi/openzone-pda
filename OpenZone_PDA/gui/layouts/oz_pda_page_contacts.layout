@@ -221,7 +221,13 @@ FrameWidgetClass OZ_PageContacts {
 
   // "colums" -- саме так, з одним m: помилка в самому рушії, і виправляти її
   // тут означає лишитись без колонок. "lines" обов'язковий.
-  TextListboxWidgetClass ContactList {
+  // Список -- ПРОКРУТКА з рядками, а не TextListbox.
+  //
+  // Listbox уміє лише один рядок тексту на запис, і все про людину доводилось
+  // зліплювати комами. Тепер кожен контакт -- власна розкладка
+  // (oz_pda_contact_row.layout), і в ній є де показати ім'я, фракцію її
+  // кольором, звання, посаду й мітки, не перетворюючи це на речення.
+  ScrollWidgetClass ContactScroll {
    visible 1
    position 16 46
    size 1013 322
@@ -229,30 +235,30 @@ FrameWidgetClass OZ_PageContacts {
    vexactpos 1
    hexactsize 1
    vexactsize 1
-   // style NoScrollBar -- інакше рушій малює власну смугу прокрутки, і вона
-   // яскраво-червона поверх графітового екрана. Так само робить ваниль там,
-   // де смуга не потрібна (debug/day_z_debug_remoteinfo.layout).
-   style NoScrollBar
-   "title visible" 0
-   // Рядок ОБИРАЄТЬСЯ: усі дії тут стосуються когось конкретного, і без
-   // видимого виділення гравець не знає, кого саме зачепить кнопка.
-   "highlight row" 1
-   // Формат ванільний: "назва;ширина у відсотках;". Одна колонка на весь ряд.
-   colums "text;100;"
-   lines 14
-   font "gui/fonts/sdf_MetronBook24"
-   "exact text" 1
-   "exact text size" 15
-   color 0.788 0.788 0.816 1
+   "Scrollbar V" 1
    priority 2
+   {
+    WrapSpacerWidgetClass ContactList {
+     visible 1
+     position 0 0
+     size 1013 322
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 0
+    }
+   }
   }
 
+  // Ширина 235 різала кожну підказку довшу за чотири слова -- «No contacts
+  // yet. Meet somebody an». Кнопка «сховатись» починається на 861, тож до неї
+  // є 820 одиниць, і жодної причини тулитись у чверть із них немає.
   TextWidgetClass ContactsHint {
    visible 1
    ignorepointer 1
    halign left_ref
    position 16 380
-   size 235 24
+   size 820 24
    hexactpos 1
    vexactpos 1
    hexactsize 1

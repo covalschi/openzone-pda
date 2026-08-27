@@ -11,7 +11,11 @@
 
 class OZ_PdaPageContacts : OZ_PdaPage
 {
-    private TextListboxWidget m_List;
+    private Widget m_List;
+
+    // Створені рядки. Тримаємо самі, бо їх треба знімати перед кожною
+    // перемальовкою: спейсер не прибирає за нами.
+    private ref array<Widget> m_Rows;
     private ButtonWidget m_BtnHide;
     private ButtonWidget m_BtnFriend;
     private ButtonWidget m_BtnDecline;
@@ -30,7 +34,8 @@ class OZ_PdaPageContacts : OZ_PdaPage
 
     override void OnBuilt()
     {
-        m_List       = TextListboxWidget.Cast(Wgt("ContactList"));
+        m_List       = Wgt("ContactList");
+        m_Rows       = new array<Widget>();
         m_BtnHide    = ButtonWidget.Cast(Wgt("BtnHide"));
         m_BtnFriend  = ButtonWidget.Cast(Wgt("BtnFriend"));
         m_BtnDecline = ButtonWidget.Cast(Wgt("BtnDecline"));
@@ -59,23 +64,27 @@ class OZ_PdaPageContacts : OZ_PdaPage
         OZ_Rpc.Request(OZ_PdaConst.PAGE_CONTACTS, "list", "{}");
     }
 
+    // Рядок обирається КЛІКОМ по самому рядку: віджетів-списків тут більше
+    // немає, кожен контакт -- окрема кнопка.
     override bool OnPageItemSelected(Widget w, int row)
     {
-        if (!m_List || w != m_List)
-            return false;
-
-        m_Picked = "";
-        if (m_Data && m_Data.Entries && row >= 0 && row < m_Data.Entries.Count())
-            m_Picked = m_Data.Entries[row].Name;
-
-        PaintButtons();
-        return true;
+        return false;
     }
 
     override bool OnPageClick(Widget w, int x, int y)
     {
         if (!w)
             return false;
+
+        // Клік по рядку контакту. Тримаємо ІМ'Я, а не номер: список
+        // перебудовується щосекунди, і номер після цього вказував би вже на
+        // іншу людину.
+        if (w.GetUserID() == 2)
+        {
+            m_Picked = w.GetName();
+            Paint();
+            return true;
+        }
 
         if (w == m_BtnHide)
         {
@@ -99,11 +108,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
             return true;
         }
 
-        if (w == m_BtnDecline)
-        {
-            Send("friend_decline");
-            return true;
-        }
+
 
         if (w == m_BtnMsg)
         {
@@ -144,33 +149,11 @@ class OZ_PdaPageContacts : OZ_PdaPage
             return;
         }
 
-        if (e.Rel == "friend")
-        {
-            Send("friend_drop");
-            return;
-        }
-
-        if (e.Rel == "got")
-        {
-            Send("friend_accept");
-            return;
-        }
-
-        if (e.Rel == "sent")
-        {
-            // Чекаємо відповіді -- натискати нема чого, і сказати про це
-            // краще, ніж мовчки нічого не зробити.
-            SetHintSticky("ContactsHint", "#STR_OZ_FRIEND_WAIT");
-            return;
-        }
-
-        if (!e.Near)
-        {
-            SetHintSticky("ContactsHint", "#STR_OZ_FRIEND_TOOFAR");
-            return;
-        }
-
-        Send("friend_ask");
+        // ДОДАТИ звідси більше не можна -- обмін відбувається в світі, дією з
+        // приладом у руках. Тут лишилось те, для чого меню й потрібне:
+        // ПРИБРАТИ зі свого записника. Викреслити людину зі списку -- твоя
+        // особиста справа, і зустрічатись заради неї ні з ким не треба.
+        Send("friend_drop");
     }
 
     private void Send(string op)
@@ -222,8 +205,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
             // яку гейт живлення й прибирає.
             m_Data = null;
             m_Picked = "";
-            if (m_List)
-                m_List.ClearItems();
+            Clear();
             SetText("ContactsHeader", "");
             PaintButtons();
 
@@ -245,8 +227,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
 
     private void Paint()
     {
-        if (m_List)
-            m_List.ClearItems();
+        Clear();
 
         int n = m_Data.Entries.Count();
 
@@ -259,61 +240,17 @@ class OZ_PdaPageContacts : OZ_PdaPage
         else
             SetText("BtnHideText", "#STR_OZ_CONTACTS_HIDE_ME");
 
-        int keep = -1;
+        bool stillThere = false;
 
         for (int i = 0; i < n; i++)
         {
-            OZ_ContactEntry e = m_Data.Entries[i];
-
-            string row = e.Name;
-            if (e.Me)
-            {
-                row += "   (you";
-                // Невидимка бачить сама себе -- і мусить бачити, що вона
-                // невидимка, інакше стан не видно ніде.
-                if (m_Data.MeHidden)
-                    row += ", hidden";
-                row += ")";
-            }
-            else
-            {
-                string tag = Tag(e);
-                if (tag != "")
-                    row += "   " + tag;
-            }
-
-            // Фракція йде після всього: вона про людину, а не про стосунки, і
-            // плутати ці два повідомлення в одному рядку не варто.
-            if (e.Faction != "")
-            {
-                row += "   - " + e.Faction;
-
-                // Посада -- ОДРАЗУ за фракцією, бо вона всередині неї. Лідер
-                // на екрані був не відрізнити від новачка, і гравцеві не було
-                // до кого підійти у справі фракції.
-                if (e.Posts && e.Posts.Count() > 0)
-                    row += ", " + Join(e.Posts);
-            }
-
-            // Звання й мітки -- про людину саму, тому після фракції й окремо.
-            if (e.Rank != "")
-                row += "   " + e.Rank;
-
-            if (e.Traits && e.Traits.Count() > 0)
-                row += "   [" + Join(e.Traits) + "]";
-
-            if (m_List)
-                m_List.AddItem(row, NULL, 0);
-
-            if (e.Name == m_Picked)
-                keep = i;
+            if (Row(m_Data.Entries[i]))
+                stillThere = true;
         }
 
         // Виділення переживає перемальовку. Інакше вибір злітав би щосекунди,
         // і натиснути кнопку встигав би лише дуже швидкий гравець.
-        if (m_List && keep != -1)
-            m_List.SelectRow(keep);
-        else if (keep == -1)
+        if (!stillThere)
             m_Picked = "";
 
         PaintButtons();
@@ -335,6 +272,126 @@ class OZ_PdaPageContacts : OZ_PdaPage
             SetHint("ContactsHint", "");
     }
 
+    // Знімаємо попередні рядки. Спейсер за нами не прибирає, і без цього
+    // список ріс би щосекунди.
+    private void Clear()
+    {
+        for (int i = 0; i < m_Rows.Count(); i++)
+        {
+            if (m_Rows[i])
+                m_Rows[i].Unlink();
+        }
+        m_Rows.Clear();
+    }
+
+    // Один рядок. Повертає true, якщо це саме обраний -- так виділення
+    // переживає перемальовку без пошуку по індексах, яких більше немає.
+    private bool Row(OZ_ContactEntry e)
+    {
+        if (!m_List)
+            return false;
+
+        Widget w = GetGame().GetWorkspace().CreateWidgets("OpenZone_PDA/gui/layouts/oz_pda_contact_row.layout", m_List);
+        if (!w)
+            return false;
+
+        w.SetName(e.Name);
+        w.SetUserID(2);   // так OnClick відрізняє рядок від вкладки й кнопок
+        m_Rows.Insert(w);
+
+        bool picked = (e.Name == m_Picked);
+
+        Widget pick = w.FindAnyWidget("RowPick");
+        if (pick)
+            pick.Show(picked);
+
+        // Ім'я, і одразу поруч -- чи це ти.
+        string name = e.Name;
+        if (e.Me)
+        {
+            name += "   (you";
+            // Невидимка бачить сама себе -- і мусить бачити, що вона
+            // невидимка, інакше стан не видно ніде.
+            if (m_Data.MeHidden)
+                name += ", hidden";
+            name += ")";
+        }
+        Put(w, "RowName", name);
+
+        // Фракція -- СВОЇМ КОЛЬОРОМ, тим самим, що й смужка ліворуч. Колір
+        // приходить із реєстру бота, тож підпис і колір з одного джерела.
+        Put(w, "RowFaction", e.Faction);
+
+        Widget chip = w.FindAnyWidget("RowChip");
+        if (e.Faction != "")
+        {
+            TextWidget ft = TextWidget.Cast(w.FindAnyWidget("RowFaction"));
+            if (ft)
+                ft.SetColor(e.FactionColor);
+
+            if (chip)
+            {
+                chip.SetColor(e.FactionColor);
+                chip.Show(true);
+            }
+        }
+        else if (chip)
+        {
+            chip.Show(false);
+        }
+
+        Put(w, "RowWhere", Where(e));
+        Put(w, "RowDetail", Detail(e));
+
+        return picked;
+    }
+
+    // Де людина: поруч, у Зоні, чи взагалі немає. Одна відповідь, не три
+    // прапорці в різних кутах.
+    private string Where(OZ_ContactEntry e)
+    {
+        if (e.Me)
+            return "";
+        if (e.Near)
+            return "#STR_OZ_TAG_NEAR";
+        if (e.Online)
+            return "#STR_OZ_TAG_INZONE";
+        return "#STR_OZ_TAG_AWAY";
+    }
+
+    // Другий рядок: посада, звання, мітки -- через розділювач, а не через
+    // коми. Кома читається як перелік однорідного; це три різні речі.
+    private string Detail(OZ_ContactEntry e)
+    {
+        string line;
+
+        if (e.Posts && e.Posts.Count() > 0)
+            line = Join(e.Posts);
+
+        if (e.Rank != "")
+        {
+            if (line != "")
+                line += "   ·   ";
+            line += e.Rank;
+        }
+
+        if (e.Traits && e.Traits.Count() > 0)
+        {
+            if (line != "")
+                line += "   ·   ";
+            line += Join(e.Traits);
+        }
+
+        return line;
+    }
+
+    private void Put(Widget row, string name, string value)
+    {
+        TextWidget t = TextWidget.Cast(row.FindAnyWidget(name));
+        if (t)
+            t.SetText(value);
+    }
+
     private string Join(array<string> what)
     {
         string line = "";
@@ -345,19 +402,6 @@ class OZ_PdaPageContacts : OZ_PdaPage
             line += what[i];
         }
         return line;
-    }
-
-    private string Tag(OZ_ContactEntry e)
-    {
-        if (e.Rel == "friend")
-            return "[#STR_OZ_TAG_FRIEND]";
-        if (e.Rel == "got")
-            return "[#STR_OZ_TAG_GOT]";
-        if (e.Rel == "sent")
-            return "[#STR_OZ_TAG_SENT]";
-        if (e.Near)
-            return "[#STR_OZ_TAG_NEAR]";
-        return "";
     }
 
     private void PaintButtons()
@@ -379,23 +423,15 @@ class OZ_PdaPageContacts : OZ_PdaPage
 
         // Писати можна лише контакту -- саме тому контакти й заводять.
         if (m_BtnMsg)
-            m_BtnMsg.Show(e.Rel == "friend");
+            m_BtnMsg.Show(true);
 
+        // Одна дія на обраному: прибрати. Додавання пішло в світ, а кнопка,
+        // якої немає, чесніша за кнопку, яка завжди відмовляє.
         if (m_BtnFriend)
             m_BtnFriend.Show(true);
+        SetText("BtnFriendText", "#STR_OZ_CONTACT_DROP");
 
-        if (e.Rel == "friend")
-            SetText("BtnFriendText", "#STR_OZ_FRIEND_DROP");
-        else if (e.Rel == "got")
-            SetText("BtnFriendText", "#STR_OZ_FRIEND_ACCEPT");
-        else if (e.Rel == "sent")
-            SetText("BtnFriendText", "#STR_OZ_FRIEND_WAIT");
-        else
-            SetText("BtnFriendText", "#STR_OZ_FRIEND_ASK");
-
-        // Відмовити можна лише на запит.
         if (m_BtnDecline)
-            m_BtnDecline.Show(e.Rel == "got");
-        SetText("BtnDeclineText", "#STR_OZ_FRIEND_DECLINE");
+            m_BtnDecline.Show(false);
     }
 }
