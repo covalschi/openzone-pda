@@ -33,6 +33,9 @@ modded class MissionGameplay
     {
         super.OnInit();
 
+        // Ядро розносить команди «покажи це»; нас цікавить одна.
+        OZ_Show.OnShow.Insert(OZ_PdaShow);
+
         OZ_PdaMenuGate.Bind(new OZ_PdaMenuOpener());
         OZ_PdaInput.Init();
     }
@@ -51,6 +54,12 @@ modded class MissionGameplay
     {
         OZ_PdaHud.Teardown();
         super.OnMissionFinish();
+    }
+
+    void OZ_PdaShow(string what)
+    {
+        if (what == "pda")
+            OZ_PdaMenuGate.Open();
     }
 
     override UIScriptedMenu CreateScriptedMenu(int id)

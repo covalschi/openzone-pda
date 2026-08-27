@@ -53,9 +53,22 @@ class OZ_ActionOpenPda : ActionSingleUseBase
     // OnStartClient спрацьовує на Start() (actionbase.c:758), одразу й
     // безумовно. Це саме те, чого хоче дія, яка нічого не змінює у світі, а
     // лише показує вікно.
-    override void OnStartClient(ActionData action_data)
+    // ВІДКРИВАЄ СЕРВЕР, і це не примха.
+    //
+    // Клієнтська половина дії тут не спрацьовує: ActionManager кличе Start()
+    // на клієнті лише після підтвердження сервера й лише якщо пройде повторна
+    // перевірка умов (actionmanagerclient.c:70-85). Виміряно на стенді --
+    // серверна половина відпрацьовувала щоразу (список дій скидався), меню не
+    // відкривалось жодного. Ані OnStartClient, ані OnExecuteClient.
+    //
+    // Замість того щоб гадати про чужий скінченний автомат, беремо канал,
+    // який доведено працює весь час: сервер зробив -- сервер і сказав.
+    override void OnExecuteServer(ActionData action_data)
     {
-        OZ_PdaMenuGate.Open();
+        if (!action_data.m_Player)
+            return;
+
+        OZ_Rpc.Show(action_data.m_Player.GetIdentity(), "pda");
     }
 }
 
