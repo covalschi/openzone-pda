@@ -1,0 +1,99 @@
+// Одне повідомлення в розмові. Створюється скриптом по одному на репліку.
+//
+// Замість "> Ім'я:  текст" одним рядком у TextListbox. Listbox не переносить
+// -- довге повідомлення просто обрізалось на середині слова, і прочитати його
+// не було де.
+//
+// Тепер ім'я окремо, текст під ним і З ПЕРЕНОСОМ, а своє повідомлення
+// позначене смужкою ліворуч і кольором імені. Стрілка «>» більше не потрібна:
+// вона була обхідним шляхом там, де в списку не було чим фарбувати.
+
+PanelWidgetClass OZ_ChatLine {
+ visible 1
+ ignorepointer 1
+ position 0 0
+ size 697 58
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ color 0 0 0 0
+ style rover_sim_colorable
+ {
+  // Смужка «це сказав я». У чужих невидима.
+  PanelWidgetClass LineMine {
+   visible 0
+   ignorepointer 1
+   color 1 0.478 0.102 1
+   position 0 4
+   size 2 50
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 2
+   style rover_sim_colorable
+  }
+
+  TextWidgetClass LineWho {
+   visible 1
+   ignorepointer 1
+   position 12 2
+   size 470 18
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.788 0.788 0.816 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 13
+   "text halign" left
+   "text valign" center
+   priority 3
+  }
+
+  TextWidgetClass LineAt {
+   visible 1
+   ignorepointer 1
+   position 491 2
+   size 194 18
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.463 0.463 0.494 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 12
+   "text halign" right
+   "text valign" center
+   priority 3
+  }
+
+  // ПЕРЕНОСИТЬСЯ. Саме заради цього рядок і став окремою розкладкою:
+  // MultilineTextWidget із wrap -- єдине, що вміє це в Enforce, і в
+  // TextListbox його не покласти.
+  MultilineTextWidgetClass LineText {
+   visible 1
+   ignorepointer 1
+   position 12 20
+   size 673 36
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.918 0.918 0.933 1
+   text ""
+   wrap 1
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 14
+   "text halign" left
+   "text valign" top
+   priority 3
+  }
+ }
+}

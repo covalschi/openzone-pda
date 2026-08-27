@@ -15,7 +15,8 @@ FrameWidgetClass OZ_PageChat {
  vexactsize 1
  {
   // --- ліва колонка: з ким ---
-  TextListboxWidgetClass ChatList {
+  // Бесіди -- ПРОКРУТКА з рядками, як і все інше в цьому КПК.
+  ScrollWidgetClass ChatListScroll {
    visible 1
    position 16 12
    size 300 356
@@ -23,16 +24,19 @@ FrameWidgetClass OZ_PageChat {
    vexactpos 1
    hexactsize 1
    vexactsize 1
-   style NoScrollBar
-   "title visible" 0
-   "highlight row" 1
-   colums "text;100;"
-   lines 14
-   font "gui/fonts/sdf_MetronBook24"
-   "exact text" 1
-   "exact text size" 13
-   color 0.788 0.788 0.816 1
+   "Scrollbar V" 1
    priority 2
+   {
+    WrapSpacerWidgetClass ChatList {
+     visible 1
+     position 0 0
+     size 300 356
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 0
+    }
+   }
   }
 
   // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
@@ -147,7 +151,12 @@ FrameWidgetClass OZ_PageChat {
    }
   }
 
-  TextListboxWidgetClass ChatLines {
+  // Розмова -- ПРОКРУТКА з рядками, а не TextListbox.
+  //
+  // Listbox не переносить рядок: довге повідомлення обрізалось на середині
+  // слова й прочитати його було ніде. Тепер кожна репліка -- власна розкладка
+  // (oz_pda_chat_line.layout) з MultilineTextWidget усередині.
+  ScrollWidgetClass ChatScroll {
    visible 1
    position 332 42
    size 697 296
@@ -155,16 +164,19 @@ FrameWidgetClass OZ_PageChat {
    vexactpos 1
    hexactsize 1
    vexactsize 1
-   style NoScrollBar
-   "title visible" 0
-   "highlight row" 0
-   colums "text;100;"
-   lines 12
-   font "gui/fonts/sdf_MetronBook24"
-   "exact text" 1
-   "exact text size" 13
-   color 0.788 0.788 0.816 1
+   "Scrollbar V" 1
    priority 2
+   {
+    WrapSpacerWidgetClass ChatLines {
+     visible 1
+     position 0 0
+     size 697 296
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 0
+    }
+   }
   }
 
   // Рядок вводу. EditBoxWidget ловить клавіатуру сам -- так само, як на

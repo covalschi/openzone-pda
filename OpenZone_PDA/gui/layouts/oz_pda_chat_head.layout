@@ -1,0 +1,83 @@
+// Одна розмова в лівій колонці. Створюється скриптом по одній на бесіду.
+//
+// Ім'я КОРЕНЯ скрипт перезаписує на id розмови (SetName), а SetUserID(3)
+// відрізняє її від вкладки (1) і від контакту (2) в OnClick.
+
+ButtonWidgetClass OZ_ChatHead {
+ visible 1
+ position 0 0
+ size 300 40
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ text ""
+ {
+  PanelWidgetClass HeadPick {
+   visible 0
+   ignorepointer 1
+   color 1 0.478 0.102 0.10
+   position 0 0
+   size 300 40
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 1
+   style rover_sim_colorable
+  }
+
+  TextWidgetClass HeadTitle {
+   visible 1
+   ignorepointer 1
+   position 12 3
+   size 276 20
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.918 0.918 0.933 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 14
+   "text halign" left
+   "text valign" center
+   priority 3
+  }
+
+  // Групова чи особиста -- дрібним під назвою, а не значком у самій назві.
+  TextWidgetClass HeadKind {
+   visible 1
+   ignorepointer 1
+   position 12 21
+   size 276 15
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.463 0.463 0.494 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 12
+   "text halign" left
+   "text valign" center
+   priority 3
+  }
+
+  PanelWidgetClass HeadLine {
+   visible 1
+   ignorepointer 1
+   color 1 1 1 0.07
+   position 12 39
+   size 276 1
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 2
+   style rover_sim_colorable
+  }
+ }
+}

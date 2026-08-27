@@ -14,8 +14,14 @@
 
 class OZ_PdaPageChat : OZ_PdaPage
 {
-    private TextListboxWidget m_List;
-    private TextListboxWidget m_Lines;
+    private Widget m_List;
+
+    // Створені рядки бесід.
+    private ref array<Widget> m_HeadRows;
+    private Widget m_Lines;
+
+    // Створені рядки розмови. Знімаємо самі -- спейсер за нами не прибирає.
+    private ref array<Widget> m_LineRows;
     private EditBoxWidget m_Input;
     private ButtonWidget m_BtnSend;
     private ButtonWidget m_BtnGroup;
@@ -43,8 +49,10 @@ class OZ_PdaPageChat : OZ_PdaPage
 
     override void OnBuilt()
     {
-        m_List      = TextListboxWidget.Cast(Wgt("ChatList"));
-        m_Lines     = TextListboxWidget.Cast(Wgt("ChatLines"));
+        m_List      = Wgt("ChatList");
+        m_HeadRows  = new array<Widget>();
+        m_Lines     = Wgt("ChatLines");
+        m_LineRows  = new array<Widget>();
         m_Input     = EditBoxWidget.Cast(Wgt("ChatInput"));
         m_BtnSend   = ButtonWidget.Cast(Wgt("BtnSend"));
         m_BtnGroup  = ButtonWidget.Cast(Wgt("BtnGroup"));
@@ -92,23 +100,27 @@ class OZ_PdaPageChat : OZ_PdaPage
             OZ_Rpc.Request(OZ_PdaConst.PAGE_CHAT, "open", json);
     }
 
+    // Бесіда обирається КЛІКОМ по самому рядку: списків-віджетів тут більше
+    // немає, кожна розмова -- окрема кнопка.
     override bool OnPageItemSelected(Widget w, int row)
     {
-        if (!m_List || w != m_List)
-            return false;
-
-        if (m_Heads && m_Heads.Items && row >= 0 && row < m_Heads.Items.Count())
-        {
-            m_OpenId = m_Heads.Items[row].Id;
-            RequestOpen();
-        }
-        return true;
+        return false;
     }
 
     override bool OnPageClick(Widget w, int x, int y)
     {
         if (!w)
             return false;
+
+        // Клік по рядку бесіди. Тримаємо id, а не номер: список
+        // перебудовується, і номер після цього вказував би на іншу розмову.
+        if (w.GetUserID() == 3)
+        {
+            m_OpenId = w.GetName();
+            RequestOpen();
+            PaintList();
+            return true;
+        }
 
         if (w == m_BtnSend)
         {
@@ -280,34 +292,121 @@ class OZ_PdaPageChat : OZ_PdaPage
         }
     }
 
+    // Одна бесіда в лівій колонці.
+    private void HeadRow(OZ_ChatHead h)
+    {
+        if (!m_List)
+            return;
+
+        Widget w = GetGame().GetWorkspace().CreateWidgets("OpenZone_PDA/gui/layouts/oz_pda_chat_head.layout", m_List);
+        if (!w)
+            return;
+
+        w.SetName(h.Id);
+        w.SetUserID(3);   // так OnClick відрізняє бесіду від вкладки й контакту
+        m_HeadRows.Insert(w);
+
+        Widget pick = w.FindAnyWidget("HeadPick");
+        if (pick)
+            pick.Show(h.Id == m_OpenId);
+
+        TextWidget t = TextWidget.Cast(w.FindAnyWidget("HeadTitle"));
+        if (t)
+            t.SetText(h.Title);
+
+        TextWidget k = TextWidget.Cast(w.FindAnyWidget("HeadKind"));
+        if (k)
+        {
+            if (h.Kind == "group")
+                k.SetText("#STR_OZ_CHAT_GROUP");
+            else
+                k.SetText("");
+        }
+    }
+
+    // Час у людському вигляді.
+    //
+    // На проводі -- ISO UTC ("2026-08-25T16:47:37.079Z"), і саме так воно й
+    // світилось на екрані: двадцять чотири символи машинного часу поруч із
+    // трьома словами повідомлення. Для розмови треба знати день і годину, а
+    // не мілісекунди й часовий пояс.
+    //
+    // Ріжемо за позиціями, а не парсимо: формат задає міст, він сталий, і
+    // розбирати дату заради двох чисел -- це чотири нових способи помилитись.
+    private string Stamp(string iso)
+    {
+        if (iso.Length() < 16)
+            return iso;
+
+        string day   = iso.Substring(8, 2);
+        string month = iso.Substring(5, 2);
+        string time  = iso.Substring(11, 5);
+
+        return day + "." + month + "  " + time;
+    }
+
+    private void ClearLines()
+    {
+        for (int i = 0; i < m_LineRows.Count(); i++)
+        {
+            if (m_LineRows[i])
+                m_LineRows[i].Unlink();
+        }
+        m_LineRows.Clear();
+    }
+
+    // Одна репліка.
+    //
+    // Своє позначаємо СМУЖКОЮ й кольором імені, а не стрілкою «>». Стрілка
+    // була обхідним шляхом: у TextListbox не було чим фарбувати окремий
+    // рядок, і напрям доводилось малювати символом усередині тексту.
+    private void LineRow(OZ_ChatLine l)
+    {
+        if (!m_Lines)
+            return;
+
+        Widget w = GetGame().GetWorkspace().CreateWidgets("OpenZone_PDA/gui/layouts/oz_pda_chat_line.layout", m_Lines);
+        if (!w)
+            return;
+
+        m_LineRows.Insert(w);
+
+        Widget mine = w.FindAnyWidget("LineMine");
+        if (mine)
+            mine.Show(l.Mine);
+
+        TextWidget who = TextWidget.Cast(w.FindAnyWidget("LineWho"));
+        if (who)
+        {
+            who.SetText(l.Who);
+            if (l.Mine)
+                who.SetColor(ARGB(255, 255, 122, 26));
+        }
+
+        TextWidget at = TextWidget.Cast(w.FindAnyWidget("LineAt"));
+        if (at)
+            at.SetText(Stamp(l.At));
+
+        TextWidget text = TextWidget.Cast(w.FindAnyWidget("LineText"));
+        if (text)
+            text.SetText(l.Text);
+    }
+
     private void PaintList()
     {
-        if (m_List)
-            m_List.ClearItems();
+        for (int c = 0; c < m_HeadRows.Count(); c++)
+        {
+            if (m_HeadRows[c])
+                m_HeadRows[c].Unlink();
+        }
+        m_HeadRows.Clear();
 
         int n = 0;
         if (m_Heads && m_Heads.Items)
             n = m_Heads.Items.Count();
 
-        int keep = -1;
-
         for (int i = 0; i < n; i++)
-        {
-            OZ_ChatHead h = m_Heads.Items[i];
-
-            string row = h.Title;
-            if (h.Kind == "group")
-                row += "  [#STR_OZ_CHAT_GROUP]";
-
-            if (m_List)
-                m_List.AddItem(row, NULL, 0);
-
-            if (h.Id == m_OpenId)
-                keep = i;
-        }
-
-        if (m_List && keep != -1)
-            m_List.SelectRow(keep);
+            HeadRow(m_Heads.Items[i]);
 
         if (n == 0)
             SetText("ChatHint", "#STR_OZ_CHAT_NONE");
@@ -315,8 +414,7 @@ class OZ_PdaPageChat : OZ_PdaPage
 
     private void PaintView()
     {
-        if (m_Lines)
-            m_Lines.ClearItems();
+        ClearLines();
 
         if (!m_View)
             return;
@@ -333,27 +431,7 @@ class OZ_PdaPageChat : OZ_PdaPage
             n = m_View.Lines.Count();
 
         for (int i = 0; i < n; i++)
-        {
-            OZ_ChatLine l = m_View.Lines[i];
-
-            // Своє повідомлення позначаємо стрілкою, а не кольором: колір у
-            // списку задається стилем, і сперечатися з ним заради двох станів
-            // не варто.
-            string row = "  ";
-            if (l.Mine)
-                row = "> ";
-
-            row += l.Who;
-            row += ":  " + l.Text;
-
-            if (m_Lines)
-                m_Lines.AddItem(row, NULL, 0);
-        }
-
-        // Останнє видно завжди: розмова, що показує початок, а не кінець, --
-        // це розмова, у якій щоразу треба прокручувати.
-        if (m_Lines && n > 0)
-            m_Lines.EnsureVisible(n - 1);
+            LineRow(m_View.Lines[i]);
 
         if (n == 0)
             SetText("ChatHint", "#STR_OZ_CHAT_EMPTY");
