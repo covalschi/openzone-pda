@@ -526,10 +526,6 @@ class OZ_PdaModule : CF_ModuleWorld
         // приймачів однаково питається на кожну пачку.
         OZ_BridgeClient.Subscribe("chat", new OZ_ChatSink());
 
-        // Каталог записок -- наш, і створити його мусимо ми: ядро про нього
-        // не знає.
-        OZ_NoteStore.EnsureDir();
-
         OZ_PdaProfiles.ServerLoad();
         OZ_PdaHardware.ServerLoad();
         OZ_Factions.ServerLoad();

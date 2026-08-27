@@ -1,132 +1,185 @@
 // Сторінка «Записки»: приватні нотатки гравця.
 //
-// СЕРВЕРНІ, один файл на Steam64 у $profile:OpenZone\notes\. Не CF_ModStorage
-// і не сам пристрій: записки належать АКАУНТУ, а не тілу й не залізу. Загинув
-// -- записки лишились; загубив КПК -- лишились; знайшов чужий КПК -- своїх
-// записок там немає, бо їх там ніколи й не було.
+// ДЖЕРЕЛО ПРАВДИ -- DISCORD, як і в чату. Рішення власника 2026-08-28:
+// перша редакція тримала записки файлом сервера, і це БУЛО самовільним
+// відступом від спеки тонкого клієнта -- спека прописувала переїзд, а
+// сесія лишила файли, не спитавши. Повертаємо як задумано.
 //
-// Це ж і відповідь на «а якщо КПК украли»: красти нема чого. Записки
-// прив'язані до того, хто дивиться, а не до того, що в руках.
+// У бота на гравця -- приватний тред «Нотатник», одна записка -- одне
+// повідомлення. Правок повідомлень немає взагалі: зберегти -- це видалити
+// старе повідомлення й запостити нове (пост вебхука ще й безкоштовно
+// розархівує тред). Id записки карбує МІСТ і він СВІЙ, не id повідомлення:
+// id повідомлення змінюється кожним перепостом.
 //
-// Дзеркало в тред Discord приїде разом із мостом і нічого тут не змінить:
-// файл лишається джерелом правди, тред -- копією для читання з телефона.
+// Наслідки, які сторінка вже вміє з часів чату:
+//   -- без моста записок НЕМАЄ. Це те саме правило, що для розмов:
+//      немає Discord -- немає функціональності;
+//   -- відповіді ВІДКЛАДЕНІ (OZ_Const.DEFER): RestContext асинхронний,
+//      Handle() відповідає сам, коли міст озветься.
+//
+// Записки належать АКАУНТУ, а не пристрою: міст віддає їх по Uid, тож
+// чужий КПК своїх записок не покаже, а смерть і згублений прилад їх не
+// чіпають. Відсічка пристрою на них не поширюється -- і не мусить.
 
-class OZ_NoteBook : OZ_ConfigBase
+// ------------------------------------------------------- листи до моста
+
+class OZ_NotesAskList
 {
+    string Uid;
+}
+
+class OZ_NotesAskSave
+{
+    string Uid;
+    string Id;
+    string Title;
+    string Body;
+    string Name;
+}
+
+class OZ_NotesAskDelete
+{
+    string Uid;
+    string Id;
+}
+
+// Відмова моста. Код машинний, рядок для гравця добирає клієнт.
+class OZ_NotesFail
+{
+    string Error;
+
+    static string KeyOf(string code)
+    {
+        if (code == "no_note")
+            return "STR_OZ_ERR_NO_NOTE";
+        if (code == "notes_full")
+            return "STR_OZ_ERR_NOTES_FULL";
+        if (code == "discord_down")
+            return "STR_OZ_ERR_NO_BRIDGE";
+        return "STR_OZ_ERR_INTERNAL";
+    }
+}
+
+// Книжка цілком -- формат відповіді list. Той самий клас читала стара
+// файлова версія, тож клієнт розбирає обидві епохи одним описом.
+class OZ_NoteBook
+{
+    int Version = 1;
     ref array<ref OZ_Note> Notes;
 
-    override int LatestVersion()
+    void OZ_NoteBook()
     {
-        return 1;
-    }
-
-    override void LoadDefaults()
-    {
-        Version = LatestVersion();
-        Notes   = new array<ref OZ_Note>();
-    }
-
-    override void Validate(out int warnings)
-    {
-        warnings = 0;
-        if (!Notes)
-            Notes = new array<ref OZ_Note>();
+        Notes = new array<ref OZ_Note>();
     }
 }
 
-class OZ_NoteStore
+// ------------------------------------------------------------ відповіді
+
+class OZ_NotesReply : OZ_BridgeReply
 {
-    // Каталог НАШ, а не ядра: ядро не знає ні про які записки, і додавати
-    // туди константу заради одного мода означало б, що наступний мод додасть
-    // ще одну.
-    static const string DIR = OZ_Const.PROFILE_DIR + "\\notes";
+    protected string m_Uid;
+    protected string m_Op;
+    protected bool   m_Body;
 
-    private static string PathOf(string uid)
+    void OZ_NotesReply(string uid, string op, bool body)
     {
-        return DIR + "\\" + uid + ".json";
+        m_Uid  = uid;
+        m_Op   = op;
+        m_Body = body;
     }
 
-    // MakeDirectory не рекурсивний, але $profile:OpenZone ядро вже створило
-    // до нас: його ServerLoad іде першим.
-    static void EnsureDir()
+    override void OnBody(string json)
     {
-        OZ_Json.EnsureDir(DIR);
+        PlayerIdentity to = OZ_ChatWho.Online(m_Uid);
+        if (!to)
+            return;
+
+        OZ_NotesFail fail;
+        string err;
+        if (JsonFileLoader<OZ_NotesFail>.LoadData(json, fail, err) && fail && fail.Error != "")
+        {
+            OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_NOTES, m_Op, false, "", OZ_NotesFail.KeyOf(fail.Error));
+            return;
+        }
+
+        string body = "";
+        if (m_Body)
+            body = json;
+
+        OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_NOTES, m_Op, true, body, "");
     }
 
-    static OZ_NoteBook Load(string uid)
+    override void OnFail(int code)
     {
-        OZ_NoteBook b = new OZ_NoteBook();
-        // backup=false з тієї ж причини, що й у сховищі гравців: файлів
-        // сотні, і копія кожного перед кожним записом зробила б Backup
-        // непридатним для пошуку.
-        OZ_ConfigLoader<OZ_NoteBook>.Load(PathOf(uid), "notes_" + uid, b, false);
-        return b;
-    }
+        PlayerIdentity to = OZ_ChatWho.Online(m_Uid);
+        if (!to)
+            return;
 
-    static void Save(string uid, OZ_NoteBook b)
-    {
-        OZ_ConfigLoader<OZ_NoteBook>.Save(PathOf(uid), "notes_" + uid, b, false);
+        OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_NOTES, m_Op, false, "", "STR_OZ_ERR_NO_BRIDGE");
     }
 }
+
+// -------------------------------------------------------------- сторінка
 
 class OZ_PdaHandlerNotes : OZ_PageHandler
 {
-    // Ідентифікатор нової записки. Час у секундах був би зіткненням при двох
-    // записках в одну секунду, тому до нього додається лічильник.
-    private static int s_Seq = 0;
-
     override string Handle(string op, string json, PlayerIdentity sender, out bool ok, out string error)
     {
-        ok = false;
+        ok    = false;
         error = "STR_OZ_ERR_UNKNOWN_OP";
 
+        if (!OZ_BridgeClient.IsRunning())
+        {
+            error = "STR_OZ_ERR_NO_BRIDGE";
+            return "";
+        }
+
         if (op == "list")
-            return List(sender, ok, error);
+            return List(sender, error);
 
         if (op == "save")
-            return Save(json, sender, ok, error);
+            return Save(json, sender, error);
 
         if (op == "delete")
-            return Delete(json, sender, ok, error);
+            return Delete(json, sender, error);
 
         return "";
     }
 
-    private string List(PlayerIdentity sender, out bool ok, out string error)
+    private string List(PlayerIdentity sender, out string error)
     {
-        ok = false;
+        string uid = sender.GetPlainId();
 
-        OZ_NoteBook b = OZ_NoteStore.Load(sender.GetPlainId());
+        OZ_NotesAskList a = new OZ_NotesAskList();
+        a.Uid = uid;
 
-        string outJson;
+        string letter;
         string err;
-        if (!JsonFileLoader<OZ_NoteBook>.MakeData(b, outJson, err, false))
+        if (!JsonFileLoader<OZ_NotesAskList>.MakeData(a, letter, err, false))
         {
-            OZ_Log.Error("notes serialise failed: " + err);
+            OZ_Log.Error("notes: cannot build the letter: " + err);
             error = "STR_OZ_ERR_INTERNAL";
             return "";
         }
 
-        ok = true;
-        error = "";
-        return outJson;
+        OZ_BridgeClient.Call("v1/notes/list", letter, new OZ_NotesReply(uid, "list", true));
+
+        error = OZ_Const.DEFER;
+        return "";
     }
 
-    private string Save(string json, PlayerIdentity sender, out bool ok, out string error)
+    private string Save(string json, PlayerIdentity sender, out string error)
     {
-        ok = false;
-
         OZ_Note incoming;
         string err;
-        if (!JsonFileLoader<OZ_Note>.LoadData(json, incoming, err))
+        if (!JsonFileLoader<OZ_Note>.LoadData(json, incoming, err) || !incoming)
         {
             error = "STR_OZ_ERR_INTERNAL";
             return "";
         }
 
-        // Текст із клієнта чиститься ЗАВЖДИ. Він поїде в JSON, а згодом у
-        // тред Discord -- обидва мають свої керівні символи, і жоден не має
-        // приймати те, що набрав хтось інший, як є.
+        // Текст із клієнта чиститься ЗАВЖДИ: він поїде в JSON і в Discord,
+        // обидва мають керівні символи, і жоден не має приймати чуже як є.
         incoming.Title = MiscGameplayFunctions.SanitizeString(incoming.Title);
         incoming.Body  = MiscGameplayFunctions.SanitizeString(incoming.Body);
 
@@ -136,104 +189,57 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
             incoming.Body = incoming.Body.Substring(0, OZ_PdaConst.NOTE_BODY_MAX);
 
         string uid = sender.GetPlainId();
-        OZ_NoteBook b = OZ_NoteStore.Load(uid);
 
-        if (incoming.Id == "")
+        OZ_NotesAskSave a = new OZ_NotesAskSave();
+        a.Uid   = uid;
+        a.Id    = incoming.Id;
+        a.Title = incoming.Title;
+        a.Body  = incoming.Body;
+        a.Name  = sender.GetName();
+
+        string letter;
+        if (!JsonFileLoader<OZ_NotesAskSave>.MakeData(a, letter, err, false))
         {
-            if (b.Notes.Count() >= OZ_PdaConst.NOTES_MAX)
-            {
-                error = "STR_OZ_ERR_NOTES_FULL";
-                return "";
-            }
-
-            s_Seq++;
-            incoming.Id = OZ_Time.NowUtc();
-            incoming.Id += "#" + s_Seq.ToString();
-            incoming.CreatedAt = OZ_Time.NowUtc();
-            incoming.EditedAt  = incoming.CreatedAt;
-            b.Notes.Insert(incoming);
-        }
-        else
-        {
-            int at = IndexOf(b, incoming.Id);
-            if (at == -1)
-            {
-                // Записки з таким id немає. Це не привід створити нову: клієнт
-                // просив ЗМІНИТИ щось конкретне, і мовчазна підміна дії -- це
-                // те, що потім не знайдеш.
-                error = "STR_OZ_ERR_NO_NOTE";
-                return "";
-            }
-
-            b.Notes[at].Title    = incoming.Title;
-            b.Notes[at].Body     = incoming.Body;
-            b.Notes[at].EditedAt = OZ_Time.NowUtc();
-        }
-
-        OZ_NoteStore.Save(uid, b);
-
-        // Id ЇДЕ НАЗАД, і без цього створення записки було одноразовим у
-        // найгіршому сенсі: сервер карбував id, лишав його собі й повертав
-        // порожнє тіло, тож клієнт так і тримав m_CurrentId порожнім. Друге
-        // натискання «Зберегти» знову йшло гілкою створення -- і чернетка,
-        // збережена двічі, ставала двома записками, аж до стелі в 50.
-        OZ_NoteRef saved = new OZ_NoteRef();
-        saved.Id = incoming.Id;
-
-        string refJson;
-        if (!JsonFileLoader<OZ_NoteRef>.MakeData(saved, refJson, err, false))
-        {
-            // Записка ВЖЕ на диску: провалилась відповідь, а не збереження.
-            // Кажемо про це чесно, а не вдаємо невдале збереження -- інакше
-            // гравець натисне ще раз і отримає дубль, тобто рівно те, від
-            // чого цей блок і рятує.
-            OZ_Log.Error("note saved but id serialise failed: " + err);
+            OZ_Log.Error("notes: cannot build the letter: " + err);
             error = "STR_OZ_ERR_INTERNAL";
             return "";
         }
 
-        ok = true;
-        error = "";
-        return refJson;
+        // Відповідь моста -- { Id } -- їде клієнтові ЯК Є: саме її чекає
+        // сторінка, щоб друге «Зберегти» правило записку, а не плодило дубль.
+        OZ_BridgeClient.Call("v1/notes/save", letter, new OZ_NotesReply(uid, "save", true));
+
+        error = OZ_Const.DEFER;
+        return "";
     }
 
-    private string Delete(string json, PlayerIdentity sender, out bool ok, out string error)
+    private string Delete(string json, PlayerIdentity sender, out string error)
     {
-        ok = false;
-
         OZ_NoteRef r;
         string err;
-        if (!JsonFileLoader<OZ_NoteRef>.LoadData(json, r, err))
+        if (!JsonFileLoader<OZ_NoteRef>.LoadData(json, r, err) || !r)
         {
             error = "STR_OZ_ERR_INTERNAL";
             return "";
         }
 
         string uid = sender.GetPlainId();
-        OZ_NoteBook b = OZ_NoteStore.Load(uid);
 
-        int at = IndexOf(b, r.Id);
-        if (at == -1)
+        OZ_NotesAskDelete a = new OZ_NotesAskDelete();
+        a.Uid = uid;
+        a.Id  = r.Id;
+
+        string letter;
+        if (!JsonFileLoader<OZ_NotesAskDelete>.MakeData(a, letter, err, false))
         {
-            error = "STR_OZ_ERR_NO_NOTE";
+            OZ_Log.Error("notes: cannot build the letter: " + err);
+            error = "STR_OZ_ERR_INTERNAL";
             return "";
         }
 
-        b.Notes.Remove(at);
-        OZ_NoteStore.Save(uid, b);
+        OZ_BridgeClient.Call("v1/notes/delete", letter, new OZ_NotesReply(uid, "delete", false));
 
-        ok = true;
-        error = "";
+        error = OZ_Const.DEFER;
         return "";
-    }
-
-    private int IndexOf(OZ_NoteBook b, string id)
-    {
-        for (int i = 0; i < b.Notes.Count(); i++)
-        {
-            if (b.Notes[i].Id == id)
-                return i;
-        }
-        return -1;
     }
 }
