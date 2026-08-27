@@ -274,7 +274,22 @@ class OZ_PdaPageContacts : OZ_PdaPage
             // Фракція йде після всього: вона про людину, а не про стосунки, і
             // плутати ці два повідомлення в одному рядку не варто.
             if (e.Faction != "")
+            {
                 row += "   - " + e.Faction;
+
+                // Посада -- ОДРАЗУ за фракцією, бо вона всередині неї. Лідер
+                // на екрані був не відрізнити від новачка, і гравцеві не було
+                // до кого підійти у справі фракції.
+                if (e.Posts && e.Posts.Count() > 0)
+                    row += ", " + Join(e.Posts);
+            }
+
+            // Звання й мітки -- про людину саму, тому після фракції й окремо.
+            if (e.Rank != "")
+                row += "   " + e.Rank;
+
+            if (e.Traits && e.Traits.Count() > 0)
+                row += "   [" + Join(e.Traits) + "]";
 
             if (m_List)
                 m_List.AddItem(row, NULL, 0);
@@ -292,12 +307,33 @@ class OZ_PdaPageContacts : OZ_PdaPage
 
         PaintButtons();
 
+        // Протухла проекція має ПЕРЕВАГУ над усіма іншими підказками: усе, що
+        // намальовано вище, може бути застарілим, і мовчати про це гірше, ніж
+        // не сказати про самотність.
+        if (m_Data.Stale)
+        {
+            SetHint("ContactsHint", "#STR_OZ_CONTACTS_STALE");
+            return;
+        }
+
         // Один у списку -- це ти сам, і сказати про це треба словами: порожній
         // на вигляд список і сервер без людей -- різні речі.
         if (n <= 1)
             SetHint("ContactsHint", "#STR_OZ_CONTACTS_ALONE");
         else
             SetHint("ContactsHint", "");
+    }
+
+    private string Join(array<string> what)
+    {
+        string line = "";
+        for (int i = 0; i < what.Count(); i++)
+        {
+            if (i > 0)
+                line += ", ";
+            line += what[i];
+        }
+        return line;
     }
 
     private string Tag(OZ_ContactEntry e)

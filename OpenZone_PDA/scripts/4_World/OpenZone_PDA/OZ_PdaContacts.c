@@ -56,6 +56,15 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         OZ_ContactList list = new OZ_ContactList();
         list.MeHidden = me.PresenceHidden;
 
+        // Ким я є сам -- вирішує СЕРВЕР. Клієнт про свої права не здогадується
+        // і намалює лідерські кнопки рівно тоді, коли йому тут скажуть.
+        string myFaction = OZ_Factions.OfUid(myUid);
+        list.MeLeader    = myFaction != "" && OZ_Roles.IsLeader(myUid);
+
+        // Міст давно мовчить -- скажемо про це, а не покажемо порожнє. Гравець
+        // мусить розуміти, що бачить останнє відоме, а не «нікого немає».
+        list.Stale = OZ_Identity.Stale();
+
         // 1. Ті, хто на сервері. Себе -- завжди, друга -- завжди, решту --
         //    якщо не сховались.
         array<Man> players = new array<Man>();
@@ -86,6 +95,7 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
             e.Rel     = RelOf(me, uid, isFriend);
             e.Near    = !isMe && WithinReach(mePlayer, players[i]);
             e.Faction = OZ_Factions.NameOf(OZ_Factions.Of(PlayerBase.Cast(players[i]), uid));
+            Identify(e, uid, myFaction);
 
             list.Entries.Insert(e);
             seen.Insert(uid);
@@ -94,13 +104,13 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         // 2. Друзі та ті, хто просився, але зараз офлайн. Пропустити їх
         //    означало б втратити вхідний запит: попросили й вийшли -- і
         //    відповісти нема кому.
-        AddOffline(list, me.Friends, seen, "friend");
-        AddOffline(list, me.FriendReq, seen, "got");
+        AddOffline(list, me.Friends, seen, "friend", myFaction);
+        AddOffline(list, me.FriendReq, seen, "got", myFaction);
 
         return Serialise(list, ok, error);
     }
 
-    private void AddOffline(OZ_ContactList list, array<string> uids, array<string> seen, string rel)
+    private void AddOffline(OZ_ContactList list, array<string> uids, array<string> seen, string rel, string myFaction)
     {
         for (int i = 0; uids && i < uids.Count(); i++)
         {
@@ -122,10 +132,27 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
             // Гравця немає на сервері -- постачальника питати нема про кого,
             // лишається останнє відоме з його файлу.
             e.Faction = OZ_Factions.NameOf(OZ_Factions.Of(null, uid));
+            Identify(e, uid, myFaction);
 
             list.Entries.Insert(e);
             seen.Insert(uid);
         }
+    }
+
+    // Три осі, яких у списку не було: звання, посади, мітки.
+    //
+    // Уже людськими назвами -- слаг на екрані читається як помилка, а
+    // перекладати його мусив би кожен, хто малює.
+    private void Identify(OZ_ContactEntry e, string uid, string myFaction)
+    {
+        e.Rank = OZ_Identity.RankName(uid);
+
+        OZ_Identity.PostNames(uid, e.Posts);
+        OZ_Identity.TraitNames(uid, e.Traits);
+
+        // Порівнюємо СЛАГИ, а не назви: дві однакові назви -- право адміна, і
+        // це не привід зарахувати чужого в свої.
+        e.Mine = myFaction != "" && OZ_Factions.OfUid(uid) == myFaction;
     }
 
     private string RelOf(OZ_PlayerData me, string uid, bool isFriend)
