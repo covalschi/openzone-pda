@@ -15,6 +15,9 @@ class OZ_PdaPageMap : OZ_PdaPage
     private EditBoxWidget m_Name;
     private ButtonWidget m_BtnMark;
 
+    // Адмінська кнопка: поставити зону спавна там, де я стою.
+    private ButtonWidget m_BtnSpawn;
+
     private ref OZ_MapState m_State;
     private bool m_Centred = false;
 
@@ -42,6 +45,13 @@ class OZ_PdaPageMap : OZ_PdaPage
         m_BtnMode   = ButtonWidget.Cast(Wgt("BtnMode"));
         m_Name      = EditBoxWidget.Cast(Wgt("MarkName"));
         m_BtnMark   = ButtonWidget.Cast(Wgt("BtnMark"));
+        m_BtnSpawn  = ButtonWidget.Cast(Wgt("BtnSpawn"));
+
+        // Малюється лише адмінові. Прапорець приходить із сервера тим самим
+        // конвертом синхронізації -- клієнт про свої права не здогадується.
+        if (m_BtnSpawn)
+            m_BtnSpawn.Show(OZ_ClientState.IsAdmin());
+        SetText("BtnSpawnText", "#STR_OZ_MAP_SETSPAWN");
 
         SetText("BtnCenterText", "#STR_OZ_MAP_CENTER");
     }
@@ -82,6 +92,30 @@ class OZ_PdaPageMap : OZ_PdaPage
         if (w == m_Map)
         {
             MapClick(x, y);
+            return true;
+        }
+
+        // ЗОНА СПАВНА -- ТУТ, ДЕ Я СТОЮ.
+        //
+        // Карта -- саме та сторінка: вона про місця. І координат набирати не
+        // треба, бо єдиний надійний спосіб дізнатись, куди ставити зону, --
+        // прийти туди й подивитись; тепер прийти туди й ЛИШИТИСЬ.
+        //
+        // Слаг ролі береться з того ж поля, що й назва мітки: одне поле, дві
+        // дії, і обидві -- «назви щось і натисни». Порожнє поле означає
+        // ЗАПАСНУ зону, "*" -- стейджинґ.
+        if (w == m_BtnSpawn)
+        {
+            string slug = "-";
+            if (m_Name)
+            {
+                string typed = m_Name.GetText();
+                if (typed != "")
+                    slug = typed;
+            }
+
+            OZ_Rpc.RoleRequest(OZ_RoleOp.SPAWN_HERE, "", slug);
+            SetHintSticky("MapHint", "#STR_OZ_MAP_SPAWN_SENT");
             return true;
         }
 

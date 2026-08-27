@@ -185,6 +185,50 @@ FrameWidgetClass OZ_PageMap {
     }
    }
   }
+  ButtonWidgetClass BtnSpawn {
+   visible 1
+   position 876 378
+   size 160 26
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnSpawnBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 160 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnSpawnText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 160 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
 
   // Смуга під картою. Своя підкладка ОБОВ'ЯЗКОВА: сірий текст поверх білої
   // карти не читається, а карта біла майже всюди.
