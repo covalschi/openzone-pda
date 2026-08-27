@@ -15,6 +15,40 @@ class OZ_PdaPageMap : OZ_PdaPage
     private EditBoxWidget m_Name;
     private ButtonWidget m_BtnMark;
 
+    // Список міток: перемикач, панель, рядки, поля редагування.
+    private ButtonWidget           m_BtnList;
+    private Widget                 m_Panel;
+    private Widget                 m_Rows;
+    private EditBoxWidget          m_EditName;
+    private MultilineEditBoxWidget m_EditDesc;
+    private ButtonWidget           m_BtnSave;
+    private ButtonWidget           m_BtnDel;
+    private ref array<Widget>      m_RowWgts;
+    private bool                   m_ListOpen = false;
+
+    // Підпис списку з минулого разу. Стан приходить ЩОСЕКУНДИ (маячки
+    // рухаються), а перебудовувати рядки щосекунди означало б скидати скрол
+    // і мигтіти. Рядки перебудовуються лише коли мітки СПРАВДІ змінились.
+    private string m_RowsSig = "~";
+
+    // Точка натискання миші. Клік приходить після відпускання, і лише
+    // порівнявши його з точкою натискання можна відрізнити «клацнув» від
+    // «потягнув карту». -1 означає «натискання не бачили» -- тоді кліку
+    // віримо (програмний клік не має натискання, а обманювати нема кому).
+    private int m_DownX = -1;
+    private int m_DownY = -1;
+    private static const int DRAG_SLOP_PX = 12;
+
+    // Повний розмір карти, знятий у момент побудови. Одиниці SetSize --
+    // ті самі, що поверне GetSize, і саме тому міряємо, а не вписуємо
+    // константу з розкладки: розкладка масштабується.
+    private float m_MapW;
+    private float m_MapH;
+
+    // Скільки ширини лишається карті при відкритому списку: 773 з 1045
+    // одиниць розкладки -- панель починається на 785.
+    private static const float LIST_SQUEEZE = 0.7397;
+
     // Адмінська кнопка: поставити зону спавна там, де я стою.
     private ButtonWidget m_BtnSpawn;
     private ButtonWidget m_BtnSpawnOff;
@@ -24,9 +58,6 @@ class OZ_PdaPageMap : OZ_PdaPage
 
     // Обрана мітка. Порожньо -- нічого не обрано, і кнопка ставить нову.
     private string m_PickedId = "";
-
-    // Куди поставити наступну мітку. Заповнюється кліком по порожньому місцю.
-    private string m_PendingPos = "";
 
     // Ванільні іконки: своя й чужа мітки мусять відрізнятись з першого
     // погляду, і кольором тут не обійтись -- на карті кольорів і так вистачає.
@@ -59,6 +90,33 @@ class OZ_PdaPageMap : OZ_PdaPage
         SetText("BtnSpawnOffText", "#STR_OZ_MAP_CLEARSPAWN");
 
         SetText("BtnCenterText", "#STR_OZ_MAP_CENTER");
+
+        m_BtnList  = ButtonWidget.Cast(Wgt("BtnList"));
+        if (m_Map)
+            m_Map.GetSize(m_MapW, m_MapH);
+        m_Panel    = Wgt("MarkerPanel");
+        m_Rows     = Wgt("MarkerRows");
+        m_EditName = EditBoxWidget.Cast(Wgt("MarkerName"));
+        m_EditDesc = MultilineEditBoxWidget.Cast(Wgt("MarkerDesc"));
+        m_BtnSave  = ButtonWidget.Cast(Wgt("BtnMarkSave"));
+        m_BtnDel   = ButtonWidget.Cast(Wgt("BtnMarkDel"));
+        m_RowWgts  = new array<Widget>();
+
+        SetText("BtnListText", "#STR_OZ_MAP_LIST");
+        SetText("BtnMarkSaveText", "#STR_OZ_MAP_SAVE");
+        SetText("BtnMarkDelText", "#STR_OZ_MAP_DELETE");
+    }
+
+    // Точку натискання пам'ятаємо ЛИШЕ для карти: решті віджетів вона ні до
+    // чого, а подію мусить побачити й рушій -- тому false завжди.
+    override bool OnPageMouseDown(Widget w, int x, int y)
+    {
+        if (w == m_Map)
+        {
+            m_DownX = x;
+            m_DownY = y;
+        }
+        return false;
     }
 
     override void OnSelected()
@@ -141,6 +199,54 @@ class OZ_PdaPageMap : OZ_PdaPage
             return true;
         }
 
+        if (w == m_BtnList)
+        {
+            m_ListOpen = !m_ListOpen;
+            if (m_Panel)
+                m_Panel.Show(m_ListOpen);
+
+            // Карта СТИСКАЄТЬСЯ, а не ховається під панель: MapWidget малює
+            // себе поверх усього -- і сусідів, і власних дітей, незалежно
+            // від priority. Виміряно на стенді: кнопка з priority 4 над
+            // картою не малювалась узагалі. Тож поверх карти не малює НІХТО,
+            // і місце списку звільняє сама карта.
+            if (m_Map && m_MapW > 0)
+            {
+                if (m_ListOpen)
+                    m_Map.SetSize(m_MapW * LIST_SQUEEZE, m_MapH);
+                else
+                    m_Map.SetSize(m_MapW, m_MapH);
+            }
+
+            if (m_ListOpen)
+                RebuildRows(true);
+            return true;
+        }
+
+        // Рядок списку міток. Ім'я віджета -- це Id мітки, див. RebuildRows.
+        if (w.GetUserID() == 5)
+        {
+            Pick(w.GetName());
+            return true;
+        }
+
+        if (w == m_BtnSave)
+        {
+            SendMarkerEdit();
+            return true;
+        }
+
+        if (w == m_BtnDel)
+        {
+            if (m_PickedId == "")
+            {
+                SetHintSticky("MapHint", "#STR_OZ_MAP_PICK_FIRST");
+                return true;
+            }
+            SendMarkerDelete();
+            return true;
+        }
+
         if (w == m_BtnMark)
         {
             if (m_PickedId != "")
@@ -180,8 +286,10 @@ class OZ_PdaPageMap : OZ_PdaPage
             return "friends";
         if (cur == "friends")
             return "faction";
-        if (cur == "faction")
-            return "contacts";
+        // "contacts" тут НЕМАЄ навмисно: режим обіцяє список TransponderTo,
+        // а вести той список поки нічим -- жоден код його не пише. Режим,
+        // який мовчки транслює НІКОМУ, гірший за відсутній. Повернеться
+        // разом з інтерфейсом ведення списку.
         return "off";
     }
 
@@ -191,22 +299,195 @@ class OZ_PdaPageMap : OZ_PdaPage
         if (!m_Map || !m_State)
             return;
 
+        // ПЕРЕТЯГУВАННЯ -- НЕ КЛІК. Клік приходить після відпускання, тобто
+        // й наприкінці кожного зсуву карти теж. Якби він ставив мітку, кожен
+        // зсув лишав би по мітці там, де палець відпустив. Порівнюємо з
+        // точкою натискання: зсунулись далі за поріг -- це був зсув.
+        if (m_DownX >= 0)
+        {
+            int moved = Math.AbsInt(x - m_DownX) + Math.AbsInt(y - m_DownY);
+            m_DownX = -1;
+            m_DownY = -1;
+            if (moved > DRAG_SLOP_PX)
+                return;
+        }
+
         vector at = m_Map.ScreenToMap(Vector(x, y, 0));
 
         string hit = MarkerNear(at);
         if (hit != "")
         {
-            m_PickedId = hit;
-            PaintMarkButton();
+            // Повторний клік по обраній -- зняти вибір. Інакше «нічого не
+            // обрано» не досягалося б узагалі.
+            if (hit == m_PickedId)
+                Pick("");
+            else
+                Pick(hit);
             return;
         }
 
-        // Порожнє місце -- знімаємо вибір і запам'ятовуємо точку. Ставить
-        // мітку кнопка, а не сам клік: інакше кожен зсув карти лишав би по
-        // мітці на кожному випадковому натисканні.
-        m_PickedId = "";
-        m_PendingPos = at.ToString(false);
+        // Порожнє місце -- СТАВИМО МІТКУ ТУТ, одразу. Назва з поля внизу,
+        // опис додається потім через панель. Промах коштує два кліки:
+        // обрати й видалити.
+        OZ_MapMarker m = new OZ_MapMarker();
+        m.Pos = at.ToString(false);
+        if (m_Name)
+            m.Name = m_Name.GetText();
+
+        string json;
+        string err;
+        if (JsonFileLoader<OZ_MapMarker>.MakeData(m, json, err, false))
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_MAP, "marker_add", json);
+    }
+
+    // Обрати мітку (або зняти вибір порожнім id): підсвітити на карті й у
+    // списку, заповнити поля редагування, показати карті ДЕ вона.
+    private void Pick(string id)
+    {
+        m_PickedId = id;
+
+        OZ_MapMarker m = FindMarker(id);
+        if (m)
+        {
+            if (m_EditName)
+                m_EditName.SetText(m.Name);
+            if (m_EditDesc)
+                m_EditDesc.SetText(m.Desc);
+            if (m_Map)
+                m_Map.SetMapPos(m.Pos.ToVector());
+        }
+        else
+        {
+            if (m_EditName)
+                m_EditName.SetText("");
+            if (m_EditDesc)
+                m_EditDesc.SetText("");
+        }
+
         PaintMarkButton();
+        Paint();
+        RebuildRows(true);
+    }
+
+    private OZ_MapMarker FindMarker(string id)
+    {
+        if (id == "" || !m_State || !m_State.Markers)
+            return null;
+
+        for (int i = 0; i < m_State.Markers.Count(); i++)
+        {
+            if (m_State.Markers[i].Id == id)
+                return m_State.Markers[i];
+        }
+        return null;
+    }
+
+    private void SendMarkerEdit()
+    {
+        if (m_PickedId == "")
+        {
+            SetHintSticky("MapHint", "#STR_OZ_MAP_PICK_FIRST");
+            return;
+        }
+
+        OZ_MapMarker m = new OZ_MapMarker();
+        m.Id = m_PickedId;
+        if (m_EditName)
+            m.Name = m_EditName.GetText();
+        if (m_EditDesc)
+        {
+            // GetText багаторядкового поля пише в out-параметр, а не
+            // повертає: він успадкований від іншого прото, ніж у EditBox.
+            string d;
+            m_EditDesc.GetText(d);
+            m.Desc = d;
+        }
+
+        string json;
+        string err;
+        if (JsonFileLoader<OZ_MapMarker>.MakeData(m, json, err, false))
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_MAP, "marker_edit", json);
+    }
+
+    // Перебудувати рядки списку. force -- перебудувати завжди (вибір
+    // змінився, підсвітку треба перемалювати); без force -- лише коли
+    // самі мітки змінилися, бо стан приходить щосекунди.
+    private void RebuildRows(bool force)
+    {
+        if (!m_Rows || !m_ListOpen)
+            return;
+
+        string sig = "";
+        if (m_State && m_State.Markers)
+        {
+            for (int i = 0; i < m_State.Markers.Count(); i++)
+            {
+                OZ_MapMarker mk = m_State.Markers[i];
+                sig += mk.Id + "|" + mk.Name + "|" + mk.Desc + ";";
+            }
+        }
+        sig += "@" + m_PickedId;
+
+        if (!force && sig == m_RowsSig)
+            return;
+        m_RowsSig = sig;
+
+        for (int r = 0; r < m_RowWgts.Count(); r++)
+        {
+            if (m_RowWgts[r])
+                m_RowWgts[r].Unlink();
+        }
+        m_RowWgts.Clear();
+
+        int n = 0;
+        int limit = 0;
+        if (m_State)
+        {
+            if (m_State.Markers)
+                n = m_State.Markers.Count();
+            limit = m_State.MarkerLimit;
+        }
+        SetText("MarkerHead", Widget.TranslateString("#STR_OZ_MAP_LIST") + "  " + n.ToString() + "/" + limit.ToString());
+
+        for (int k = 0; k < n; k++)
+        {
+            OZ_MapMarker mrk = m_State.Markers[k];
+
+            Widget row = GetGame().GetWorkspace().CreateWidgets("OpenZone_PDA/gui/layouts/oz_pda_marker_row.layout", m_Rows);
+            if (!row)
+                break;
+
+            // Ім'я віджета -- Id мітки: саме його читає OnClick.
+            row.SetName(mrk.Id);
+            row.SetUserID(5);
+            m_RowWgts.Insert(row);
+
+            TextWidget name = TextWidget.Cast(row.FindAnyWidget("RowName"));
+            if (name)
+            {
+                if (mrk.Name != "")
+                    name.SetText(mrk.Name);
+                else
+                    name.SetText("#STR_OZ_MAP_UNNAMED");
+            }
+
+            TextWidget where = TextWidget.Cast(row.FindAnyWidget("RowWhere"));
+            if (where)
+            {
+                vector p = mrk.Pos.ToVector();
+                int px = Math.Round(p[0]);
+                int pz = Math.Round(p[2]);
+                where.SetText(px.ToString() + " " + pz.ToString());
+            }
+
+            TextWidget desc = TextWidget.Cast(row.FindAnyWidget("RowDesc"));
+            if (desc)
+                desc.SetText(mrk.Desc);
+
+            Widget pick = row.FindAnyWidget("RowPick");
+            if (pick)
+                pick.Show(mrk.Id == m_PickedId);
+        }
     }
 
     private string MarkerNear(vector at)
@@ -231,11 +512,10 @@ class OZ_PdaPageMap : OZ_PdaPage
 
     private void SendMarkerAdd()
     {
-        // Нічого не клікнули -- ставимо ТУТ. «Позначити місце, де я стою» --
-        // найчастіша дія в Зоні, і вимагати заради неї влучити мишею в свою ж
-        // позначку було б знущанням. Клік по карті лишається уточненням.
-        string at = m_PendingPos;
-        if (at == "" && m_State)
+        // Кнопка ставить мітку ТАМ, ДЕ СТОЇШ. «Позначити місце, де я стою» --
+        // найчастіша дія в Зоні. Мітку В ІНШОМУ місці ставить клік по карті.
+        string at = "";
+        if (m_State)
             at = m_State.SelfPos;
 
         if (at == "")
@@ -284,7 +564,7 @@ class OZ_PdaPageMap : OZ_PdaPage
 
     override void OnResponse(string op, bool ok, string json, string error)
     {
-        if (op == "transponder" || op == "marker_add" || op == "marker_del")
+        if (op == "transponder" || op == "marker_add" || op == "marker_del" || op == "marker_edit")
         {
             if (!ok)
             {
@@ -294,13 +574,12 @@ class OZ_PdaPageMap : OZ_PdaPage
             {
                 // Поставили -- поле підпису чистимо, інакше наступна мітка
                 // мовчки успадкує чужу назву.
-                m_PendingPos = "";
                 if (m_Name)
                     m_Name.SetText("");
             }
             else if (op == "marker_del")
             {
-                m_PickedId = "";
+                Pick("");
             }
 
             PaintMarkButton();
@@ -377,6 +656,7 @@ class OZ_PdaPageMap : OZ_PdaPage
         }
 
         PaintMarkButton();
+        RebuildRows(false);
         SetHint("MapHint", Hint());
     }
 

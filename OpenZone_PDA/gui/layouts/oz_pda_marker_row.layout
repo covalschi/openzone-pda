@@ -1,0 +1,104 @@
+// Один рядок списку міток. Створюється скриптом по одному на мітку.
+//
+// Ім'я КОРЕНЯ скрипт перезаписує на Id мітки (SetName), а SetUserID(5)
+// відрізняє рядок мітки від вкладки (1), контакту (2) й розмови (3) в OnClick.
+
+ButtonWidgetClass OZ_MarkerRow {
+ visible 1
+ position 0 0
+ size 252 34
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ text ""
+ {
+  PanelWidgetClass RowPick {
+   visible 0
+   ignorepointer 1
+   color 1 0.478 0.102 0.14
+   position 0 0
+   size 252 34
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 1
+   style rover_sim_colorable
+  }
+
+  TextWidgetClass RowName {
+   visible 1
+   ignorepointer 1
+   position 8 1
+   size 148 16
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.918 0.918 0.933 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 13
+   "text halign" left
+   "text valign" center
+   priority 3
+  }
+
+  // Координати праворуч: по них мітку впізнають, коли назви однакові.
+  TextWidgetClass RowWhere {
+   visible 1
+   ignorepointer 1
+   position 148 2
+   size 98 14
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.463 0.463 0.494 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 11
+   "text halign" right
+   "text valign" center
+   priority 3
+  }
+
+  // Опис другим рядком, дрібним. Порожній лишається порожнім місцем --
+  // рядок однакової висоти, і список не стрибає.
+  TextWidgetClass RowDesc {
+   visible 1
+   ignorepointer 1
+   position 8 17
+   size 238 14
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.549 0.549 0.576 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 11
+   "text halign" left
+   "text valign" center
+   priority 3
+  }
+
+  PanelWidgetClass RowLine {
+   visible 1
+   ignorepointer 1
+   color 1 1 1 0.07
+   position 8 33
+   size 238 1
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 2
+   style rover_sim_colorable
+  }
+ }
+}

@@ -76,7 +76,7 @@ class OZ_ChatFail
         if (code == "not_group")
             return "STR_OZ_ERR_NOT_GROUP";
         if (code == "already_in")
-            return "STR_OZ_ERR_ALREADY_IN";
+            return "STR_OZ_ERR_GROUP_ALREADY_IN";
         return "STR_OZ_ERR_INTERNAL";
     }
 }

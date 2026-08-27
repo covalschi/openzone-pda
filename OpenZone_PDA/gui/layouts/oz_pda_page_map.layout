@@ -31,12 +31,243 @@ FrameWidgetClass OZ_PageMap {
    priority 1
   }
 
+
+  // Список міток. ПОРУЧ із картою, не поверх неї: MapWidget малює себе
+  // поверх усього -- і сусідів, і власних дітей, незалежно від priority
+  // (виміряно на стенді). Тому відкритий список СТИСКАЄ карту, а не
+  // накриває її.
+  PanelWidgetClass MarkerPanel {
+   visible 0
+   color 0.047 0.047 0.055 1
+   position 785 0
+   size 260 344
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 2
+   style rover_sim_colorable
+   {
+    TextWidgetClass MarkerHead {
+     visible 1
+     ignorepointer 1
+     position 8 6
+     size 244 16
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 12
+     "text halign" left
+     "text valign" center
+     priority 2
+    }
+
+    ScrollWidgetClass MarkerScroll {
+     visible 1
+     position 4 26
+     size 252 196
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     "Scrollbar V" 1
+     priority 2
+     {
+      WrapSpacerWidgetClass MarkerRows {
+       visible 1
+       position 0 0
+       size 252 196
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+      }
+     }
+    }
+
+    // Редагування ОБРАНОЇ мітки: назва й опис.
+    EditBoxWidgetClass MarkerName {
+     visible 1
+     position 8 230
+     size 244 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.918 0.918 0.933 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     priority 2
+    }
+
+    MultilineEditBoxWidgetClass MarkerDesc {
+     visible 1
+     position 8 256
+     size 244 48
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 12
+     priority 2
+    }
+
+    ButtonWidgetClass BtnMarkSave {
+     visible 1
+     position 8 310
+     size 118 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 2
+     {
+      PanelWidgetClass BtnMarkSaveBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 118 26
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnMarkSaveText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 118 26
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
+    ButtonWidgetClass BtnMarkDel {
+     visible 1
+     position 134 310
+     size 118 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 2
+     {
+      PanelWidgetClass BtnMarkDelBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 118 26
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnMarkDelText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 118 26
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 0.918 0.918 0.933 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+   }
+  }
+
+
+  ButtonWidgetClass BtnList {
+   visible 1
+   position 335 378
+   size 110 26
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnListBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 110 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnListText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 110 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 12
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
   // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
   // віджетів, і напис усередині зникає.
   ButtonWidgetClass BtnMode {
    visible 1
    position 16 378
-   size 232 26
+   size 175 26
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -49,7 +280,7 @@ FrameWidgetClass OZ_PageMap {
      ignorepointer 1
      color 0.145 0.145 0.161 1
      position 0 0
-     size 232 26
+     size 175 26
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -61,7 +292,7 @@ FrameWidgetClass OZ_PageMap {
      visible 1
      ignorepointer 1
      position 0 0
-     size 232 26
+     size 175 26
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -80,8 +311,8 @@ FrameWidgetClass OZ_PageMap {
 
   ButtonWidgetClass BtnCenter {
    visible 1
-   position 260 378
-   size 160 26
+   position 203 378
+   size 120 26
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -94,7 +325,7 @@ FrameWidgetClass OZ_PageMap {
      ignorepointer 1
      color 0.145 0.145 0.161 1
      position 0 0
-     size 160 26
+     size 120 26
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -106,7 +337,7 @@ FrameWidgetClass OZ_PageMap {
      visible 1
      ignorepointer 1
      position 0 0
-     size 160 26
+     size 120 26
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -127,8 +358,8 @@ FrameWidgetClass OZ_PageMap {
   // на сторінці записок, і з тієї ж причини.
   EditBoxWidgetClass MarkName {
    visible 1
-   position 432 378
-   size 260 26
+   position 457 378
+   size 200 26
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -143,8 +374,8 @@ FrameWidgetClass OZ_PageMap {
 
   ButtonWidgetClass BtnMark {
    visible 1
-   position 704 378
-   size 160 26
+   position 669 378
+   size 120 26
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -157,7 +388,7 @@ FrameWidgetClass OZ_PageMap {
      ignorepointer 1
      color 0.145 0.145 0.161 1
      position 0 0
-     size 160 26
+     size 120 26
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -169,7 +400,7 @@ FrameWidgetClass OZ_PageMap {
      visible 1
      ignorepointer 1
      position 0 0
-     size 160 26
+     size 120 26
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -187,8 +418,8 @@ FrameWidgetClass OZ_PageMap {
   }
   ButtonWidgetClass BtnSpawn {
    visible 1
-   position 876 378
-   size 160 26
+   position 801 378
+   size 110 26
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -201,7 +432,7 @@ FrameWidgetClass OZ_PageMap {
      ignorepointer 1
      color 0.145 0.145 0.161 1
      position 0 0
-     size 160 26
+     size 110 26
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -213,7 +444,7 @@ FrameWidgetClass OZ_PageMap {
      visible 1
      ignorepointer 1
      position 0 0
-     size 160 26
+     size 110 26
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -235,8 +466,8 @@ FrameWidgetClass OZ_PageMap {
   // послала. Помилково поставлена зона лишалась назавжди.
   ButtonWidgetClass BtnSpawnOff {
    visible 1
-   position 432 378
-   size 160 26
+   position 923 378
+   size 110 26
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -249,7 +480,7 @@ FrameWidgetClass OZ_PageMap {
      ignorepointer 1
      color 0.145 0.145 0.161 1
      position 0 0
-     size 160 26
+     size 110 26
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -261,7 +492,7 @@ FrameWidgetClass OZ_PageMap {
      visible 1
      ignorepointer 1
      position 0 0
-     size 160 26
+     size 110 26
      hexactpos 1
      vexactpos 1
      hexactsize 1

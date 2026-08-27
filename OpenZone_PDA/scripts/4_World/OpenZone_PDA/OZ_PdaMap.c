@@ -35,6 +35,9 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         if (op == "marker_del")
             return MarkerDel(json, sender, ok, error);
 
+        if (op == "marker_edit")
+            return MarkerEdit(json, sender, ok, error);
+
         return "";
     }
 
@@ -116,9 +119,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         }
 
         // Ім'я з клієнта чиститься завжди -- воно поїде в JSON і на карту.
-        incoming.Name = MiscGameplayFunctions.SanitizeString(incoming.Name);
-        if (incoming.Name.Length() > OZ_PdaConst.MARKER_NAME_MAX)
-            incoming.Name = incoming.Name.Substring(0, OZ_PdaConst.MARKER_NAME_MAX);
+        Scrub(incoming);
 
         // Позицію бере СЕРВЕР з того, що прислав клієнт, але межі світу
         // перевіряє сам: мітка за краєм карти -- це не мітка.
@@ -195,6 +196,74 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         ok = true;
         error = "";
         return "";
+    }
+
+    // Переназвати або переописати. Позиція навмисно НЕ редагується: мітка --
+    // це місце, і «посунути мітку» означає поставити нову там, де стоїш або
+    // куди клікнув. Інакше з'явився б спосіб виправляти координати наосліп.
+    private string MarkerEdit(string json, PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        if (!pda)
+        {
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return "";
+        }
+
+        OZ_MapMarker incoming;
+        string err;
+        if (!JsonFileLoader<OZ_MapMarker>.LoadData(json, incoming, err) || !incoming)
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        OZ_MarkerList list = LoadMarkers(pda);
+
+        OZ_MapMarker found;
+        for (int i = 0; i < list.Items.Count(); i++)
+        {
+            if (list.Items[i].Id == incoming.Id)
+            {
+                found = list.Items[i];
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            error = "STR_OZ_ERR_NO_MARKER";
+            return "";
+        }
+
+        Scrub(incoming);
+        found.Name = incoming.Name;
+        found.Desc = incoming.Desc;
+
+        if (!SaveMarkers(pda, list))
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        ok = true;
+        error = "";
+        return "";
+    }
+
+    // Текст із клієнта чиститься завжди -- він поїде в JSON, на карту й у
+    // список. Одне місце на обидва шляхи (add і edit), щоб межі не розійшлись.
+    private void Scrub(OZ_MapMarker m)
+    {
+        m.Name = MiscGameplayFunctions.SanitizeString(m.Name);
+        if (m.Name.Length() > OZ_PdaConst.MARKER_NAME_MAX)
+            m.Name = m.Name.Substring(0, OZ_PdaConst.MARKER_NAME_MAX);
+
+        m.Desc = MiscGameplayFunctions.SanitizeString(m.Desc);
+        if (m.Desc.Length() > OZ_PdaConst.MARKER_DESC_MAX)
+            m.Desc = m.Desc.Substring(0, OZ_PdaConst.MARKER_DESC_MAX);
     }
 
     private int MarkerLimit(OZ_PdaProfile prof)
@@ -376,7 +445,9 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         // Перелік режимів закритий. Чуже слово в TransponderMode згодом
         // прочитав би Broadcasts() і не впізнав -- тобто маячок мовчав би, а
         // гравець вважав би, що веде.
-        if (t.Mode != "off" && t.Mode != "public" && t.Mode != "friends" && t.Mode != "contacts" && t.Mode != "faction")
+        // "contacts" не приймається, поки список TransponderTo нічим вести:
+        // див. NextMode() на сторінці карти.
+        if (t.Mode != "off" && t.Mode != "public" && t.Mode != "friends" && t.Mode != "faction")
         {
             error = "STR_OZ_ERR_REFUSED";
             return "";

@@ -49,6 +49,21 @@ class OZ_PdaInput
         // Щоб подивитись у КПК, його тепер треба дістати в руки й застосувати
         // -- рівно як усе інше в Зоні. Відкриття живе в OZ_ActionOpenPda.
         if (GetGame().GetUIManager().FindMenu(OZ_PdaConst.MENU_PDA))
+        {
+            // НЕ ЗАКРИВАТИ, ПОКИ ГРАВЕЦЬ ДРУКУЄ. UAInput бачить сирі
+            // клавіші незалежно від фокуса UI: буква «o» в назві мітки, в
+            // записці чи в повідомленні чату закривала КПК посеред слова.
+            // Знайдено, коли надрукований опис «ammo...» закрив меню на
+            // першій же «o». Поле з фокусом означає «клавіатура зайнята
+            // текстом», і клавіша закриття мусить мовчати.
+            Widget focused = GetFocus();
+            if (focused)
+            {
+                if (EditBoxWidget.Cast(focused) || MultilineEditBoxWidget.Cast(focused))
+                    return;
+            }
+
             OZ_PdaMenuGate.Close();
+        }
     }
 }

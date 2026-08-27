@@ -63,6 +63,12 @@ modded class MissionGameplay
     // за собою.
     override void OnMissionFinish()
     {
+        // Дзеркало підписок з OnMissionStart: інвокери статичні й переживуть
+        // місію, а місія -- ні. Слухач, що пережив свою місію, отримує
+        // наступну подію вже з мертвими руками.
+        OZ_Show.OnShow.Remove(OZ_PdaShow);
+        OZ_RoleNotice.OnAnswer.Remove(OZ_PdaNotice);
+
         OZ_PdaHud.Teardown();
         super.OnMissionFinish();
     }

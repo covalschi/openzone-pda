@@ -111,6 +111,28 @@ class OZ_PdaMenu : UIScriptedMenu
         if (m_Refresh)
             m_Refresh.Stop();
 
+        // ДЕМОНТАЖ СТОРІНОК -- ТУТ, і це не прибирання заради прибирання.
+        // Сторінка контактів відписується від статичного інвокера у своєму
+        // Unlink() -- але той Unlink мусить хтось покликати. Ніхто не кликав:
+        // кожен цикл відкрити/закрити лишав живу сторінку, підписану на
+        // відповіді, з мертвими віджетами в руках. Знайшов аудит, а не краш
+        // -- крашем воно стало б у першого, хто відкриє КПК двічі й отримає
+        // відповідь на роль.
+        if (m_Pages)
+        {
+            for (int i = 0; i < m_Pages.Count(); i++)
+            {
+                OZ_PdaPage page = m_Pages.GetElement(i);
+                if (page)
+                    page.Unlink();
+            }
+            m_Pages.Clear();
+        }
+        if (m_Tabs)
+            m_Tabs.Clear();
+        m_Current = "";
+        m_Built = false;
+
         OZ_ClientState.BindListener(null);
 
         array<string> excludes = new array<string>();
@@ -837,6 +859,17 @@ class OZ_PdaMenu : UIScriptedMenu
         }
 
         return super.OnClick(w, x, y, button);
+    }
+
+    override bool OnMouseButtonDown(Widget w, int x, int y, int button)
+    {
+        if (m_Current != "" && m_Pages.Contains(m_Current))
+        {
+            if (m_Pages.Get(m_Current).OnPageMouseDown(w, x, y))
+                return true;
+        }
+
+        return super.OnMouseButtonDown(w, x, y, button);
     }
 
     override bool OnItemSelected(Widget w, int x, int y, int row, int column, int oldRow, int oldColumn)
