@@ -185,6 +185,26 @@ class OZ_CarrierView
 // живе в мості, і рахувати місце може лише той, хто спитав.
 class OZ_CarrierImportReply : OZ_BridgeReply
 {
+    // Один імпорт на гравця за раз. Дві двофазки впереміш бачили б ОДНАКОВЕ
+    // «зайнято» від моста, кожна порахувала б те саме місце і кожна слала б
+    // свій комплект листів -- книжка гравця подвоїлась би. Латч знімає
+    // БУДЬ-ЯКЕ завершення: OnBody, OnFail і тиша (OnQuiet іде в OnFail).
+    protected static ref map<string, bool> s_Busy = new map<string, bool>();
+
+    static bool Begin(string uid)
+    {
+        if (s_Busy.Contains(uid))
+            return false;
+        s_Busy.Set(uid, true);
+        return true;
+    }
+
+    static void End(string uid)
+    {
+        if (s_Busy.Contains(uid))
+            s_Busy.Remove(uid);
+    }
+
     protected string m_Uid;
     // Знімок книжки З ЧИПА, як він лежав на предметі в мить запиту: чип за
     // час дороги міг зникнути з гнізда, а імпортуємо ми не гніздо, а вміст.
@@ -198,6 +218,8 @@ class OZ_CarrierImportReply : OZ_BridgeReply
 
     override void OnBody(string json)
     {
+        End(m_Uid);
+
         PlayerIdentity to = OZ_ChatWho.Online(m_Uid);
         if (!to)
             return;
@@ -270,6 +292,8 @@ class OZ_CarrierImportReply : OZ_BridgeReply
 
     override void OnFail(int code)
     {
+        End(m_Uid);
+
         PlayerIdentity to = OZ_ChatWho.Online(m_Uid);
         if (!to)
             return;

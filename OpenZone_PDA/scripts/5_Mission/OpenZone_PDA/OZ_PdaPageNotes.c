@@ -22,6 +22,10 @@ class OZ_PdaPageNotes : OZ_PdaPage
     private ref OZ_NoteBook m_Book;
     private string m_CurrentId = "";
     private bool m_Draft = false;   // відкрито НОВУ, ще не збережену
+    // Збереження в польоті: відповідь відкладена (міст), і другий клік по
+    // SAVE до її приходу створював ДРУГУ записку -- чернетка шле Id="",
+    // а «створи» без Id міст виконує щоразу.
+    private bool m_Saving = false;
 
     override string LayoutPath()
     {
@@ -46,6 +50,11 @@ class OZ_PdaPageNotes : OZ_PdaPage
 
     override void OnSelected()
     {
+        m_Saving = false;
+        // Рушій сам дає фокус першому multiline-полю при побудові, і
+        // порожнє тіло світилось червоним фокус-стилем на всю панель.
+        SetFocus(null);
+
         Request();
     }
 
@@ -170,6 +179,9 @@ class OZ_PdaPageNotes : OZ_PdaPage
 
     private void SendSave()
     {
+        if (m_Saving)
+            return;
+
         OZ_Note n = new OZ_Note();
         n.Id = m_CurrentId;
 
@@ -197,6 +209,7 @@ class OZ_PdaPageNotes : OZ_PdaPage
         if (!JsonFileLoader<OZ_Note>.MakeData(n, json, err, false))
             return;
 
+        m_Saving = true;
         OZ_Rpc.Request(OZ_PdaConst.PAGE_NOTES, "save", json);
     }
 
@@ -213,6 +226,9 @@ class OZ_PdaPageNotes : OZ_PdaPage
 
         if (op == "save" || op == "delete")
         {
+            if (op == "save")
+                m_Saving = false;
+
             if (!ok)
             {
                 SetText("NotesHint", "#" + error);

@@ -288,6 +288,11 @@ class OZ_PdaMenu : UIScriptedMenu
         if (m_Current == pageId)
             return;
 
+        // Сторінки, якої немає, не існує й вибір: інакше поточна ховається,
+        // нова не показується, і КПК стоїть порожнім екраном.
+        if (!m_Pages.Contains(pageId))
+            return;
+
         if (m_Current != "" && m_Pages.Contains(m_Current))
         {
             m_Pages.Get(m_Current).Show(false);

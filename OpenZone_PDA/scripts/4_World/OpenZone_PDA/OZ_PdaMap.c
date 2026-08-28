@@ -98,6 +98,10 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             OZ_MarkerList parsed;
             if (JsonFileLoader<OZ_MarkerList>.LoadData(c.OZ_Payload(), parsed, err) && parsed && parsed.Items)
                 carried = parsed;
+            else
+                // Як і в нотатках: свіжий список поверх нечитного пейлоада,
+                // але зі слідом у лозі -- на чипі щось було.
+                OZ_Log.Warn("carrier: unreadable markers payload on " + c.GetType() + ", replacing (" + err + ")");
         }
 
         // Дедуп за ВМІСТОМ (назва + місце), а не за Id. Id мітки не переживає

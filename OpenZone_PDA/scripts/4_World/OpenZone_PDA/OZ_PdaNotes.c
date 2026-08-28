@@ -189,6 +189,11 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
             OZ_NoteBook parsed;
             if (JsonFileLoader<OZ_NoteBook>.LoadData(c.OZ_Payload(), parsed, err) && parsed && parsed.Notes)
                 book = parsed;
+            else
+                // Нечитний пейлоад -- перезаписуємо свіжою книжкою: рятувати
+                // там нема чого. Але МОВЧКИ губити чужі дані не можна --
+                // слід у лозі каже, що на чипі щось БУЛО.
+                OZ_Log.Warn("carrier: unreadable notes payload on " + c.GetType() + ", replacing (" + err + ")");
         }
 
         int at = -1;
@@ -262,11 +267,12 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
             return "";
         }
 
-        // Текст із клієнта чиститься ЗАВЖДИ: він поїде в JSON і в Discord,
-        // обидва мають керівні символи, і жоден не має приймати чуже як є.
-        incoming.Title = MiscGameplayFunctions.SanitizeString(incoming.Title);
-        incoming.Body  = MiscGameplayFunctions.SanitizeString(incoming.Body);
-
+        // БЕЗ ванільного SanitizeString: він -- сліпий Substring(0,512) по
+        // БАЙТАХ (miscgameplayfunctions.c:863), тобто і стелю NOTE_BODY_MAX
+        // ламає, і кирилицю ріже навпіл. Записка на 1500 байтів, що приїхала
+        // з чипа, після першого ж редагування German до 512 з битим хвостом.
+        // Наш Clip ріже по межі символу й по НАШІЙ стелі; JSON і Discord
+        // самі екранують те, що їм треба.
         incoming.Title = OZ_Text.Clip(incoming.Title, OZ_PdaConst.NOTE_TITLE_MAX);
         incoming.Body = OZ_Text.Clip(incoming.Body, OZ_PdaConst.NOTE_BODY_MAX);
 

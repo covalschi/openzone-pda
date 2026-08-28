@@ -109,6 +109,9 @@ class OZ_PdaPageDevice : OZ_PdaPage
         {
             // Редактор -- ОКРЕМЕ меню поверх світу: КПК закривається, і
             // гравець бачить екран, який розкладає, а не пристрій.
+            // Панелі мусять ІСНУВАТИ до відкриття: якщо HUD ще не був
+            // видимим цієї сесії, реєстр порожній і тягати нема чого.
+            OZ_PdaHud.EnsurePanes();
             OZ_PdaMenuGate.Close();
             GetGame().GetUIManager().EnterScriptedMenu(OZ_PdaConst.MENU_PDA_HUD, null);
             return true;
@@ -471,6 +474,9 @@ class OZ_PdaPageDevice : OZ_PdaPage
                 for (int i = 0; i < ml.Items.Count(); i++)
                 {
                     OZ_MapMarker m = ml.Items[i];
+                    // Чужий чип -- чужий JSON: масив може нести null-елементи.
+                    if (!m)
+                        continue;
                     vector at = m.Pos.ToVector();
                     int px = Math.Round(at[0]);
                     int pz = Math.Round(at[2]);
@@ -491,6 +497,8 @@ class OZ_PdaPageDevice : OZ_PdaPage
                 for (int k = 0; k < nb.Notes.Count(); k++)
                 {
                     OZ_Note n = nb.Notes[k];
+                    if (!n)
+                        continue;
                     body += n.Title;
                     if (n.Body != "")
                         body += "  -- " + OneLine(n.Body);

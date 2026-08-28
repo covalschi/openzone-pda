@@ -362,6 +362,15 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 return "";
             }
 
+            // Поки перша двофазка в дорозі, другу не пускаємо: обидві
+            // порахували б місце від того самого знімка і продублювали б
+            // книжку. Латч знімає відповідь моста, будь-яка.
+            if (!OZ_CarrierImportReply.Begin(uid))
+            {
+                error = "STR_OZ_ERR_BUSY";
+                return "";
+            }
+
             OZ_BridgeClient.Call("v1/notes/list", letter2, new OZ_CarrierImportReply(uid, c.OZ_Payload()));
             error = OZ_Const.DEFER;
             return "";
