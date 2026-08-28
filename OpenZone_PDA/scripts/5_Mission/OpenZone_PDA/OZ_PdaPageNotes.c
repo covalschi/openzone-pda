@@ -11,7 +11,9 @@
 
 class OZ_PdaPageNotes : OZ_PdaPage
 {
-    private TextListboxWidget m_List;
+    private Widget m_Canvas;
+    private ref array<Widget> m_NoteRows = new array<Widget>();
+    private int m_NotesY = 0;
     private EditBoxWidget m_Title;
     private MultilineEditBoxWidget m_Body;
     private ButtonWidget m_BtnNew;
@@ -34,7 +36,7 @@ class OZ_PdaPageNotes : OZ_PdaPage
 
     override void OnBuilt()
     {
-        m_List      = TextListboxWidget.Cast(Wgt("NoteList"));
+        m_Canvas    = Wgt("NotesCanvas");
         m_Title     = EditBoxWidget.Cast(Wgt("NoteTitle"));
         m_Body      = MultilineEditBoxWidget.Cast(Wgt("NoteBody"));
         m_BtnNew    = ButtonWidget.Cast(Wgt("BtnNew"));
@@ -71,6 +73,13 @@ class OZ_PdaPageNotes : OZ_PdaPage
 
     override bool OnPageClick(Widget w, int x, int y)
     {
+        if (w && w.GetUserID() == 7)
+        {
+            OpenSelected(w.GetName().ToInt());
+            PaintPicks();
+            return true;
+        }
+
         if (!w)
             return false;
 
@@ -147,14 +156,6 @@ class OZ_PdaPageNotes : OZ_PdaPage
         return false;
     }
 
-    override bool OnPageItemSelected(Widget w, int row)
-    {
-        if (!m_List || w != m_List)
-            return false;
-
-        OpenSelected(row);
-        return true;
-    }
 
     private void OpenSelected(int row)
     {
@@ -293,8 +294,13 @@ class OZ_PdaPageNotes : OZ_PdaPage
 
     private void Paint()
     {
-        if (m_List)
-            m_List.ClearItems();
+        for (int r = 0; r < m_NoteRows.Count(); r++)
+        {
+            if (m_NoteRows[r])
+                m_NoteRows[r].Unlink();
+        }
+        m_NoteRows.Clear();
+        m_NotesY = 0;
 
         if (!m_Book.Notes)
             return;
@@ -303,24 +309,60 @@ class OZ_PdaPageNotes : OZ_PdaPage
         {
             OZ_Note n = m_Book.Notes[i];
 
-            string row = n.Title;
-            if (row == "")
-                row = "#STR_OZ_NOTES_UNTITLED";
+            string title = n.Title;
+            if (title == "")
+                title = "#STR_OZ_NOTES_UNTITLED";
 
-            if (m_List)
-            {
-                // Дата -- ОКРЕМА колонка: довга назва обрізається своєю
-                // шириною й дати не чіпає. "12.08" вистачає, щоб упізнати свіже.
-                string when = "";
-                if (n.EditedAt.Length() >= 10)
-                    when = n.EditedAt.Substring(8, 2) + "." + n.EditedAt.Substring(5, 2);
+            Widget w = GetGame().GetWorkspace().CreateWidgets("OpenZone_PDA/gui/layouts/oz_pda_note_row.layout", m_Canvas);
+            if (!w)
+                continue;
 
-                int at = m_List.AddItem(row, NULL, 0);
-                m_List.SetItem(at, when, NULL, 1);
-            }
+            w.SetUserID(7);
+            w.SetName(i.ToString());
+            w.SetPos(0, m_NotesY);
+            m_NotesY += 26;
+
+            TextWidget tw = TextWidget.Cast(w.FindAnyWidget("RowTitle"));
+            if (tw)
+                tw.SetText(title);
+
+            // Дата -- окремим стовпчиком праворуч: довга назва обрізається
+            // своєю шириною й дати не чіпає.
+            TextWidget dw = TextWidget.Cast(w.FindAnyWidget("RowDate"));
+            if (dw && n.EditedAt.Length() >= 10)
+                dw.SetText(OZ_LocalTime.Stamp(n.EditedAt).Substring(0, 5));
+
+            m_NoteRows.Insert(w);
         }
+
+        if (m_Canvas)
+        {
+            int want = m_NotesY;
+            if (want < 356)
+                want = 356;
+            m_Canvas.SetSize(340, want);
+        }
+
+        PaintPicks();
 
         if (m_Book.Notes.Count() == 0 && !m_Draft)
             SetText("NotesHint", "#STR_OZ_NOTES_NONE");
+    }
+
+    // Смужка вибору на рядку відкритої записки.
+    private void PaintPicks()
+    {
+        if (!m_Book || !m_Book.Notes)
+            return;
+
+        for (int i = 0; i < m_NoteRows.Count(); i++)
+        {
+            if (!m_NoteRows[i])
+                continue;
+
+            Widget pick = m_NoteRows[i].FindAnyWidget("RowPick");
+            if (pick && i < m_Book.Notes.Count())
+                pick.Show(m_Book.Notes[i].Id == m_CurrentId);
+        }
     }
 }

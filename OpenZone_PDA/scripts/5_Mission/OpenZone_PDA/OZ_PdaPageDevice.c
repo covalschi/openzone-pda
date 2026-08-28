@@ -23,6 +23,16 @@ class OZ_PdaPageDevice : OZ_PdaPage
     private Widget       m_CarPane;
     private ButtonWidget m_BtnCarDoImport;
     private ButtonWidget m_BtnCarClose;
+    private ButtonWidget m_BtnCarTake;
+    private ButtonWidget m_BtnCarDel;
+    private TextListboxWidget m_CarList;
+
+    // Розібране прев'ю чипа: рядок списку -> (секція, місце в ній).
+    private ref OZ_MarkerList  m_CarMarks;
+    private ref OZ_NoteBook    m_CarNotes;
+    private ref array<string>  m_CarRowKind = new array<string>();
+    private ref array<int>     m_CarRowIndex = new array<int>();
+    private int m_CarSelRow = -1;
     private ButtonWidget m_BtnHudEdit;
 
     override string LayoutPath()
@@ -39,12 +49,19 @@ class OZ_PdaPageDevice : OZ_PdaPage
         m_CarPane        = Wgt("CarPane");
         m_BtnCarDoImport = ButtonWidget.Cast(Wgt("BtnCarDoImport"));
         m_BtnCarClose    = ButtonWidget.Cast(Wgt("BtnCarClose"));
+        m_BtnCarTake     = ButtonWidget.Cast(Wgt("BtnCarTake"));
+        m_BtnCarDel      = ButtonWidget.Cast(Wgt("BtnCarDel"));
+        m_CarList        = TextListboxWidget.Cast(Wgt("CarList"));
+
+
         SetText("BtnCarWriteMText", "#STR_OZ_DEV_WRITE_MARKS");
         SetText("BtnCarWriteNText", "#STR_OZ_DEV_WRITE_NOTES");
         SetText("BtnCarViewText", "#STR_OZ_DEV_CAR_VIEW");
         SetText("BtnCarEraseText", "#STR_OZ_DEV_ERASE");
         SetText("BtnCarDoImportText", "#STR_OZ_DEV_IMPORT");
         SetText("BtnCarCloseText", "#STR_OZ_DEV_CAR_CLOSE");
+        SetText("BtnCarTakeText", "#STR_OZ_DEV_CAR_TAKE");
+        SetText("BtnCarDelText", "#STR_OZ_DEV_CAR_DEL");
         m_BtnHudEdit = ButtonWidget.Cast(Wgt("BtnHudEdit"));
         SetText("BtnHudEditText", "#STR_OZ_DEV_HUD_EDIT");
         m_Preview    = ItemPreviewWidget.Cast(Wgt("Preview"));
@@ -127,6 +144,18 @@ class OZ_PdaPageDevice : OZ_PdaPage
         {
             if (m_CarPane)
                 m_CarPane.Show(false);
+            return true;
+        }
+
+        if (w == m_BtnCarTake)
+        {
+            SendCarrierItem("carrier_take");
+            return true;
+        }
+
+        if (w == m_BtnCarDel)
+        {
+            SendCarrierItem("carrier_del");
             return true;
         }
 
@@ -228,6 +257,29 @@ class OZ_PdaPageDevice : OZ_PdaPage
             }
 
             ShowCarrierPreview(json);
+            return;
+        }
+
+        if (op == "carrier_take")
+        {
+            if (ok)
+                SetHintSticky("CarPaneHead", "#STR_OZ_DEV_CAR_TAKEN");
+            else
+                SetHintSticky("CarPaneHead", "#" + error);
+            return;
+        }
+
+        if (op == "carrier_del")
+        {
+            if (!ok)
+            {
+                SetHintSticky("CarPaneHead", "#" + error);
+                return;
+            }
+
+            // Перечитуємо чип: список без стертого рядка малює сервер,
+            // а не наша здогадка про нього.
+            CarrierOp("carrier_read", "");
             return;
         }
 
@@ -452,9 +504,9 @@ class OZ_PdaPageDevice : OZ_PdaPage
         }
     }
 
-    // Зібрати текст прев'ю з того, що чип чесно віддав. Знаємо СВОЇ два
-    // роди; чужий показуємо словом роду -- його вміст знає лише його
-    // сторінка, а гравцеві досить бачити, що чип не порожній.
+    // Прев'ю чипа: обидві секції одним СПИСКОМ, кожен рядок клікабельний --
+    // вибір показує повний запис праворуч, а кнопки TAKE/DEL працюють саме
+    // з вибраним. Кольором кажемо «натисни»: то самий акцент, що в чаті.
     private void ShowCarrierPreview(string json)
     {
         OZ_CarrierView v;
@@ -462,65 +514,175 @@ class OZ_PdaPageDevice : OZ_PdaPage
         if (!JsonFileLoader<OZ_CarrierView>.LoadData(json, v, err) || !v)
             return;
 
-        string head = "";
-        string body = "";
+        m_CarMarks = null;
+        m_CarNotes = null;
+        m_CarRowKind.Clear();
+        m_CarRowIndex.Clear();
+        m_CarSelRow = -1;
 
-        if (v.Kind == "markers")
+        // Секції приїжджають уже об'єктами -- див. коментар в OZ_CarrierView.
+        if (v.Marks && v.Marks.Items)
+            m_CarMarks = v.Marks;
+
+        if (v.Notes && v.Notes.Notes)
+            m_CarNotes = v.Notes;
+
+        // Шапка -- місткість: «скільки з скількох» на кожну секцію. Стеля
+        // 0 означає безліміт, і тоді число стоїть саме.
+        int markCnt = 0;
+        if (m_CarMarks)
+            markCnt = m_CarMarks.Items.Count();
+        int noteCnt = 0;
+        if (m_CarNotes)
+            noteCnt = m_CarNotes.Notes.Count();
+
+        string head = "#STR_OZ_DEV_CAR_MARKS " + markCnt.ToString();
+        if (v.MaxMarks > 0)
+            head += "/" + v.MaxMarks.ToString();
+        head += "   #STR_OZ_DEV_CAR_NOTES " + noteCnt.ToString();
+        if (v.MaxNotes > 0)
+            head += "/" + v.MaxNotes.ToString();
+        SetText("CarPaneHead", head);
+
+        if (m_CarList)
         {
-            OZ_MarkerList ml;
-            if (JsonFileLoader<OZ_MarkerList>.LoadData(v.Payload, ml, err) && ml && ml.Items)
+            m_CarList.ClearItems();
+
+            if (m_CarMarks)
             {
-                head = "#STR_OZ_DEV_CAR_MARKS  " + ml.Items.Count().ToString();
-                for (int i = 0; i < ml.Items.Count(); i++)
+                for (int i = 0; i < m_CarMarks.Items.Count(); i++)
                 {
-                    OZ_MapMarker m = ml.Items[i];
+                    OZ_MapMarker m = m_CarMarks.Items[i];
                     // Чужий чип -- чужий JSON: масив може нести null-елементи.
                     if (!m)
                         continue;
-                    vector at = m.Pos.ToVector();
-                    int px = Math.Round(at[0]);
-                    int pz = Math.Round(at[2]);
 
-                    body += m.Name + "  @ " + px.ToString() + " " + pz.ToString();
-                    if (m.Desc != "")
-                        body += "  -- " + OneLine(m.Desc);
-                    body += "\n";
+                    // Лише назва: координати живуть у прев'ю праворуч, а
+                    // рядок списку мусить читатись одним поглядом.
+                    int row = m_CarList.AddItem("[M] " + m.Name, NULL, 0);
+                    m_CarList.SetItemColor(row, 0, ARGB(255, 255, 122, 26));
+                    m_CarRowKind.Insert("mark");
+                    m_CarRowIndex.Insert(i);
                 }
             }
-        }
-        else if (v.Kind == "notes")
-        {
-            OZ_NoteBook nb;
-            if (JsonFileLoader<OZ_NoteBook>.LoadData(v.Payload, nb, err) && nb && nb.Notes)
+
+            if (m_CarNotes)
             {
-                head = "#STR_OZ_DEV_CAR_NOTES  " + nb.Notes.Count().ToString();
-                for (int k = 0; k < nb.Notes.Count(); k++)
+                for (int k = 0; k < m_CarNotes.Notes.Count(); k++)
                 {
-                    OZ_Note n = nb.Notes[k];
+                    OZ_Note n = m_CarNotes.Notes[k];
                     if (!n)
                         continue;
-                    body += n.Title;
-                    if (n.Body != "")
-                        body += "  -- " + OneLine(n.Body);
-                    body += "\n";
+
+                    int nrow = m_CarList.AddItem("[N] " + n.Title, NULL, 0);
+                    m_CarList.SetItemColor(nrow, 0, ARGB(255, 255, 122, 26));
+                    m_CarRowKind.Insert("note");
+                    m_CarRowIndex.Insert(k);
                 }
             }
         }
 
-        if (head == "")
-        {
-            head = v.Kind;
-            body = "#STR_OZ_DEV_CARRIER_UNKNOWN";
-        }
-
-        SetText("CarPaneHead", head);
-
-        TextWidget tw = TextWidget.Cast(Wgt("CarBody"));
-        if (tw)
-            tw.SetText(body);
+        SetText("CarItemHead", "");
+        SetCarBody("#STR_OZ_DEV_CAR_TAP");
 
         if (m_CarPane)
             m_CarPane.Show(true);
+    }
+
+    // Тіло прев'ю з ЧЕСНОЮ висотою вмісту: скрол їздить рівно по тексту,
+    // а не по запасних восьмистах пікселях. Висота -- оцінка по рядках
+    // (перенос ~38 символів на 307px тим шрифтом), і її вистачає, бо
+    // ціль -- межа прокрутки, а не типографіка.
+    private void SetCarBody(string text)
+    {
+        TextWidget tw = TextWidget.Cast(Wgt("CarBody"));
+        if (!tw)
+            return;
+
+        tw.SetText(text);
+
+        int lines = 0;
+        int seg = 0;
+        for (int ci = 0; ci < text.Length(); ci++)
+        {
+            if (text.Substring(ci, 1) == "\n")
+            {
+                lines += 1 + seg / 28;
+                seg = 0;
+            }
+            else
+            {
+                seg++;
+            }
+        }
+        lines += 1 + seg / 28;
+
+        int h = lines * 18 + 6;
+        if (h < 108)
+            h = 108;
+        tw.SetSize(240, h);
+    }
+
+    // Клік по рядку списку: повний запис у праву панель.
+    override bool OnPageItemSelected(Widget w, int row)
+    {
+        if (!m_CarList || w != m_CarList)
+            return false;
+
+        if (row < 0 || row >= m_CarRowKind.Count())
+            return true;
+
+        m_CarSelRow = row;
+
+        string head = "";
+        string body = "";
+        if (m_CarRowKind[row] == "mark" && m_CarMarks)
+        {
+            OZ_MapMarker m = m_CarMarks.Items[m_CarRowIndex[row]];
+            if (m)
+            {
+                vector at = m.Pos.ToVector();
+                head = m.Name;
+                body = "@ " + Math.Round(at[0]).ToString() + " " + Math.Round(at[2]).ToString();
+                if (m.Desc != "")
+                    body += "\n\n" + m.Desc;
+            }
+        }
+        else if (m_CarRowKind[row] == "note" && m_CarNotes)
+        {
+            OZ_Note n = m_CarNotes.Notes[m_CarRowIndex[row]];
+            if (n)
+            {
+                head = n.Title;
+                body = n.Body;
+            }
+        }
+
+        SetText("CarItemHead", head);
+        SetCarBody(body);
+
+        return true;
+    }
+
+    // TAKE або DEL для вибраного рядка. Без вибору чесно кажемо чому ні.
+    private void SendCarrierItem(string op)
+    {
+        if (m_CarSelRow < 0 || m_CarSelRow >= m_CarRowKind.Count())
+        {
+            SetHintSticky("CarPaneHead", "#STR_OZ_DEV_CAR_TAP");
+            return;
+        }
+
+        OZ_CarrierItemRef r = new OZ_CarrierItemRef();
+        r.Kind  = m_CarRowKind[m_CarSelRow];
+        r.Index = m_CarRowIndex[m_CarSelRow];
+
+        string json;
+        string err;
+        if (!JsonFileLoader<OZ_CarrierItemRef>.MakeData(r, json, err, false))
+            return;
+
+        OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, op, json);
     }
 
     // Один рядок прев'ю на запис: переноси -- в пробіли, хвіст -- геть.
@@ -548,23 +710,32 @@ class OZ_PdaPageDevice : OZ_PdaPage
         {
             line += "#STR_OZ_DEV_CARRIER_BLANK";
         }
-        else if (st.CarrierKind != "")
-        {
-            // Свої роди -- людським словом; чужий (iнший мод зi своєю
-            // сторiнкою) -- як є: його слово знає лише його сторiнка.
-            if (st.CarrierKind == "markers")
-                line += "#STR_OZ_DEV_CAR_MARKS";
-            else if (st.CarrierKind == "notes")
-                line += "#STR_OZ_DEV_CAR_NOTES";
-            else
-                line += st.CarrierKind;
-
-            if (st.CarrierCount >= 0)
-                line += "  " + st.CarrierCount.ToString();
-        }
         else
         {
-            line += "#STR_OZ_DEV_CARRIER_UNKNOWN";
+            // Обидві секції з місткістю класу: «скільки з скількох».
+            // Стеля 0 -- безліміт, тоді число стоїть саме.
+            string parts = "";
+
+            if (st.CarrierMarks >= 0)
+            {
+                parts += "#STR_OZ_DEV_CAR_MARKS " + st.CarrierMarks.ToString();
+                if (st.CarrierMaxMarks > 0)
+                    parts += "/" + st.CarrierMaxMarks.ToString();
+            }
+
+            if (st.CarrierNotes >= 0)
+            {
+                if (parts != "")
+                    parts += "   ";
+                parts += "#STR_OZ_DEV_CAR_NOTES " + st.CarrierNotes.ToString();
+                if (st.CarrierMaxNotes > 0)
+                    parts += "/" + st.CarrierMaxNotes.ToString();
+            }
+
+            if (parts == "")
+                parts = "#STR_OZ_DEV_CARRIER_UNKNOWN";
+
+            line += parts;
         }
 
         // SetHint, НЕ SetText: результат опа над носiєм липкий, а цей рядок

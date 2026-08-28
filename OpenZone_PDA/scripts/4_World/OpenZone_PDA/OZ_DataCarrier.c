@@ -12,24 +12,26 @@
 
 class OZ_DataCarrier_Base : ItemBase
 {
-    // Вид вмісту. Збігається з id сторінки, яка вміє його читати.
-    private string m_Kind    = "";
-    // Сам вміст, як рядок JSON. Ані КПК, ані ядро в нього не заглядають.
-    private string m_Payload = "";
+    // ДВІ СЕКЦІЇ замість одного роду (рішення власника 2026-08-28): мітки й
+    // нотатки живуть на одному чипі одночасно, і гейт роду помер разом із
+    // m_Kind. Кожна секція -- свій JSON, порожній рядок -- секції немає.
+    private string m_Marks = "";
+    private string m_Notes = "";
     // Чи записаний носій узагалі. Порожній чип -- теж законний предмет.
     private bool   m_Written = false;
-    // Скільки одиниць вмісту на чипі. НЕ зберігається: рахується з пейлоада
-    // при записі й при завантаженні, тому формат сховища не росте.
-    private int    m_CarriedCount   = -1;
+    // Лічильники транзієнтні: рахуються з пейлоада при записі й при
+    // завантаженні, тому формат сховища не росте. -1 -- секції немає.
+    private int    m_MarkCount = -1;
+    private int    m_NoteCount = -1;
 
-    string OZ_Kind()
+    string OZ_Marks()
     {
-        return m_Kind;
+        return m_Marks;
     }
 
-    string OZ_Payload()
+    string OZ_Notes()
     {
-        return m_Payload;
+        return m_Notes;
     }
 
     bool OZ_IsWritten()
@@ -37,21 +39,42 @@ class OZ_DataCarrier_Base : ItemBase
         return m_Written;
     }
 
-    int OZ_Count()
+    int OZ_MarkCount()
     {
-        return m_CarriedCount;
+        return m_MarkCount;
     }
 
-    // Серверна: вміст носія клієнт задавати не може.
-    void OZ_Write(string kind, string payload, int count)
+    int OZ_NoteCount()
+    {
+        return m_NoteCount;
+    }
+
+    // Серверні: вміст носія клієнт задавати не може. Порожній json стирає
+    // саме цю секцію, друга живе далі.
+    void OZ_WriteMarks(string json, int count)
     {
         if (!GetGame().IsServer())
             return;
 
-        m_Kind    = kind;
-        m_Payload = payload;
-        m_Written = true;
-        m_CarriedCount   = count;
+        m_Marks = json;
+        m_MarkCount = count;
+        if (json == "")
+            m_MarkCount = -1;
+
+        RefreshWritten();
+    }
+
+    void OZ_WriteNotes(string json, int count)
+    {
+        if (!GetGame().IsServer())
+            return;
+
+        m_Notes = json;
+        m_NoteCount = count;
+        if (json == "")
+            m_NoteCount = -1;
+
+        RefreshWritten();
     }
 
     void OZ_Erase()
@@ -59,40 +82,40 @@ class OZ_DataCarrier_Base : ItemBase
         if (!GetGame().IsServer())
             return;
 
-        m_Kind    = "";
-        m_Payload = "";
+        m_Marks = "";
+        m_Notes = "";
+        m_MarkCount = -1;
+        m_NoteCount = -1;
         m_Written = false;
-        m_CarriedCount   = -1;
     }
 
-    // Перерахунок вмісту за пейлоадом. Знаємо лише СВОЇ два роди: чужому
-    // роду чесно кажемо -1, і статус тоді показує рід без числа.
-    private static int Recount(string kind, string payload)
+    private void RefreshWritten()
+    {
+        m_Written = (m_Marks != "" || m_Notes != "");
+    }
+
+    private static int CountMarks(string payload)
     {
         string err;
+        OZ_MarkerList ml;
+        if (JsonFileLoader<OZ_MarkerList>.LoadData(payload, ml, err) && ml && ml.Items)
+            return ml.Items.Count();
+        return -1;
+    }
 
-        if (kind == "markers")
-        {
-            OZ_MarkerList ml;
-            if (JsonFileLoader<OZ_MarkerList>.LoadData(payload, ml, err) && ml && ml.Items)
-                return ml.Items.Count();
-            return -1;
-        }
-
-        if (kind == "notes")
-        {
-            OZ_NoteBook nb;
-            if (JsonFileLoader<OZ_NoteBook>.LoadData(payload, nb, err) && nb && nb.Notes)
-                return nb.Notes.Count();
-            return -1;
-        }
-
+    private static int CountNotes(string payload)
+    {
+        string err;
+        OZ_NoteBook nb;
+        if (JsonFileLoader<OZ_NoteBook>.LoadData(payload, nb, err) && nb && nb.Notes)
+            return nb.Notes.Count();
         return -1;
     }
 
     // ДОПИСУВАТИ тільки в кінець і читати за GetVersion(). Записи CF
     // позиційні: вставка поля в середину зсуває потік і з'їдає дані всіх,
-    // хто пише після нас.
+    // хто пише після нас. Рядок-маркер "mix" на місці старого m_Kind -- це
+    // водночас версія формату і сумісність: старі чипи несуть там свій рід.
     override void CF_OnStoreSave(CF_ModStorageMap storage)
     {
         super.CF_OnStoreSave(storage);
@@ -102,11 +125,11 @@ class OZ_DataCarrier_Base : ItemBase
             return;
 
         ctx.Write(m_Written);
-        ctx.Write(m_Kind);
-        // Пейлоад -- шматками: книжка з Drive легко переростає 1023 байти,
-        // а рядок сховища понад цю межу зносить ВЕСЬ блоб предмета при
-        // завантаженні (зміряно зондом; подробиці в OZ_StoreBig).
-        OZ_StoreBig.Write(ctx, m_Payload);
+        ctx.Write("mix");
+        // Секції -- шматками: стеля рядка сховища 1023 байти, подробиці
+        // в OZ_StoreBig.
+        OZ_StoreBig.Write(ctx, m_Marks);
+        OZ_StoreBig.Write(ctx, m_Notes);
     }
 
     override bool CF_OnStoreLoad(CF_ModStorageMap storage)
@@ -120,14 +143,38 @@ class OZ_DataCarrier_Base : ItemBase
 
         if (!ctx.Read(m_Written))
             return false;
-        if (!ctx.Read(m_Kind))
-            return false;
-        if (!OZ_StoreBig.Read(ctx, m_Payload))
+
+        string kind;
+        if (!ctx.Read(kind))
             return false;
 
-        if (m_Written)
-            m_CarriedCount = Recount(m_Kind, m_Payload);
+        if (kind == "mix")
+        {
+            if (!OZ_StoreBig.Read(ctx, m_Marks))
+                return false;
+            if (!OZ_StoreBig.Read(ctx, m_Notes))
+                return false;
+        }
+        else
+        {
+            // Старий одно-родовий чип: одна секція за родом, друга порожня.
+            string payload;
+            if (!OZ_StoreBig.Read(ctx, payload))
+                return false;
 
+            if (kind == "markers")
+                m_Marks = payload;
+            else if (kind == "notes")
+                m_Notes = payload;
+            // Чужий/зондовий рід свідомо губиться: читати його нема кому.
+        }
+
+        if (m_Marks != "")
+            m_MarkCount = CountMarks(m_Marks);
+        if (m_Notes != "")
+            m_NoteCount = CountNotes(m_Notes);
+
+        RefreshWritten();
         return true;
     }
 }
@@ -138,7 +185,7 @@ class OZ_DataCarrier_Base : ItemBase
 // писати не залежить від того, звідки прийшов запит.
 class OZ_CarrierOps
 {
-    static OZ_DataCarrier_Base ResolveWritable(PlayerIdentity sender, string kind, out string error)
+    static OZ_DataCarrier_Base ResolveWritable(PlayerIdentity sender, out string error)
     {
         OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
         if (!pda)
@@ -155,17 +202,12 @@ class OZ_CarrierOps
         }
 
         // Клас без запису в таблиці -- замок, як і клас із Writable=false.
+        // Гейта роду тут БІЛЬШЕ НЕМАЄ: секції незалежні, і писати одну
+        // поверх другої неможливо за побудовою.
         OZ_CarrierSpec spec = OZ_PdaHardware.CarrierFor(c.GetType());
         if (!spec || !spec.Writable)
         {
             error = "STR_OZ_ERR_CARRIER_LOCKED";
-            return null;
-        }
-
-        // Інший род поверх записаного -- лише через явне стирання.
-        if (c.OZ_IsWritten() && c.OZ_Kind() != kind)
-        {
-            error = "STR_OZ_ERR_CARRIER_KIND";
             return null;
         }
 
@@ -174,12 +216,17 @@ class OZ_CarrierOps
 }
 
 
-// Що віддає читання чипа: рід і тіло як є. Клієнт розбирає за Kind тим
-// самим класом, яким користується відповідна сторінка.
+// Що віддає читання чипа: обидві секції ТИПІЗОВАНО плюс стелі класу.
+// Не рядками: рядок-значення в JSON рушій ріже на 1023 байтах при розборі
+// (зміряно зондом), і секція з однією повною запискою вже не влазила б.
+// Вкладені ОБ'ЄКТИ серіалізуються полями, і кожне поле-значення всередині
+// коротше за стелю за побудовою.
 class OZ_CarrierView
 {
-    string Kind    = "";
-    string Payload = "";
+    ref OZ_MarkerList Marks;
+    ref OZ_NoteBook   Notes;
+    int MaxMarks = 0;
+    int MaxNotes = 0;
 }
 
 // «Злити нотатки З чипа»: спершу питаємо міст, СКІЛЬКИ МІСЦЯ лишилось у
@@ -212,11 +259,17 @@ class OZ_CarrierImportReply : OZ_BridgeReply
     // Знімок книжки З ЧИПА, як він лежав на предметі в мить запиту: чип за
     // час дороги міг зникнути з гнізда, а імпортуємо ми не гніздо, а вміст.
     protected string m_BookJson;
+    // Підсумок міток, які вже лягли синхронно ПЕРЕД цим листом: фінальна
+    // відповідь складає одну чесну цифру за ОБИДВІ секції. -1 -- міток не було.
+    protected int m_MarksTaken;
+    protected int m_MarksTotal;
 
-    void OZ_CarrierImportReply(string uid, string bookJson)
+    void OZ_CarrierImportReply(string uid, string bookJson, int marksTaken, int marksTotal)
     {
-        m_Uid      = uid;
-        m_BookJson = bookJson;
+        m_Uid        = uid;
+        m_BookJson   = bookJson;
+        m_MarksTaken = marksTaken;
+        m_MarksTotal = marksTotal;
     }
 
     override void OnBody(string json)
@@ -285,6 +338,11 @@ class OZ_CarrierImportReply : OZ_BridgeReply
         OZ_CarrierTaken t = new OZ_CarrierTaken();
         t.Taken = sent;
         t.Total = wanted;
+        if (m_MarksTotal > 0)
+        {
+            t.Taken += m_MarksTaken;
+            t.Total += m_MarksTotal;
+        }
 
         string tj;
         if (!JsonFileLoader<OZ_CarrierTaken>.MakeData(t, tj, err, false))
@@ -302,6 +360,45 @@ class OZ_CarrierImportReply : OZ_BridgeReply
             return;
 
         OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "carrier_import", false, "", "STR_OZ_ERR_NO_BRIDGE");
+    }
+}
+
+
+// Відповідь на забір ОДНІЄЇ записки з чипа: міст або створив її в книжці,
+// або чесно відмовив (повна книжка, тиша). Гравцеві їде рівно це.
+class OZ_CarrierTakeReply : OZ_BridgeReply
+{
+    protected string m_Uid;
+
+    void OZ_CarrierTakeReply(string uid)
+    {
+        m_Uid = uid;
+    }
+
+    override void OnBody(string json)
+    {
+        PlayerIdentity to = OZ_ChatWho.Online(m_Uid);
+        if (!to)
+            return;
+
+        OZ_NotesFail fail;
+        string err;
+        if (JsonFileLoader<OZ_NotesFail>.LoadData(json, fail, err) && fail && fail.Error != "")
+        {
+            OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "carrier_take", false, "", OZ_NotesFail.KeyOf(fail.Error));
+            return;
+        }
+
+        OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "carrier_take", true, "", "");
+    }
+
+    override void OnFail(int code)
+    {
+        PlayerIdentity to = OZ_ChatWho.Online(m_Uid);
+        if (!to)
+            return;
+
+        OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "carrier_take", false, "", "STR_OZ_ERR_NO_BRIDGE");
     }
 }
 
@@ -357,17 +454,6 @@ class OZ_CarrierNotesReply : OZ_BridgeReply
             return;
         }
 
-        // ГЕЙТ РОДУ -- заново, як при синхронному записі. Поки лист ходив у
-        // міст, гравець міг записати на той самий чип мітки (порожній чип
-        // пропускає синхронний гейт роду), і без цієї перевірки книжка
-        // мовчки затерла б їх. Інший рід поверх записаного -- лише через
-        // явне стирання, і тут теж.
-        if (c.OZ_IsWritten() && c.OZ_Kind() != "notes")
-        {
-            OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "carrier_write", false, "", "STR_OZ_ERR_CARRIER_KIND");
-            return;
-        }
-
         // Тіло мусить БУТИ книжкою: будь-яку іншу двохсотку моста писати на
         // чип як «нотатки» означало б зіпсувати його чимось нечитним.
         OZ_NoteBook book;
@@ -394,7 +480,7 @@ class OZ_CarrierNotesReply : OZ_BridgeReply
             }
         }
 
-        c.OZ_Write("notes", json, wrote);
+        c.OZ_WriteNotes(json, wrote);
 
         OZ_CarrierTaken t = new OZ_CarrierTaken();
         t.Taken = wrote;

@@ -31,6 +31,29 @@ class OZ_PdaPageChat : OZ_PdaPage
     private bool m_Anon = false;
     private ButtonWidget m_BtnGroup;
     private ButtonWidget m_BtnInvite;
+    private ButtonWidget m_BtnGroupEdit;
+    private Widget m_InvitePanel;
+    private TextListboxWidget m_InviteList;
+    private ButtonWidget m_BtnInvCancel;
+    private Widget m_GroupPanel;
+    private ButtonWidget m_BtnGSave;
+    private ButtonWidget m_BtnGCancel;
+    private ref array<string> m_InviteNames = new array<string>();
+    // Кого правимо в панелі групи: порожньо -- створюємо нову.
+    private string m_GroupEditId = "";
+    // Опис відкритої розмови: їде в панель правки як поточне значення.
+    private string m_ViewDesc = "";
+    private ButtonWidget m_BtnOlder;
+    private ButtonWidget m_BtnMembers;
+    private ButtonWidget m_BtnGDel;
+    // Ручна розкладка канв: поточний y кожної. Рядок розмови 58, бесіди 40.
+    private int m_LinesY = 0;
+    private int m_ListY = 0;
+    // Історія вантажиться сторінками: якір і прапорець від моста, а під час
+    // дороги кнопка сама стає індикатором.
+    private bool m_OlderBusy = false;
+    // Після довантаження мотати треба ВГОРУ, до щойно прочитаного.
+    private bool m_ScrollTop = false;
 
     private ref OZ_ChatList m_Heads;
     private ref OZ_ChatView m_View;
@@ -63,6 +86,26 @@ class OZ_PdaPageChat : OZ_PdaPage
         m_BtnAnon   = ButtonWidget.Cast(Wgt("BtnAnon"));
         m_BtnGroup  = ButtonWidget.Cast(Wgt("BtnGroup"));
         m_BtnInvite = ButtonWidget.Cast(Wgt("BtnInvite"));
+        m_BtnGroupEdit = ButtonWidget.Cast(Wgt("BtnGroupEdit"));
+        m_BtnOlder = ButtonWidget.Cast(Wgt("BtnOlder"));
+        SetText("BtnOlderText", "#STR_OZ_CHAT_OLDER");
+        m_BtnMembers = ButtonWidget.Cast(Wgt("BtnMembers"));
+        SetText("BtnMembersText", "#STR_OZ_CHAT_MEMBERS");
+        m_BtnGDel = ButtonWidget.Cast(Wgt("BtnGDel"));
+        SetText("BtnGDelText", "#STR_OZ_CHAT_DEL_GROUP");
+
+        m_InvitePanel  = Wgt("InvitePanel");
+        m_InviteList   = TextListboxWidget.Cast(Wgt("InviteList"));
+        m_BtnInvCancel = ButtonWidget.Cast(Wgt("BtnInvCancel"));
+        m_GroupPanel   = Wgt("GroupPanel");
+        m_BtnGSave     = ButtonWidget.Cast(Wgt("BtnGSave"));
+        m_BtnGCancel   = ButtonWidget.Cast(Wgt("BtnGCancel"));
+
+        SetText("BtnGroupEditText", "#STR_OZ_CHAT_EDIT_GROUP");
+        SetText("InviteHead", "#STR_OZ_CHAT_PICK");
+        SetText("BtnInvCancelText", "#STR_OZ_CHAT_CANCEL");
+        SetText("BtnGSaveText", "#STR_OZ_CHAT_SAVE");
+        SetText("BtnGCancelText", "#STR_OZ_CHAT_CANCEL");
 
         SetText("BtnSendText", "#STR_OZ_CHAT_SEND");
         SetText("BtnGroupText", "#STR_OZ_CHAT_NEW_GROUP");
@@ -114,11 +157,6 @@ class OZ_PdaPageChat : OZ_PdaPage
 
     // Бесіда обирається КЛІКОМ по самому рядку: списків-віджетів тут більше
     // немає, кожна розмова -- окрема кнопка.
-    override bool OnPageItemSelected(Widget w, int row)
-    {
-        return false;
-    }
-
     override bool OnPageClick(Widget w, int x, int y)
     {
         if (!w)
@@ -129,6 +167,17 @@ class OZ_PdaPageChat : OZ_PdaPage
         if (w.GetUserID() == 3)
         {
             m_OpenId = w.GetName();
+
+            // Накладки належать ПОПЕРЕДНІЙ розмові: запрошення, вибране в
+            // одній групі, не має права полетіти в іншу.
+            if (m_InvitePanel)
+                m_InvitePanel.Show(false);
+            if (m_GroupPanel)
+                m_GroupPanel.Show(false);
+            Widget mpo = Wgt("MembersPanel");
+            if (mpo)
+                mpo.Show(false);
+
             RequestOpen();
             PaintList();
             return true;
@@ -157,28 +206,112 @@ class OZ_PdaPageChat : OZ_PdaPage
         {
             // Назву групи беремо з того ж рядка вводу: окреме поле заради
             // однієї дії з'їло б місце, яке потрібне повідомленням.
-            OZ_NameRef r = new OZ_NameRef();
-            if (m_Input)
-                r.Name = m_Input.GetText();
+            // Панель, а не сліпе поле вводу: ім'я та опис видно ДО
+            // створення, і те саме вікно править існуючу групу.
+            OpenGroupPanel("");
+            return true;
+        }
 
-            string json;
-            string err;
-            if (JsonFileLoader<OZ_NameRef>.MakeData(r, json, err, false))
-                OZ_Rpc.Request(OZ_PdaConst.PAGE_CHAT, "group_new", json);
+        if (w == m_BtnGroupEdit)
+        {
+            OpenGroupPanel(m_OpenId);
+            return true;
+        }
+
+        if (w == m_BtnGSave)
+        {
+            OZ_ChatGroupSpec g = new OZ_ChatGroupSpec();
+            g.Id = m_GroupEditId;
+
+            EditBoxWidget gn = EditBoxWidget.Cast(Wgt("GName"));
+            if (gn)
+                g.Name = gn.GetText();
+            EditBoxWidget gd = EditBoxWidget.Cast(Wgt("GDesc"));
+            if (gd)
+                g.Desc = gd.GetText();
+
+            string gj;
+            string gerr;
+            if (JsonFileLoader<OZ_ChatGroupSpec>.MakeData(g, gj, gerr, false))
+            {
+                if (m_GroupEditId == "")
+                    OZ_Rpc.Request(OZ_PdaConst.PAGE_CHAT, "group_new", gj);
+                else
+                    OZ_Rpc.Request(OZ_PdaConst.PAGE_CHAT, "group_edit", gj);
+            }
+
+            if (m_GroupPanel)
+                m_GroupPanel.Show(false);
+            return true;
+        }
+
+        if (w == m_BtnGDel)
+        {
+            if (m_GroupEditId == "")
+            {
+                if (m_GroupPanel)
+                    m_GroupPanel.Show(false);
+                return true;
+            }
+
+            OZ_NoteRef gr = new OZ_NoteRef();
+            gr.Id = m_GroupEditId;
+
+            string dj;
+            string derr;
+            if (JsonFileLoader<OZ_NoteRef>.MakeData(gr, dj, derr, false))
+                OZ_Rpc.Request(OZ_PdaConst.PAGE_CHAT, "group_del", dj);
+
+            if (m_GroupPanel)
+                m_GroupPanel.Show(false);
+            return true;
+        }
+
+        if (w == m_BtnGCancel)
+        {
+            if (m_GroupPanel)
+                m_GroupPanel.Show(false);
+            return true;
+        }
+
+        if (w == m_BtnOlder)
+        {
+            if (m_OlderBusy || !m_View)
+                return true;
+
+            m_OlderBusy = true;
+            SetText("BtnOlderText", "#STR_OZ_CHAT_LOADING");
+
+            OZ_ChatOlderReq r = new OZ_ChatOlderReq();
+            r.Id     = m_OpenId;
+            r.Before = m_View.Before;
+
+            string oj;
+            string oerr;
+            if (JsonFileLoader<OZ_ChatOlderReq>.MakeData(r, oj, oerr, false))
+                OZ_Rpc.Request(OZ_PdaConst.PAGE_CHAT, "older", oj);
+            return true;
+        }
+
+        if (w == m_BtnMembers)
+        {
+            Widget mpp = Wgt("MembersPanel");
+            if (mpp)
+                mpp.Show(!mpp.IsVisible());
             return true;
         }
 
         if (w == m_BtnInvite)
         {
-            OZ_ChatAdd a = new OZ_ChatAdd();
-            a.Id = m_OpenId;
-            if (m_Input)
-                a.Name = m_Input.GetText();
+            // Не сліпий ввід, а ВИБІР: сервер каже, кого можна кликати.
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_CHAT, "invitees", "");
+            return true;
+        }
 
-            string ajson;
-            string aerr;
-            if (JsonFileLoader<OZ_ChatAdd>.MakeData(a, ajson, aerr, false))
-                OZ_Rpc.Request(OZ_PdaConst.PAGE_CHAT, "group_add", ajson);
+        if (w == m_BtnInvCancel)
+        {
+            if (m_InvitePanel)
+                m_InvitePanel.Show(false);
             return true;
         }
 
@@ -262,6 +395,40 @@ class OZ_PdaPageChat : OZ_PdaPage
 
     override void OnResponse(string op, bool ok, string json, string error)
     {
+        // ПЕРЕД загальними ворітьми відмов: кнопка-індикатор мусить ожити
+        // й після невдачі, інакше вона навічно лишається "Loading...".
+        if (op == "older")
+        {
+            m_OlderBusy = false;
+            SetText("BtnOlderText", "#STR_OZ_CHAT_OLDER");
+
+            if (!ok)
+            {
+                SetText("ChatHint", "#" + error);
+                return;
+            }
+
+            OZ_ChatView older;
+            string olerr;
+            if (!JsonFileLoader<OZ_ChatView>.LoadData(json, older, olerr) || !older || !older.Lines)
+                return;
+
+            // Відповідь прив'язана до РОЗМОВИ: поки вона їхала, гравець міг
+            // відкрити іншу, і чужа історія не має права в неї вклеїтись.
+            if (!m_View || older.Id != m_OpenId)
+                return;
+
+            for (int oi = older.Lines.Count() - 1; oi >= 0; oi--)
+                m_View.Lines.InsertAt(older.Lines[oi], 0);
+
+            m_View.More   = older.More;
+            m_View.Before = older.Before;
+
+            m_ScrollTop = true;
+            PaintView();
+            return;
+        }
+
         if (!ok)
         {
             SetText("ChatHint", "#" + error);
@@ -364,6 +531,68 @@ class OZ_PdaPageChat : OZ_PdaPage
             return;
         }
 
+        if (op == "invitees")
+        {
+            if (!ok)
+            {
+                SetHintSticky("ChatHint", "#" + error);
+                return;
+            }
+
+            OZ_ChatInvitees inv;
+            string ierr;
+            if (!JsonFileLoader<OZ_ChatInvitees>.LoadData(json, inv, ierr) || !inv || !inv.Names)
+                return;
+
+            m_InviteNames.Clear();
+            if (m_InviteList)
+                m_InviteList.ClearItems();
+
+            for (int ii = 0; ii < inv.Names.Count(); ii++)
+            {
+                m_InviteNames.Insert(inv.Names[ii]);
+                if (m_InviteList)
+                {
+                    int irow = m_InviteList.AddItem(inv.Names[ii], NULL, 0);
+                    m_InviteList.SetItemColor(irow, 0, ARGB(255, 255, 122, 26));
+                }
+            }
+
+            if (m_InviteNames.Count() == 0)
+            {
+                SetHintSticky("ChatHint", "#STR_OZ_CHAT_NO_CONTACTS");
+                return;
+            }
+
+            if (m_InvitePanel)
+                m_InvitePanel.Show(true);
+            return;
+        }
+
+        if (op == "group_del")
+        {
+            // Розмови більше немає -- і відкритої теж, якщо це була вона.
+            if (m_OpenId == m_GroupEditId || m_View && m_View.Id == m_GroupEditId)
+            {
+                m_OpenId = "";
+                m_View = null;
+                ClearLines();
+                SetText("ChatTitle", "");
+            }
+            RequestList();
+            return;
+        }
+
+        if (op == "group_edit")
+        {
+            // І перелік, і відкриту розмову: панель правки бере поточні
+            // значення з m_View, і без перечитування друге редагування
+            // відкрилося б зі старими.
+            RequestList();
+            RequestOpen();
+            return;
+        }
+
         if (op == "group_add")
         {
             if (m_Input)
@@ -383,6 +612,9 @@ class OZ_PdaPageChat : OZ_PdaPage
         if (!w)
             return;
 
+        w.SetPos(0, m_ListY);
+        m_ListY += 40;
+
         w.SetName(h.Id);
         w.SetUserID(3);   // так OnClick відрізняє бесіду від вкладки й контакту
         m_HeadRows.Insert(w);
@@ -398,7 +630,12 @@ class OZ_PdaPageChat : OZ_PdaPage
         TextWidget k = TextWidget.Cast(w.FindAnyWidget("HeadKind"));
         if (k)
         {
-            if (h.Kind == "group")
+            // Опис, якщо група ним обзавелась; інакше -- слово роду.
+            if (h.Kind == "npc")
+                k.SetText("#STR_OZ_CHAT_PAGER");
+            else if (h.Desc != "")
+                k.SetText(h.Desc);
+            else if (h.Kind == "group")
                 k.SetText("#STR_OZ_CHAT_GROUP");
             else if (h.Kind == "zone")
                 k.SetText("#STR_OZ_CHAT_ZONE");
@@ -438,14 +675,7 @@ class OZ_PdaPageChat : OZ_PdaPage
     // розбирати дату заради двох чисел -- це чотири нових способи помилитись.
     private string Stamp(string iso)
     {
-        if (iso.Length() < 16)
-            return iso;
-
-        string day   = iso.Substring(8, 2);
-        string month = iso.Substring(5, 2);
-        string time  = iso.Substring(11, 5);
-
-        return day + "." + month + "  " + time;
+        return OZ_LocalTime.Stamp(iso);
     }
 
     private void ClearLines()
@@ -456,6 +686,7 @@ class OZ_PdaPageChat : OZ_PdaPage
                 m_LineRows[i].Unlink();
         }
         m_LineRows.Clear();
+        m_LinesY = 0;
     }
 
     // Одна репліка.
@@ -471,6 +702,10 @@ class OZ_PdaPageChat : OZ_PdaPage
         Widget w = GetGame().GetWorkspace().CreateWidgets("OpenZone_PDA/gui/layouts/oz_pda_chat_line.layout", m_Lines);
         if (!w)
             return;
+
+        w.SetPos(0, m_LinesY);
+        m_LinesY += 58;
+
 
         // Рядок клікабельний: одержувач мітки забирає її одним дотиком.
         w.SetUserID(6);
@@ -498,7 +733,24 @@ class OZ_PdaPageChat : OZ_PdaPage
 
         TextWidget text = TextWidget.Cast(w.FindAnyWidget("LineText"));
         if (text)
+        {
             text.SetText(l.Text);
+
+            // Мітка -- єдиний клікабельний рядок у розмові, і виглядати
+            // вона мусить інакше, ніж звичайна репліка: акцентний колір
+            // каже «натисни», сірий текст -- «читай».
+            if (l.Text.IndexOf("[MARK] ") == 0)
+                text.SetColor(ARGB(255, 255, 122, 26));
+        }
+    }
+
+    // Межа прокрутки переліку розмов -- за фактичними рядками, тим самим
+    // прийомом, що й у самої розмови.
+    private void ListFit()
+    {
+        ScrollWidget sc = ScrollWidget.Cast(Wgt("ChatListScroll"));
+        if (sc)
+            sc.Update();
     }
 
     private void PaintList()
@@ -509,6 +761,7 @@ class OZ_PdaPageChat : OZ_PdaPage
                 m_HeadRows[c].Unlink();
         }
         m_HeadRows.Clear();
+        m_ListY = 0;
 
         int n = 0;
         if (m_Heads && m_Heads.Items)
@@ -519,6 +772,96 @@ class OZ_PdaPageChat : OZ_PdaPage
 
         if (n == 0)
             SetText("ChatHint", "#STR_OZ_CHAT_NONE");
+
+        Widget lstc = Wgt("ChatList");
+        if (lstc)
+        {
+            int wantH = m_ListY;
+            if (wantH < 356)
+                wantH = 356;
+            lstc.SetSize(300, wantH);
+        }
+
+        GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(ListFit, 50, false);
+    }
+
+    override bool OnPageItemSelected(Widget w, int row)
+    {
+        if (!m_InviteList || w != m_InviteList)
+            return false;
+
+        if (row < 0 || row >= m_InviteNames.Count())
+            return true;
+
+        OZ_ChatAdd a = new OZ_ChatAdd();
+        a.Id   = m_OpenId;
+        a.Name = m_InviteNames[row];
+
+        string ajson;
+        string aerr;
+        if (JsonFileLoader<OZ_ChatAdd>.MakeData(a, ajson, aerr, false))
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_CHAT, "group_add", ajson);
+
+        if (m_InvitePanel)
+            m_InvitePanel.Show(false);
+        return true;
+    }
+
+    private void OpenGroupPanel(string editId)
+    {
+        m_GroupEditId = editId;
+
+        string name = "";
+        string desc = "";
+        if (editId != "" && m_View)
+        {
+            name = m_View.Title;
+            desc = m_ViewDesc;
+        }
+
+        EditBoxWidget gn = EditBoxWidget.Cast(Wgt("GName"));
+        if (gn)
+            gn.SetText(name);
+        EditBoxWidget gd = EditBoxWidget.Cast(Wgt("GDesc"));
+        if (gd)
+            gd.SetText(desc);
+
+        if (editId == "")
+            SetText("GroupHead", "#STR_OZ_CHAT_NEW_GROUP");
+        else
+            SetText("GroupHead", "#STR_OZ_CHAT_EDIT_GROUP");
+
+        if (m_BtnGDel)
+            m_BtnGDel.Show(editId != "");
+
+        if (m_GroupPanel)
+            m_GroupPanel.Show(true);
+    }
+
+    // До самого низу -- ВІДКЛАДЕНО на кадр: розмір вмісту скролер рахує
+    // лише в рендері (та сама сім'я, що й GetLinesCount), і виклик одразу
+    // після вставки рядків мотає за СТАРОЮ висотою.
+    private void ScrollDown()
+    {
+        ScrollWidget sc = ScrollWidget.Cast(Wgt("ChatScroll"));
+        if (!sc)
+            return;
+
+        sc.Update();
+
+        if (m_ScrollTop)
+        {
+            m_ScrollTop = false;
+            sc.VScrollToPos01(0);
+            return;
+        }
+
+        // Вниз -- лише коли Є куди: коротка розмова стоїть згори, і жодного
+        // «прокручено в нікуди» на одному повідомленні.
+        if (m_LinesY > 274)
+            sc.VScrollToPos01(1.0);
+        else
+            sc.VScrollToPos01(0);
     }
 
     private void PaintView()
@@ -529,11 +872,56 @@ class OZ_PdaPageChat : OZ_PdaPage
             return;
 
         SetText("ChatTitle", m_View.Title);
+        m_ViewDesc = m_View.Desc;
+
+        // Члени групи -- накладка по кнопці MEMBERS: рядки розмови ніхто
+        // не пережимає, і ламатись більше нема чому.
+        bool grp = (m_View.Kind == "group");
+        if (m_BtnMembers)
+            m_BtnMembers.Show(grp);
+        if (!grp)
+        {
+            Widget mp = Wgt("MembersPanel");
+            if (mp)
+                mp.Show(false);
+        }
+
+        if (grp)
+        {
+            SetText("MembersHead", "#STR_OZ_CHAT_MEMBERS");
+            string ms = "";
+            if (m_View.Members)
+            {
+                for (int mi = 0; mi < m_View.Members.Count(); mi++)
+                    ms += m_View.Members[mi] + "\n";
+            }
+            TextWidget ml = TextWidget.Cast(Wgt("MembersList"));
+            if (ml)
+                ml.SetText(ms);
+        }
+
+        // Пейджер -- канал В ОДИН БІК: приймач без передавача. Поле вводу
+        // й SEND ховаються, а підказка чесно каже чому.
+        bool pager = (m_View.Kind == "npc");
+        if (m_Input)
+            m_Input.Show(!pager);
+        if (m_BtnSend)
+            m_BtnSend.Show(!pager);
+        Widget inf = Wgt("ChatInputFrame");
+        if (inf)
+            inf.Show(!pager);
+        Widget infl = Wgt("ChatInputFill");
+        if (infl)
+            infl.Show(!pager);
+        if (pager)
+            SetText("ChatHint", "#STR_OZ_CHAT_PAGER_RO");
 
         // Кликати в розмову можна лише в групову: особиста розмова -- це рівно
         // двоє, і третій у ній не «запрошений», а зовсім інша розмова.
         if (m_BtnInvite)
             m_BtnInvite.Show(m_View.Kind == "group");
+        if (m_BtnGroupEdit)
+            m_BtnGroupEdit.Show(m_View.Kind == "group");
 
         if (m_BtnAnon)
         {
@@ -548,9 +936,34 @@ class OZ_PdaPageChat : OZ_PdaPage
         for (int i = 0; i < n; i++)
             LineRow(m_View.Lines[i]);
 
+        // Розмір канви відомий СИНХРОННО: висота рядка фіксована, і чекати
+        // рендера нема чого. Прибирає кадр «порожньої» розмови.
+        if (m_Lines)
+        {
+            int wantL = m_LinesY;
+            if (wantL < 274)
+                wantL = 274;
+            m_Lines.SetSize(697, wantL);
+        }
+
         if (n == 0)
             SetText("ChatHint", "#STR_OZ_CHAT_EMPTY");
         else
             SetText("ChatHint", "");
+
+        // NPC-розмова -- скриптова: історію їй не «довантажують», вона
+        // ВЕДЕТЬСЯ. Кнопка старого тут лише збивала б з пантелику.
+        if (m_BtnOlder)
+            m_BtnOlder.Show(m_View.More && m_View.Kind != "npc");
+
+        // Перерахунок розмірів ДО мотання: спейсер міряється лише в кадрі,
+        // і скролер зі старою висотою мотає в порожнечу за останнім рядком.
+        if (m_Lines)
+            m_Lines.Update();
+
+        // Розмова читається знизу: свіже повідомлення мусить бути видно без
+        // ручного мотання. Після довантаження історії -- навпаки, вгору, до
+        // щойно прочитаного.
+        GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(ScrollDown, 50, false);
     }
 }

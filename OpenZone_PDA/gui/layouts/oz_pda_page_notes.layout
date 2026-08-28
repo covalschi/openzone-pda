@@ -27,7 +27,9 @@ FrameWidgetClass OZ_PageNotes {
    font "gui/fonts/MetronBook14"
    "exact text" 1
   }
-  TextListboxWidgetClass NoteList {
+  // Не listbox: коліщатко листбокса ГОРТАЄ ВИБІР (і тим підміняє відкриту
+  // записку), а канва в скролі гортає список -- як і належить.
+  ScrollWidgetClass NotesScroll {
    visible 1
    position 16 12
    size 340 356
@@ -35,18 +37,20 @@ FrameWidgetClass OZ_PageNotes {
    vexactpos 1
    hexactsize 1
    vexactsize 1
-   style NoScrollBar
-   "title visible" 0
-   "highlight row" 1
-   // Дві колонки: назва обрізається СВОЄЮ шириною, а дата живе в правій
-   // і не з'їдається довгою назвою. "colums" -- ванільна опечатка ключа.
-   colums "text;74;date;26;"
-   lines 14
-   font "gui/fonts/sdf_MetronBook24"
-   "exact text" 1
-   "exact text size" 14
-   color 0.788 0.788 0.816 1
+   "Scrollbar V" 1
    priority 2
+   {
+    PanelWidgetClass NotesCanvas {
+     visible 1
+     position 0 0
+     size 340 356
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0 0 0 0
+    }
+   }
   }
 
   // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
@@ -167,7 +171,7 @@ FrameWidgetClass OZ_PageNotes {
     // Той самий віджет, яким ваниль дає писати на папері
     // (gui/layouts/day_z_inventory_note.layout). Клавіатуру він ловить сам --
     // на відміну від OnKeyPress меню, куди ввід доходить не з усякого джерела.
-    MultilinePanelWidgetClass NoteBodyFrame {
+    PanelWidgetClass NoteBodyFrame {
  visible 1
  ignorepointer 1
  color 0.31 0.31 0.35 1
@@ -193,7 +197,7 @@ PanelWidgetClass NoteBodyFill {
  priority 0
  style rover_sim_colorable
 }
-EditBoxWidgetClass NoteBody {
+MultilineEditBoxWidgetClass NoteBody {
      visible 1
      position 10 42
      size 637 304

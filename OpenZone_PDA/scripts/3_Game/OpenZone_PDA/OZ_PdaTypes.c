@@ -50,10 +50,13 @@ class OZ_PdaDeviceStatus
     string CarrierClass = "";
     bool   CarrierWritable = false;
     string CarrierDisplay  = "";
-    string CarrierKind  = "";
     bool   CarrierWritten = false;
+    // Секції нарізно: -1 -- секції немає. Стелі класу поруч, 0 -- безліміт.
+    int    CarrierMarks = -1;
+    int    CarrierNotes = -1;
+    int    CarrierMaxMarks = 0;
+    int    CarrierMaxNotes = 0;
     // Скільки одиниць на чипі; -1 -- невідомо (чужий род або старий запис).
-    int    CarrierCount = -1;
 
     // --- замок ---
     bool HasPin   = false;
@@ -373,6 +376,7 @@ class OZ_ChatHead
     string Id       = "";
     string Kind     = "direct";
     string Title    = "";
+    string Desc     = "";
     string LastAt   = "";
     string LastText = "";
 }
@@ -400,6 +404,11 @@ class OZ_ChatView
     string Id    = "";
     string Kind  = "direct";
     string Title = "";
+    string Desc  = "";
+    // Чи є що вантажити ГЛИБШЕ, і якір найстарішого показаного рядка.
+    // Якір непрозорий: клієнт лише повертає його в "older" як є.
+    bool   More = false;
+    string Before = "";
     ref array<ref OZ_ChatLine> Lines;
     ref array<string> Members;
 
@@ -430,4 +439,39 @@ class OZ_ChatAdd
     string Id   = "";
     string Name = "";
     string Key  = "";
+}
+
+// Один запис на носії, на який вказує гравець: секція і місце в ній.
+class OZ_CarrierItemRef
+{
+    string Kind = "";   // "mark" | "note"
+    int    Index = -1;
+}
+
+// Кого можна покликати в групу: імена контактів гравця. Відповідь сторінки
+// чату, бо саме їй потрібна -- меню маршрутизує відповіді за сторінкою.
+class OZ_ChatInvitees
+{
+    ref array<string> Names;
+
+    void OZ_ChatInvitees()
+    {
+        Names = new array<string>();
+    }
+}
+
+// Назва й опис групи одним листом: Id порожній -- створити, заданий --
+// правити існуючу.
+class OZ_ChatGroupSpec
+{
+    string Id   = "";
+    string Name = "";
+    string Desc = "";
+}
+
+// «Дай старіше»: якір -- Before із попередньої відповіді.
+class OZ_ChatOlderReq
+{
+    string Id     = "";
+    string Before = "";
 }

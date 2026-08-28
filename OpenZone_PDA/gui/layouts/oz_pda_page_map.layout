@@ -133,7 +133,7 @@ FrameWidgetClass OZ_PageMap {
      priority 2
     }
 
-    MultilinePanelWidgetClass MarkerDescFrame {
+    PanelWidgetClass MarkerDescFrame {
  visible 1
  ignorepointer 1
  color 0.31 0.31 0.35 1
@@ -159,7 +159,7 @@ PanelWidgetClass MarkerDescFill {
  priority 0
  style rover_sim_colorable
 }
-EditBoxWidgetClass MarkerDesc {
+MultilineEditBoxWidgetClass MarkerDesc {
      visible 1
      position 8 198
      size 244 40

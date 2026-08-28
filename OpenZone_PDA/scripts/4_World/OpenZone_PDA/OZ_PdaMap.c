@@ -88,18 +88,18 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             return "";
         }
 
-        OZ_DataCarrier_Base c = OZ_CarrierOps.ResolveWritable(sender, "markers", error);
+        OZ_DataCarrier_Base c = OZ_CarrierOps.ResolveWritable(sender, error);
         if (!c)
             return "";
 
         OZ_MarkerList carried = new OZ_MarkerList();
-        if (c.OZ_IsWritten() && c.OZ_Payload() != "")
+        if (c.OZ_Marks() != "")
         {
             OZ_MarkerList parsed;
-            if (JsonFileLoader<OZ_MarkerList>.LoadData(c.OZ_Payload(), parsed, err) && parsed && parsed.Items)
+            if (JsonFileLoader<OZ_MarkerList>.LoadData(c.OZ_Marks(), parsed, err) && parsed && parsed.Items)
                 carried = parsed;
             else
-                // Як і в нотатках: свіжий список поверх нечитного пейлоада,
+                // Як і в нотатках: свіжий список поверх нечитної секції,
                 // але зі слідом у лозі -- на чипі щось було.
                 OZ_Log.Warn("carrier: unreadable markers payload on " + c.GetType() + ", replacing (" + err + ")");
         }
@@ -141,7 +141,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             return "";
         }
 
-        c.OZ_Write("markers", outJson, carried.Items.Count());
+        c.OZ_WriteMarks(outJson, carried.Items.Count());
 
         ok = true;
         error = "";

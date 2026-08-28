@@ -179,18 +179,18 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
         n.Title = OZ_Text.Clip(n.Title, OZ_PdaConst.NOTE_TITLE_MAX);
         n.Body  = OZ_Text.Clip(n.Body, OZ_PdaConst.NOTE_BODY_MAX);
 
-        OZ_DataCarrier_Base c = OZ_CarrierOps.ResolveWritable(sender, "notes", error);
+        OZ_DataCarrier_Base c = OZ_CarrierOps.ResolveWritable(sender, error);
         if (!c)
             return "";
 
         OZ_NoteBook book = new OZ_NoteBook();
-        if (c.OZ_IsWritten() && c.OZ_Payload() != "")
+        if (c.OZ_Notes() != "")
         {
             OZ_NoteBook parsed;
-            if (JsonFileLoader<OZ_NoteBook>.LoadData(c.OZ_Payload(), parsed, err) && parsed && parsed.Notes)
+            if (JsonFileLoader<OZ_NoteBook>.LoadData(c.OZ_Notes(), parsed, err) && parsed && parsed.Notes)
                 book = parsed;
             else
-                // Нечитний пейлоад -- перезаписуємо свіжою книжкою: рятувати
+                // Нечитна секція -- перезаписуємо свіжою книжкою: рятувати
                 // там нема чого. Але МОВЧКИ губити чужі дані не можна --
                 // слід у лозі каже, що на чипі щось БУЛО.
                 OZ_Log.Warn("carrier: unreadable notes payload on " + c.GetType() + ", replacing (" + err + ")");
@@ -228,7 +228,7 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
             return "";
         }
 
-        c.OZ_Write("notes", outJson, book.Notes.Count());
+        c.OZ_WriteNotes(outJson, book.Notes.Count());
 
         ok = true;
         error = "";

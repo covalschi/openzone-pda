@@ -102,6 +102,7 @@ class OZ_PdaConst
     // і згодом у тред Discord, у якого своя межа.
     static const int CHAT_MSG_MAX   = 220;
     static const int CHAT_TITLE_MAX = 32;
+    static const int CHAT_DESC_MAX  = 96;
     static const int CHAT_KEEP      = 100;
     static const int CHAT_GROUP_MAX = 16;
 }

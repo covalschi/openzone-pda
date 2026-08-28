@@ -34,6 +34,14 @@ class OZ_ChatAskOpen
     int    Limit;
 }
 
+class OZ_ChatAskOlder
+{
+    string Uid;
+    string Id;
+    string Before;
+    int    Limit;
+}
+
 class OZ_ChatAskSend
 {
     string Uid;
@@ -55,6 +63,17 @@ class OZ_ChatAskGroup
 {
     string Uid;
     string Title;
+    string Desc;
+}
+
+// Правка існуючої групи: назва й опис. Порожнє поле -- «не чіпати» вирішує
+// міст, який єдиний знає поточні значення.
+class OZ_ChatAskGroupEdit
+{
+    string Uid;
+    string Id;
+    string Title;
+    string Desc;
 }
 
 class OZ_ChatAskInvite
@@ -78,6 +97,10 @@ class OZ_ChatFail
             return "STR_OZ_ERR_NOT_GROUP";
         if (code == "already_in")
             return "STR_OZ_ERR_GROUP_ALREADY_IN";
+        if (code == "discord_down")
+            return "STR_OZ_ERR_NO_BRIDGE";
+        if (code == "read_only")
+            return "STR_OZ_ERR_READ_ONLY";
         return "STR_OZ_ERR_INTERNAL";
     }
 }
@@ -218,6 +241,9 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         if (op == "open")
             return Open(json, sender, error);
 
+        if (op == "older")
+            return Older(json, sender, error);
+
         if (op == "send")
             return Send(json, sender, error);
 
@@ -229,6 +255,15 @@ class OZ_PdaHandlerChat : OZ_PageHandler
 
         if (op == "group_add")
             return GroupAdd(json, sender, error);
+
+        if (op == "group_edit")
+            return GroupEdit(json, sender, error);
+
+        if (op == "group_del")
+            return GroupDel(json, sender, error);
+
+        if (op == "invitees")
+            return Invitees(sender, ok, error);
 
         return "";
     }
@@ -283,6 +318,38 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         }
 
         OZ_BridgeClient.Call("v1/chat/open", letter, new OZ_ChatReply(uid, "open", true));
+
+        error = OZ_Const.DEFER;
+        return "";
+    }
+
+    private string Older(string json, PlayerIdentity sender, out string error)
+    {
+        OZ_ChatOlderReq r;
+        string err;
+        if (!JsonFileLoader<OZ_ChatOlderReq>.LoadData(json, r, err) || !r || r.Id == "")
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        string uid = sender.GetPlainId();
+
+        OZ_ChatAskOlder a = new OZ_ChatAskOlder();
+        a.Uid    = uid;
+        a.Id     = r.Id;
+        a.Before = r.Before;
+        a.Limit  = 50;
+
+        string letter;
+        if (!JsonFileLoader<OZ_ChatAskOlder>.MakeData(a, letter, err, false))
+        {
+            OZ_Log.Error("chat: cannot build the letter: " + err);
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        OZ_BridgeClient.Call("v1/chat/older", letter, new OZ_ChatReply(uid, "older", true));
 
         error = OZ_Const.DEFER;
         return "";
@@ -385,9 +452,9 @@ class OZ_PdaHandlerChat : OZ_PageHandler
 
     private string GroupNew(string json, PlayerIdentity sender, out string error)
     {
-        OZ_NameRef r;
+        OZ_ChatGroupSpec r;
         string err;
-        if (!JsonFileLoader<OZ_NameRef>.LoadData(json, r, err) || !r)
+        if (!JsonFileLoader<OZ_ChatGroupSpec>.LoadData(json, r, err) || !r)
         {
             error = "STR_OZ_ERR_INTERNAL";
             return "";
@@ -403,6 +470,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         OZ_ChatAskGroup a = new OZ_ChatAskGroup();
         a.Uid   = uid;
         a.Title = title;
+        a.Desc  = OZ_Text.Clip(MiscGameplayFunctions.SanitizeString(r.Desc), OZ_PdaConst.CHAT_DESC_MAX);
 
         string letter;
         if (!JsonFileLoader<OZ_ChatAskGroup>.MakeData(a, letter, err, false))
@@ -416,6 +484,97 @@ class OZ_PdaHandlerChat : OZ_PageHandler
 
         error = OZ_Const.DEFER;
         return "";
+    }
+
+    private string GroupEdit(string json, PlayerIdentity sender, out string error)
+    {
+        OZ_ChatGroupSpec r;
+        string err;
+        if (!JsonFileLoader<OZ_ChatGroupSpec>.LoadData(json, r, err) || !r || r.Id == "")
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        string uid = sender.GetPlainId();
+
+        OZ_ChatAskGroupEdit a = new OZ_ChatAskGroupEdit();
+        a.Uid   = uid;
+        a.Id    = r.Id;
+        a.Title = OZ_Text.Clip(MiscGameplayFunctions.SanitizeString(r.Name), OZ_PdaConst.CHAT_TITLE_MAX);
+        a.Desc  = OZ_Text.Clip(MiscGameplayFunctions.SanitizeString(r.Desc), OZ_PdaConst.CHAT_DESC_MAX);
+
+        string letter;
+        if (!JsonFileLoader<OZ_ChatAskGroupEdit>.MakeData(a, letter, err, false))
+        {
+            OZ_Log.Error("chat: cannot build the letter: " + err);
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        OZ_BridgeClient.Call("v1/chat/group_edit", letter, new OZ_ChatReply(uid, "group_edit", false));
+
+        error = OZ_Const.DEFER;
+        return "";
+    }
+
+    private string GroupDel(string json, PlayerIdentity sender, out string error)
+    {
+        OZ_NoteRef r;
+        string err;
+        if (!JsonFileLoader<OZ_NoteRef>.LoadData(json, r, err) || !r || r.Id == "")
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        string uid = sender.GetPlainId();
+
+        OZ_NotesAskDelete a = new OZ_NotesAskDelete();
+        a.Uid = uid;
+        a.Id  = r.Id;
+
+        string letter;
+        if (!JsonFileLoader<OZ_NotesAskDelete>.MakeData(a, letter, err, false))
+        {
+            OZ_Log.Error("chat: cannot build the letter: " + err);
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        OZ_BridgeClient.Call("v1/chat/group_del", letter, new OZ_ChatReply(uid, "group_del", false));
+
+        error = OZ_Const.DEFER;
+        return "";
+    }
+
+    // Кого МОЖНА покликати -- вирішує сервер, а не текстове поле: клієнт
+    // показує цей перелік і шле вибране ім'я в group_add, як і раніше.
+    private string Invitees(PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_PlayerData me = OZ_PlayerStore.Load(sender.GetPlainId());
+
+        OZ_ChatInvitees inv = new OZ_ChatInvitees();
+        for (int i = 0; i < me.Friends.Count(); i++)
+        {
+            OZ_PlayerData d = OZ_PlayerStore.Load(me.Friends[i]);
+            if (d && d.Name != "")
+                inv.Names.Insert(d.Name);
+        }
+
+        string outJson;
+        string err;
+        if (!JsonFileLoader<OZ_ChatInvitees>.MakeData(inv, outJson, err, false))
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        ok = true;
+        error = "";
+        return outJson;
     }
 
     private string GroupAdd(string json, PlayerIdentity sender, out string error)

@@ -72,7 +72,7 @@ ButtonWidgetClass OZ_ChatLine {
   TextWidgetClass LineAt {
    visible 1
    ignorepointer 1
-   position 491 2
+   position 471 2
    size 194 18
    hexactpos 1
    vexactpos 1

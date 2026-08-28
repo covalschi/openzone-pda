@@ -576,23 +576,59 @@ FrameWidgetClass OZ_PageDevice {
        priority 2
       }
 
-      ScrollWidgetClass CarScroll {
+      TextListboxWidgetClass CarList {
        visible 1
        position 8 26
-       size 661 128
+       size 330 128
        hexactpos 1
        vexactpos 1
        hexactsize 1
        vexactsize 1
-       contentwidth 645
-       contentheight 800
+       style NoScrollBar
+       "title visible" 0
+       "highlight row" 1
+       lines 7
+       font "gui/fonts/MetronBook14"
+       "exact text" 1
+       color 0.788 0.788 0.816 1
+       priority 3
+      }
+
+      TextWidgetClass CarItemHead {
+       visible 1
+       ignorepointer 1
+       position 346 26
+       size 323 16
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/MetronBook14"
+       "exact text" 1
+       "text halign" left
+       "text valign" center
+       priority 2
+      }
+
+      ScrollWidgetClass CarScroll {
+       visible 1
+       position 346 46
+       size 323 108
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       contentwidth 285
+       contentheight 108
        priority 2
        {
         MultilineTextWidgetClass CarBody {
          visible 1
          ignorepointer 1
          position 0 0
-         size 645 800
+         size 240 108
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -605,6 +641,124 @@ FrameWidgetClass OZ_PageDevice {
          "text halign" left
          "text valign" top
          priority 1
+        }
+       }
+      }
+
+      ButtonWidgetClass BtnCarTake {
+       visible 1
+       position 8 162
+       size 120 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       text ""
+       priority 3
+       {
+       PanelWidgetClass BtnCarTakeEdge {
+        visible 1
+        ignorepointer 1
+        color 0.31 0.31 0.35 1
+        position -1 -1
+        size 122 24
+        hexactpos 1
+        vexactpos 1
+        hexactsize 1
+        vexactsize 1
+        priority 0
+        style rover_sim_colorable
+       }
+
+        PanelWidgetClass BtnCarTakeBg {
+         visible 1
+         ignorepointer 1
+         color 0.145 0.145 0.161 1
+         position 0 0
+         size 120 22
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         priority 0
+         style rover_sim_colorable
+        }
+
+        TextWidgetClass BtnCarTakeText {
+         visible 1
+         ignorepointer 1
+         position 0 0
+         size 120 22
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         color 1 0.478 0.102 1
+         text ""
+         font "gui/fonts/MetronBook14"
+         "exact text" 1
+         "text halign" center
+         "text valign" center
+         priority 2
+        }
+       }
+      }
+
+      ButtonWidgetClass BtnCarDel {
+       visible 1
+       position 136 162
+       size 104 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       text ""
+       priority 3
+       {
+       PanelWidgetClass BtnCarDelEdge {
+        visible 1
+        ignorepointer 1
+        color 0.31 0.31 0.35 1
+        position -1 -1
+        size 106 24
+        hexactpos 1
+        vexactpos 1
+        hexactsize 1
+        vexactsize 1
+        priority 0
+        style rover_sim_colorable
+       }
+
+        PanelWidgetClass BtnCarDelBg {
+         visible 1
+         ignorepointer 1
+         color 0.145 0.145 0.161 1
+         position 0 0
+         size 104 22
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         priority 0
+         style rover_sim_colorable
+        }
+
+        TextWidgetClass BtnCarDelText {
+         visible 1
+         ignorepointer 1
+         position 0 0
+         size 104 22
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         color 1 0.478 0.102 1
+         text ""
+         font "gui/fonts/MetronBook14"
+         "exact text" 1
+         "text halign" center
+         "text valign" center
+         priority 2
         }
        }
       }

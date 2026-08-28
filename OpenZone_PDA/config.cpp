@@ -46,6 +46,9 @@ class CfgSlots
     {
         name = "OZ_PdaWear";
         displayName = "$STR_OZ_SLOT_PDA";
+        // Без привида слот у ванільній сітці інвентаря стоїть сліпим
+        // квадратом, який ніхто не впізнає. Рація -- найближчий силует.
+        ghostIcon = "set:dayz_inventory image:walkietalkie";
     };
 
     class Slot_OZ_Module1
@@ -156,6 +159,15 @@ class CfgVehicles
     class SurvivorBase : Man
     {
         attachments[] += {"OZ_PdaWear"};
+
+        // Сітку екіпіровки гравця ваніль будує НЕ з attachments[], а з
+        // цього списку (inventory.c: "CfgVehicles SurvivorBase
+        // InventoryEquipment playerSlots"). Без рядка тут слот працює,
+        // але в інвентарі його ніколи не видно.
+        class InventoryEquipment
+        {
+            playerSlots[] += {"Slot_OZ_PdaWear"};
+        };
     };
 
     class Inventory_Base;

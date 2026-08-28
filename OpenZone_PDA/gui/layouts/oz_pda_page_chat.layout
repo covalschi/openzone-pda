@@ -27,14 +27,15 @@ FrameWidgetClass OZ_PageChat {
    "Scrollbar V" 1
    priority 2
    {
-    WrapSpacerWidgetClass ChatList {
+    PanelWidgetClass ChatList {
      visible 1
      position 0 0
      size 300 356
      hexactpos 1
      vexactpos 1
      hexactsize 1
-     vexactsize 0
+     vexactsize 1
+     color 0 0 0 0
     }
    }
   }
@@ -120,6 +121,124 @@ FrameWidgetClass OZ_PageChat {
    priority 2
   }
 
+  ButtonWidgetClass BtnMembers {
+   visible 0
+   position 585 12
+   size 110 24
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnMembersEdge {
+     visible 1
+     ignorepointer 1
+     color 0.31 0.31 0.35 1
+     position -1 -1
+     size 112 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
+
+    PanelWidgetClass BtnMembersBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 110 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
+
+    TextWidgetClass BtnMembersText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 110 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
+  ButtonWidgetClass BtnGroupEdit {
+   visible 0
+   position 703 12
+   size 138 24
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnGroupEditEdge {
+     visible 1
+     ignorepointer 1
+     color 0.31 0.31 0.35 1
+     position -1 -1
+     size 140 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
+
+    PanelWidgetClass BtnGroupEditBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 138 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
+
+    TextWidgetClass BtnGroupEditText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 138 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
   ButtonWidgetClass BtnInvite {
    visible 0
    position 849 12
@@ -184,10 +303,55 @@ FrameWidgetClass OZ_PageChat {
   // Listbox не переносить рядок: довге повідомлення обрізалось на середині
   // слова й прочитати його було ніде. Тепер кожна репліка -- власна розкладка
   // (oz_pda_chat_line.layout) з MultilineTextWidget усередині.
+  ButtonWidgetClass BtnOlder {
+   visible 0
+   position 332 42
+   size 697 18
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnOlderBg {
+     visible 1
+     ignorepointer 1
+     color 0.098 0.098 0.11 1
+     position 0 0
+     size 697 18
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
+
+    TextWidgetClass BtnOlderText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 697 18
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
   ScrollWidgetClass ChatScroll {
    visible 1
-   position 332 42
-   size 697 296
+   position 332 64
+   size 697 274
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -195,14 +359,482 @@ FrameWidgetClass OZ_PageChat {
    "Scrollbar V" 1
    priority 2
    {
-    WrapSpacerWidgetClass ChatLines {
+    // ГЛУПА КАНВА, не спейсер: WrapSpacer із самовимірюванням розпухає
+    // назавжди (зміряно живцем: 105 613 юнітів висоти на порожній
+    // розмові), і скрол мотає у його порожнє черево. Рядки кладе скрипт
+    // руками, розмір канви = рівно вміст.
+    PanelWidgetClass ChatLines {
      visible 1
      position 0 0
-     size 697 296
+     size 697 274
      hexactpos 1
      vexactpos 1
      hexactsize 1
-     vexactsize 0
+     vexactsize 1
+     color 0 0 0 0
+    }
+   }
+  }
+
+  // Члени групи -- НАКЛАДКА поверх розмови, як панель запрошення: жодного
+  // пережимання рядків, кнопка MEMBERS показує і ховає.
+  PanelWidgetClass MembersPanel {
+   visible 0
+   position 332 42
+   size 697 296
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.043 0.043 0.051 1
+   priority 5
+   style rover_sim_colorable
+   {
+    TextWidgetClass MembersHead {
+     visible 1
+     ignorepointer 1
+     position 6 4
+     size 500 14
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     "text halign" left
+     "text valign" center
+     priority 2
+    }
+
+    MultilineTextWidgetClass MembersList {
+     visible 1
+     ignorepointer 1
+     position 6 24
+     size 685 266
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     wrap 1
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     "text halign" left
+     "text valign" top
+     priority 2
+    }
+   }
+  }
+
+  // Назва й опис групи: створення і правка однією панеллю. НАКЛАДКА, як і
+  // вибір контакта нижче.
+  PanelWidgetClass GroupPanel {
+   visible 0
+   position 332 42
+   size 697 296
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.043 0.043 0.051 1
+   priority 6
+   style rover_sim_colorable
+   {
+    TextWidgetClass GroupHead {
+     visible 1
+     ignorepointer 1
+     position 8 4
+     size 500 16
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     "text halign" left
+     "text valign" center
+     priority 2
+    }
+
+    PanelWidgetClass GNameFrame {
+     visible 1
+     ignorepointer 1
+     color 0.31 0.31 0.35 1
+     position 8 40
+     size 420 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
+
+    PanelWidgetClass GNameFill {
+     visible 1
+     ignorepointer 1
+     color 0.086 0.086 0.098 1
+     position 9 41
+     size 418 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
+
+    EditBoxWidgetClass GName {
+     visible 1
+     position 12 42
+     size 412 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     priority 2
+    }
+
+    PanelWidgetClass GDescFrame {
+     visible 1
+     ignorepointer 1
+     color 0.31 0.31 0.35 1
+     position 8 84
+     size 681 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
+
+    PanelWidgetClass GDescFill {
+     visible 1
+     ignorepointer 1
+     color 0.086 0.086 0.098 1
+     position 9 85
+     size 679 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
+
+    EditBoxWidgetClass GDesc {
+     visible 1
+     position 12 86
+     size 673 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     priority 2
+    }
+
+    ButtonWidgetClass BtnGDel {
+     visible 1
+     position 8 268
+     size 130 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnGDelEdge {
+       visible 1
+       ignorepointer 1
+       color 0.45 0.2 0.2 1
+       position -1 -1
+       size 132 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      PanelWidgetClass BtnGDelBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 130 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      TextWidgetClass BtnGDelText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 130 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 0.9 0.45 0.35 1
+       text ""
+       font "gui/fonts/MetronBook14"
+       "exact text" 1
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
+    ButtonWidgetClass BtnGSave {
+     visible 1
+     position 465 268
+     size 104 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnGSaveEdge {
+       visible 1
+       ignorepointer 1
+       color 0.31 0.31 0.35 1
+       position -1 -1
+       size 106 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      PanelWidgetClass BtnGSaveBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 104 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      TextWidgetClass BtnGSaveText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 104 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/MetronBook14"
+       "exact text" 1
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
+    ButtonWidgetClass BtnGCancel {
+     visible 1
+     position 585 268
+     size 104 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnGCancelEdge {
+       visible 1
+       ignorepointer 1
+       color 0.31 0.31 0.35 1
+       position -1 -1
+       size 106 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      PanelWidgetClass BtnGCancelBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 104 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      TextWidgetClass BtnGCancelText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 104 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/MetronBook14"
+       "exact text" 1
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+   }
+  }
+
+  // Вибір контакта для запрошення в групу. НАКЛАДКА поверх розмови:
+  // з'являється по INVITE CONTACT, зникає вибором або CANCEL. Список --
+  // TextListbox, той самий клік-механізм, що в записок.
+  PanelWidgetClass InvitePanel {
+   visible 0
+   position 332 42
+   size 697 296
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.043 0.043 0.051 1
+   priority 6
+   style rover_sim_colorable
+   {
+    TextWidgetClass InviteHead {
+     visible 1
+     ignorepointer 1
+     position 8 4
+     size 500 16
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     "text halign" left
+     "text valign" center
+     priority 2
+    }
+
+    TextListboxWidgetClass InviteList {
+     visible 1
+     position 8 26
+     size 681 236
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     style NoScrollBar
+     "title visible" 0
+     "highlight row" 1
+     lines 14
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 14
+     color 1 0.478 0.102 1
+     priority 3
+    }
+
+    ButtonWidgetClass BtnInvCancel {
+     visible 1
+     position 585 268
+     size 104 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnInvCancelEdge {
+       visible 1
+       ignorepointer 1
+       color 0.31 0.31 0.35 1
+       position -1 -1
+       size 106 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      PanelWidgetClass BtnInvCancelBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 104 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      TextWidgetClass BtnInvCancelText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 104 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/MetronBook14"
+       "exact text" 1
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
     }
    }
   }

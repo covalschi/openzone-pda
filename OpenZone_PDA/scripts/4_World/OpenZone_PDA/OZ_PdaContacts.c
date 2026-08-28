@@ -85,7 +85,12 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
             bool isMe = (uid == myUid);
             bool isFriend = Has(me.Friends, uid);
 
-            if (!isMe && !isFriend)
+            // Сховався -- значить сховався ВІД УСІХ, і від друзів теж
+            // (рішення власника 2026-08-28: перша редакція лишала друзям
+            // видимість, і в грі це читалось як поломка). Схований друг
+            // не зникає з книжки -- він падає нижче, в ОФЛАЙН: людини в
+            // Зоні не видно, і байдуже чому.
+            if (!isMe)
             {
                 OZ_PlayerData d = OZ_PlayerStore.Load(uid);
                 if (d.PresenceHidden)
@@ -141,6 +146,29 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         // Лише контакти. Вхідні пропозиції в списку більше не з'являються --
         // на них не відповідають з меню.
         AddOffline(list, me.Friends, seen, "friend", myFaction);
+
+        // NPC-контакти -- окремим родом. Ім'я дає реєстр OZ_PdaNpc; NPC,
+        // якого мод цього старту не зареєстрував, чесно не показується.
+        for (int ni = 0; ni < me.NpcContacts.Count(); ni++)
+        {
+            string tag = me.NpcContacts[ni];
+            if (tag.IndexOf("npc:") != 0)
+                continue;
+
+            string npcName = OZ_PdaNpc.NameOf(tag.Substring(4, tag.Length() - 4));
+            if (npcName == "")
+                continue;
+
+            OZ_ContactEntry ne = new OZ_ContactEntry();
+            ne.Name   = npcName;
+            ne.Key    = tag;
+            ne.Rel    = "npc";
+            ne.Online = true;
+            // Показний підзаголовок без нового клієнтського коду: рядок
+            // звання рендериться під іменем, і "NPC" там читається як слід.
+            ne.Rank   = "NPC";
+            list.Entries.Insert(ne);
+        }
 
         return Serialise(list, ok, error);
     }
