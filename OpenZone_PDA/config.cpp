@@ -73,6 +73,8 @@ class CfgPatches
             "OZ_PDA_Advanced",
             "OZ_PDA_Sealed",
             "OZ_DataCarrier_Chip",
+            "OZ_DataCarrier_Floppy",
+            "OZ_DataCarrier_Drive",
             "OZ_Module_Radiometer",
             "OZ_Module_Dosimeter",
             "OZ_Module_Antenna",
