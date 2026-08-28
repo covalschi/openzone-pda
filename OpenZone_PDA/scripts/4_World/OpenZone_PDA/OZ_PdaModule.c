@@ -89,11 +89,23 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             return "";
 
         // Перше справжнє застосування Writable з Hardware.json: чип, який
-        // конфіг оголосив лише читаним, не перезаписується ніколи.
+        // конфіг оголосив лише читаним, не перезаписується ніколи. Клас БЕЗ
+        // запису в таблиці -- теж замок: клієнт такому кнопок не малює, і
+        // підроблений запит не має права пройти там, де чесний не пройде.
         OZ_CarrierSpec spec = OZ_PdaHardware.CarrierFor(c.GetType());
-        if (spec && !spec.Writable)
+        if (!spec || !spec.Writable)
         {
             error = "STR_OZ_ERR_CARRIER_LOCKED";
+            return "";
+        }
+
+        // Перезапис ІНШИМ родом -- лише через явне стирання: мітки живуть
+        // тільки на пристрої й чипі, і мовчазна заміна книжкою нотаток
+        // губила б їх безповоротно. Свій род поверх себе -- звичайне
+        // оновлення, воно лишається в один дотик.
+        if (c.OZ_IsWritten() && c.OZ_Kind() != opw.Kind)
+        {
+            error = "STR_OZ_ERR_CARRIER_KIND";
             return "";
         }
 
@@ -104,7 +116,13 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             if (payload == "")
                 payload = "{\"Version\":1,\"Items\":[]}";
 
-            c.OZ_Write("markers", payload);
+            int cnt = 0;
+            OZ_MarkerList pl;
+            string perr;
+            if (JsonFileLoader<OZ_MarkerList>.LoadData(payload, pl, perr) && pl && pl.Items)
+                cnt = pl.Items.Count();
+
+            c.OZ_Write("markers", payload, cnt);
             ok = true;
             error = "";
             return "";
@@ -113,8 +131,10 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         if (opw.Kind == "notes")
         {
             // Записки живуть у Discord -- їх спершу треба ПРИНЕСТИ. Відповідь
-            // відкладена, як усе, що ходить через міст.
-            if (!OZ_BridgeClient.IsRunning())
+            // відкладена, як усе, що ходить через міст. Alive, не IsRunning:
+            // друге означає лише «опит увімкнено в налаштуваннях», і мертвий
+            // міст висів би мовчки замість чесної відмови.
+            if (!OZ_BridgeClient.Alive())
             {
                 error = "STR_OZ_ERR_NO_BRIDGE";
                 return "";
@@ -131,7 +151,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 return "";
             }
 
-            OZ_BridgeClient.Call("v1/notes/list", letter, new OZ_CarrierNotesReply(uid));
+            OZ_BridgeClient.Call("v1/notes/list", letter, new OZ_CarrierNotesReply(uid, c));
             error = OZ_Const.DEFER;
             return "";
         }
@@ -214,13 +234,28 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             if (prof && prof.Limits)
                 limit = prof.Limits.Markers;
 
-            int taken = 0;
-            for (int i = 0; i < incoming.Items.Count(); i++)
+            // limit <= 0 -- зіпсований конфіг. Сторінка карти в цьому стані
+            // відмовляє СТАВИТИ, тож імпорт поводиться так само, а не читає
+            // той самий нуль як «безліміт».
+            if (limit <= 0 || mine.Items.Count() >= limit)
             {
-                if (limit > 0 && mine.Items.Count() >= limit)
+                error = "STR_OZ_ERR_MARKERS_FULL";
+                return "";
+            }
+
+            int total = incoming.Items.Count();
+            int taken = 0;
+            for (int i = 0; i < total; i++)
+            {
+                if (mine.Items.Count() >= limit)
                     break;
 
                 OZ_MapMarker m = incoming.Items[i];
+
+                // Той самий санітар, що й у marker_add: чуже походження --
+                // не привілей, а межі в чипа ніхто не питав.
+                m.Name = OZ_Text.Clip(m.Name, OZ_PdaConst.MARKER_NAME_MAX);
+                m.Desc = OZ_Text.Clip(m.Desc, OZ_PdaConst.MARKER_DESC_MAX);
 
                 // Id карбуємо ЗАНОВО: чужі id зіткнулись би з нашими, і
                 // видалення по id зносило б не ту мітку.
@@ -238,16 +273,26 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             }
 
             pda.OZ_SetMarkersJson(outJson);
-            OZ_Log.Info("carrier: imported " + taken.ToString() + " marker(s) for " + sender.GetPlainId());
+            OZ_Log.Info("carrier: imported " + taken.ToString() + "/" + total.ToString() + " marker(s) for " + sender.GetPlainId());
+
+            // Скільки влізло -- у відповідь: «Done.» при 25 з 40 було б
+            // брехнею, а гравець мусить знати, що хвіст лишився на чипі.
+            OZ_CarrierTaken t = new OZ_CarrierTaken();
+            t.Taken = taken;
+            t.Total = total;
+
+            string tj;
+            if (!JsonFileLoader<OZ_CarrierTaken>.MakeData(t, tj, err, false))
+                tj = "";
 
             ok = true;
             error = "";
-            return "";
+            return tj;
         }
 
         if (c.OZ_Kind() == "notes")
         {
-            if (!OZ_BridgeClient.IsRunning())
+            if (!OZ_BridgeClient.Alive())
             {
                 error = "STR_OZ_ERR_NO_BRIDGE";
                 return "";
@@ -262,16 +307,23 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             }
 
             // Кожна записка -- окремий лист мостові з ПОРОЖНІМ Id: це
-            // «створи мені таку саму», а не «редагуй чужу».
+            // «створи мені таку саму», а не «редагуй чужу». Стеля та сама,
+            // що й у книжки (NOTES_MAX): один дотик не має права висипати в
+            // Discord більше, ніж книжка взагалі вміщає.
             string uid = sender.GetPlainId();
+            int wanted = book.Notes.Count();
+            int cap = wanted;
+            if (cap > OZ_PdaConst.NOTES_MAX)
+                cap = OZ_PdaConst.NOTES_MAX;
+
             int sent = 0;
-            for (int k = 0; k < book.Notes.Count(); k++)
+            for (int k = 0; k < cap; k++)
             {
                 OZ_NotesAskSave a = new OZ_NotesAskSave();
                 a.Uid   = uid;
                 a.Id    = "";
-                a.Title = book.Notes[k].Title;
-                a.Body  = book.Notes[k].Body;
+                a.Title = OZ_Text.Clip(book.Notes[k].Title, OZ_PdaConst.NOTE_TITLE_MAX);
+                a.Body  = OZ_Text.Clip(book.Notes[k].Body, OZ_PdaConst.NOTE_BODY_MAX);
                 a.Name  = sender.GetName();
 
                 string letter;
@@ -282,10 +334,19 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 sent++;
             }
 
-            OZ_Log.Info("carrier: importing " + sent.ToString() + " note(s) for " + uid);
+            OZ_Log.Info("carrier: importing " + sent.ToString() + "/" + wanted.ToString() + " note(s) for " + uid);
+
+            OZ_CarrierTaken tn = new OZ_CarrierTaken();
+            tn.Taken = sent;
+            tn.Total = wanted;
+
+            string tnj;
+            if (!JsonFileLoader<OZ_CarrierTaken>.MakeData(tn, tnj, err2, false))
+                tnj = "";
+
             ok = true;
             error = "";
-            return "";
+            return tnj;
         }
 
         error = "STR_OZ_ERR_INTERNAL";
@@ -301,9 +362,17 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             return "";
 
         OZ_CarrierSpec spec = OZ_PdaHardware.CarrierFor(c.GetType());
-        if (spec && !spec.Writable)
+        if (!spec || !spec.Writable)
         {
             error = "STR_OZ_ERR_CARRIER_LOCKED";
+            return "";
+        }
+
+        // Симетрія з імпортом і читанням: порожній чип стирати нема чого,
+        // і «зроблено» на ніщо було б звітом про неіснуючу роботу.
+        if (!c.OZ_IsWritten())
+        {
+            error = "STR_OZ_ERR_CARRIER_BLANK";
             return "";
         }
 
@@ -453,6 +522,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             if (carrier)
             {
                 st.CarrierWritten = carrier.OZ_IsWritten();
+                st.CarrierCount   = carrier.OZ_Count();
                 if (carrier.OZ_Kind() != "")
                     st.CarrierKind = carrier.OZ_Kind();
             }

@@ -52,6 +52,8 @@ class OZ_PdaDeviceStatus
     string CarrierDisplay  = "";
     string CarrierKind  = "";
     bool   CarrierWritten = false;
+    // Скільки одиниць на чипі; -1 -- невідомо (чужий род або старий запис).
+    int    CarrierCount = -1;
 
     // --- замок ---
     bool HasPin   = false;
@@ -345,6 +347,14 @@ class OZ_MarkerRef
 //
 // Що писати на чип. Kind -- "markers" або "notes"; порожні списки
 // означають «усе, що є».
+// Вiдповiдь iмпорту: скiльки взяли проти скiльки лежало. Рiзниця мiж ними
+// -- те, що НЕ влiзло, i гравець мусить це побачити, а не почути "Done.".
+class OZ_CarrierTaken
+{
+    int Taken = 0;
+    int Total = 0;
+}
+
 class OZ_CarrierWriteOp
 {
     string Kind = "";

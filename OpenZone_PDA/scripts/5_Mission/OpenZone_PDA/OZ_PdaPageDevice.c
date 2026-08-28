@@ -180,7 +180,28 @@ class OZ_PdaPageDevice : OZ_PdaPage
     {
         // Відповідь на живлення сама по собі нічого не несе: перепитуємо стан
         // і малюємо його, а причину відмови показуємо там, де вона видима.
-        if (op == "carrier_write" || op == "carrier_import" || op == "carrier_erase")
+        if (op == "carrier_import")
+        {
+            if (!ok)
+            {
+                SetHintSticky("CarrierText", "#" + error);
+            }
+            else
+            {
+                // Частковий iмпорт -- НЕ "Done.": скiльки взято проти
+                // скiльки лежало, i рiзниця досi на чипi.
+                OZ_CarrierTaken t;
+                string terr;
+                if (JsonFileLoader<OZ_CarrierTaken>.LoadData(json, t, terr) && t && t.Taken < t.Total)
+                    SetHintSticky("CarrierText", "#STR_OZ_DEV_CAR_PART  " + t.Taken.ToString() + "/" + t.Total.ToString());
+                else
+                    SetHintSticky("CarrierText", "#STR_OZ_DEV_CARRIER_DONE");
+            }
+            Request();
+            return;
+        }
+
+        if (op == "carrier_write" || op == "carrier_erase")
         {
             if (ok)
                 SetHintSticky("CarrierText", "#STR_OZ_DEV_CARRIER_DONE");
@@ -381,15 +402,36 @@ class OZ_PdaPageDevice : OZ_PdaPage
         line += "  ";
 
         if (st.CarrierClass == "")
+        {
             line += "#STR_OZ_DEV_BAY_EMPTY";
+        }
         else if (!st.CarrierWritten)
+        {
             line += "#STR_OZ_DEV_CARRIER_BLANK";
+        }
         else if (st.CarrierKind != "")
-            line += st.CarrierKind;
-        else
-            line += "#STR_OZ_DEV_CARRIER_UNKNOWN";
+        {
+            // Свої роди -- людським словом; чужий (iнший мод зi своєю
+            // сторiнкою) -- як є: його слово знає лише його сторiнка.
+            if (st.CarrierKind == "markers")
+                line += "#STR_OZ_DEV_CAR_MARKS";
+            else if (st.CarrierKind == "notes")
+                line += "#STR_OZ_DEV_CAR_NOTES";
+            else
+                line += st.CarrierKind;
 
-        SetText("CarrierText", line);
+            if (st.CarrierCount >= 0)
+                line += "  " + st.CarrierCount.ToString();
+        }
+        else
+        {
+            line += "#STR_OZ_DEV_CARRIER_UNKNOWN";
+        }
+
+        // SetHint, НЕ SetText: результат опа над носiєм липкий, а цей рядок
+        // перемальовується щосекунди -- прямий запис з'їдав його до того, як
+        // око встигало прочитати. Рiвно та хвороба, яку лiкує HINT_HOLD_MS.
+        SetHint("CarrierText", line);
     }
 
     private void PaintSession(OZ_PdaDeviceStatus st)
