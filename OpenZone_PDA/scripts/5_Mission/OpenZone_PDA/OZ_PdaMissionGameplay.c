@@ -104,6 +104,12 @@ modded class MissionGameplay
             menu = new OZ_PdaMenu();
             menu.SetID(id);
         }
+
+        if (id == OZ_PdaConst.MENU_PDA_HUD)
+        {
+            menu = new OZ_HudEditMenu();
+            menu.SetID(id);
+        }
 #endif
 
         return menu;

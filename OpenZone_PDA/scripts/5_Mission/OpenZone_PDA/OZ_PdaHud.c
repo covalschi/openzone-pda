@@ -21,6 +21,16 @@ class OZ_PdaHudEars
     }
 }
 
+// Одна панель HUD у реєстрі: віджет, типове місце і людський підпис.
+class OZ_HudPane
+{
+    string Id;
+    Widget W;
+    float  DefX;
+    float  DefY;
+    string Label;
+}
+
 class OZ_PdaHud
 {
     private static Widget s_Root;
@@ -34,6 +44,7 @@ class OZ_PdaHud
     private static float s_Acc = 0;
     private static bool s_Hooked = false;
     private static ref OZ_PdaHudEars s_Ears;
+    private static ref array<ref OZ_HudPane> s_Panes = new array<ref OZ_HudPane>();
 
     // Тост тримається стільки, скільки людина читає один рядок.
     private static float s_ToastUntil = 0;
@@ -225,6 +236,73 @@ class OZ_PdaHud
         s_ToastText = TextWidget.Cast(s_Root.FindAnyWidget("ToastText"));
         s_Mini      = s_Root.FindAnyWidget("MiniPane");
         s_MiniMap   = MapWidget.Cast(s_Root.FindAnyWidget("MiniMap"));
+
+        // Свої панелі йдуть через той самий реєстр, що й чужі: власна їжа.
+        Adopt("strip", s_Strip, 0.845, 0.845, "#STR_OZ_HUD_PANE_STRIP");
+        Adopt("toast", s_Toast, 0.69, 0.845, "#STR_OZ_HUD_PANE_TOAST");
+        Adopt("mini",  s_Mini,  0.845, 0.6,  "#STR_OZ_HUD_PANE_MINI");
+    }
+
+    // ------------------------------------------------------------ реєстр
+    //
+    // ПУБЛІЧНИЙ ВХІД ДЛЯ МОДУЛІВ: чужий мод створює свій віджет на робочій
+    // області сам і віддає його сюди з унікальним id -- отримує збережену
+    // позицію гравця, місце в редакторі розкладки і типове місце на випадок,
+    // коли гравець ще нічого не рухав. Ховати/показувати віджет мод
+    // продовжує сам: реєстр володіє ПОЗИЦІЄЮ, не видимістю.
+    static void Adopt(string id, Widget w, float defX, float defY, string label)
+    {
+        if (!w || id == "")
+            return;
+
+        OZ_HudPane pane;
+        for (int i = 0; i < s_Panes.Count(); i++)
+        {
+            if (s_Panes[i].Id == id)
+            {
+                pane = s_Panes[i];
+                break;
+            }
+        }
+
+        if (!pane)
+        {
+            pane = new OZ_HudPane();
+            s_Panes.Insert(pane);
+        }
+
+        pane.Id    = id;
+        pane.W     = w;
+        pane.DefX  = defX;
+        pane.DefY  = defY;
+        pane.Label = label;
+
+        float x = defX;
+        float y = defY;
+        OZ_PdaHudLayout.Get(id, x, y);
+        w.SetPos(x, y);
+    }
+
+    static array<ref OZ_HudPane> Panes()
+    {
+        return s_Panes;
+    }
+
+    // Перечитати збережені позиції для всіх панелей -- редактор кличе це
+    // після APPLY, щоб живий HUD став туди, куди його поклали.
+    static void Reapply()
+    {
+        for (int i = 0; i < s_Panes.Count(); i++)
+        {
+            OZ_HudPane pane = s_Panes[i];
+            if (!pane.W)
+                continue;
+
+            float x = pane.DefX;
+            float y = pane.DefY;
+            OZ_PdaHudLayout.Get(pane.Id, x, y);
+            pane.W.SetPos(x, y);
+        }
     }
 
     // Смужка мусить зникати разом із рештою інтерфейсу: гравець ховає HUD не
@@ -307,6 +385,7 @@ class OZ_PdaHud
         s_Mini      = null;
         s_MiniMap   = null;
         s_Ears      = null;
+        s_Panes.Clear();
         s_Acc       = 0;
         s_ToastUntil = 0;
     }

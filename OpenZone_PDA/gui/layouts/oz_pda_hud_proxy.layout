@@ -1,0 +1,61 @@
+// Прокси однієї панелі HUD у редакторі: рамка з підписом, яку тягнуть
+// мишею. Розмір і позицію задає скрипт з живої панелі.
+
+FrameWidgetClass OZ_HudProxy {
+ visible 1
+ position 0 0
+ size 0.1 0.05
+ hexactpos 0
+ vexactpos 0
+ hexactsize 0
+ vexactsize 0
+ priority 5
+ {
+  PanelWidgetClass ProxyBg {
+   visible 1
+   ignorepointer 1
+   color 0.145 0.145 0.161 0.9
+   position 0 0
+   size 1 1
+   hexactpos 0
+   vexactpos 0
+   hexactsize 0
+   vexactsize 0
+   priority 1
+   style rover_sim_colorable
+  }
+
+  PanelWidgetClass ProxyMark {
+   visible 1
+   ignorepointer 1
+   color 1 0.478 0.102 1
+   position 0 0
+   size 3 1
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 0
+   priority 2
+   style rover_sim_colorable
+  }
+
+  TextWidgetClass ProxyLabel {
+   visible 1
+   ignorepointer 1
+   position 8 0
+   size 1 1
+   hexactpos 1
+   vexactpos 1
+   hexactsize 0
+   vexactsize 0
+   color 0.918 0.918 0.933 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 13
+   "text halign" left
+   "text valign" center
+   priority 2
+  }
+ }
+}

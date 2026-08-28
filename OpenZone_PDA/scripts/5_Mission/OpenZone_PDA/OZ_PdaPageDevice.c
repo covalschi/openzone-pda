@@ -23,6 +23,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
     private Widget       m_CarPane;
     private ButtonWidget m_BtnCarDoImport;
     private ButtonWidget m_BtnCarClose;
+    private ButtonWidget m_BtnHudEdit;
 
     override string LayoutPath()
     {
@@ -44,6 +45,8 @@ class OZ_PdaPageDevice : OZ_PdaPage
         SetText("BtnCarEraseText", "#STR_OZ_DEV_ERASE");
         SetText("BtnCarDoImportText", "#STR_OZ_DEV_IMPORT");
         SetText("BtnCarCloseText", "#STR_OZ_DEV_CAR_CLOSE");
+        m_BtnHudEdit = ButtonWidget.Cast(Wgt("BtnHudEdit"));
+        SetText("BtnHudEditText", "#STR_OZ_DEV_HUD_EDIT");
         m_Preview    = ItemPreviewWidget.Cast(Wgt("Preview"));
         m_ChargeFill = Wgt("ChargeFill");
         m_BtnPower     = ButtonWidget.Cast(Wgt("BtnPower"));
@@ -99,6 +102,15 @@ class OZ_PdaPageDevice : OZ_PdaPage
         if (w == m_BtnCarWriteN)
         {
             CarrierOp("carrier_write", "notes");
+            return true;
+        }
+
+        if (w == m_BtnHudEdit)
+        {
+            // Редактор -- ОКРЕМЕ меню поверх світу: КПК закривається, і
+            // гравець бачить екран, який розкладає, а не пристрій.
+            OZ_PdaMenuGate.Close();
+            GetGame().GetUIManager().EnterScriptedMenu(OZ_PdaConst.MENU_PDA_HUD, null);
             return true;
         }
 
