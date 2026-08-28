@@ -145,6 +145,20 @@ FrameWidgetClass OZ_PageDevice {
      text ""
      priority 2
      {
+     PanelWidgetClass BtnPowerEdge {
+      visible 1
+      ignorepointer 1
+      color 0.31 0.31 0.35 1
+      position -1 -1
+      size 126 28
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+
       PanelWidgetClass PowerBg {
        visible 1
        ignorepointer 1
@@ -305,6 +319,20 @@ FrameWidgetClass OZ_PageDevice {
      text ""
      priority 3
      {
+     PanelWidgetClass BtnCarWriteMEdge {
+      visible 1
+      ignorepointer 1
+      color 0.31 0.31 0.35 1
+      position -1 -1
+      size 106 24
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+
       PanelWidgetClass BtnCarWriteMBg {
        visible 1
        ignorepointer 1
@@ -350,6 +378,20 @@ FrameWidgetClass OZ_PageDevice {
      text ""
      priority 3
      {
+     PanelWidgetClass BtnCarWriteNEdge {
+      visible 1
+      ignorepointer 1
+      color 0.31 0.31 0.35 1
+      position -1 -1
+      size 106 24
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+
       PanelWidgetClass BtnCarWriteNBg {
        visible 1
        ignorepointer 1
@@ -395,6 +437,20 @@ FrameWidgetClass OZ_PageDevice {
      text ""
      priority 3
      {
+     PanelWidgetClass BtnCarViewEdge {
+      visible 1
+      ignorepointer 1
+      color 0.31 0.31 0.35 1
+      position -1 -1
+      size 106 24
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+
       PanelWidgetClass BtnCarViewBg {
        visible 1
        ignorepointer 1
@@ -440,6 +496,20 @@ FrameWidgetClass OZ_PageDevice {
      text ""
      priority 3
      {
+     PanelWidgetClass BtnCarEraseEdge {
+      visible 1
+      ignorepointer 1
+      color 0.31 0.31 0.35 1
+      position -1 -1
+      size 106 24
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+
       PanelWidgetClass BtnCarEraseBg {
        visible 1
        ignorepointer 1
@@ -550,6 +620,20 @@ FrameWidgetClass OZ_PageDevice {
        text ""
        priority 3
        {
+       PanelWidgetClass BtnCarDoImportEdge {
+        visible 1
+        ignorepointer 1
+        color 0.31 0.31 0.35 1
+        position -1 -1
+        size 106 24
+        hexactpos 1
+        vexactpos 1
+        hexactsize 1
+        vexactsize 1
+        priority 0
+        style rover_sim_colorable
+       }
+
         PanelWidgetClass BtnCarDoImportBg {
          visible 1
          ignorepointer 1
@@ -595,6 +679,20 @@ FrameWidgetClass OZ_PageDevice {
        text ""
        priority 3
        {
+       PanelWidgetClass BtnCarCloseEdge {
+        visible 1
+        ignorepointer 1
+        color 0.31 0.31 0.35 1
+        position -1 -1
+        size 106 24
+        hexactpos 1
+        vexactpos 1
+        hexactsize 1
+        vexactsize 1
+        priority 0
+        style rover_sim_colorable
+       }
+
         PanelWidgetClass BtnCarCloseBg {
          visible 1
          ignorepointer 1
@@ -682,6 +780,20 @@ FrameWidgetClass OZ_PageDevice {
      text ""
      priority 2
      {
+     PanelWidgetClass BtnPinEdge {
+      visible 1
+      ignorepointer 1
+      color 0.31 0.31 0.35 1
+      position -1 -1
+      size 126 24
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+
       PanelWidgetClass BtnPinBg {
        visible 1
        ignorepointer 1
@@ -728,6 +840,20 @@ FrameWidgetClass OZ_PageDevice {
      text ""
      priority 2
      {
+     PanelWidgetClass BtnPinClearEdge {
+      visible 1
+      ignorepointer 1
+      color 0.31 0.31 0.35 1
+      position -1 -1
+      size 118 24
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+
       PanelWidgetClass BtnPinClearBg {
        visible 1
        ignorepointer 1
@@ -774,6 +900,20 @@ FrameWidgetClass OZ_PageDevice {
      text ""
      priority 2
      {
+     PanelWidgetClass BtnAutoLockEdge {
+      visible 1
+      ignorepointer 1
+      color 0.31 0.31 0.35 1
+      position -1 -1
+      size 134 24
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+
       PanelWidgetClass BtnAutoLockBg {
        visible 1
        ignorepointer 1
@@ -820,6 +960,20 @@ FrameWidgetClass OZ_PageDevice {
      text ""
      priority 3
      {
+     PanelWidgetClass BtnHudEditEdge {
+      visible 1
+      ignorepointer 1
+      color 0.31 0.31 0.35 1
+      position -1 -1
+      size 134 24
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+
       PanelWidgetClass BtnHudEditBg {
        visible 1
        ignorepointer 1

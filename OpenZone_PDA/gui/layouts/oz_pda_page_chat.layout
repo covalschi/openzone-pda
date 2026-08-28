@@ -52,6 +52,20 @@ FrameWidgetClass OZ_PageChat {
    text ""
    priority 3
    {
+   PanelWidgetClass BtnGroupEdge {
+    visible 1
+    ignorepointer 1
+    color 0.31 0.31 0.35 1
+    position -1 -1
+    size 302 28
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    priority 0
+    style rover_sim_colorable
+   }
+
     PanelWidgetClass BtnGroupBg {
      visible 1
      ignorepointer 1
@@ -117,6 +131,20 @@ FrameWidgetClass OZ_PageChat {
    text ""
    priority 3
    {
+   PanelWidgetClass BtnInviteEdge {
+    visible 1
+    ignorepointer 1
+    color 0.31 0.31 0.35 1
+    position -1 -1
+    size 182 26
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    priority 0
+    style rover_sim_colorable
+   }
+
     PanelWidgetClass BtnInviteBg {
      visible 1
      ignorepointer 1
@@ -181,6 +209,32 @@ FrameWidgetClass OZ_PageChat {
 
   // Рядок вводу. EditBoxWidget ловить клавіатуру сам -- так само, як на
   // сторінці записок, і з тієї ж причини.
+  PanelWidgetClass ChatInputFrame {
+   visible 1
+   ignorepointer 1
+   color 0.31 0.31 0.35 1
+   position 331 345
+   size 380 24
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 0
+   style rover_sim_colorable
+  }
+  PanelWidgetClass ChatInputFill {
+   visible 1
+   ignorepointer 1
+   color 0.078 0.078 0.09 1
+   position 332 346
+   size 378 22
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 0
+   style rover_sim_colorable
+  }
   EditBoxWidgetClass ChatInput {
    visible 1
    position 332 346
@@ -210,6 +264,20 @@ FrameWidgetClass OZ_PageChat {
    text ""
    priority 3
    {
+   PanelWidgetClass BtnAnonEdge {
+    visible 1
+    ignorepointer 1
+    color 0.31 0.31 0.35 1
+    position -1 -1
+    size 64 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    priority 0
+    style rover_sim_colorable
+   }
+
     PanelWidgetClass BtnAnonBg {
      visible 1
      ignorepointer 1
@@ -254,6 +322,20 @@ FrameWidgetClass OZ_PageChat {
    text ""
    priority 3
    {
+   PanelWidgetClass BtnSendEdge {
+    visible 1
+    ignorepointer 1
+    color 0.31 0.31 0.35 1
+    position -1 -1
+    size 150 28
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    priority 0
+    style rover_sim_colorable
+   }
+
     PanelWidgetClass BtnSendBg {
      visible 1
      ignorepointer 1

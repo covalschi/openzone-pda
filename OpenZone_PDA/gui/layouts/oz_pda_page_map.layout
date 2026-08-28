@@ -92,6 +92,32 @@ FrameWidgetClass OZ_PageMap {
     }
 
     // Редагування ОБРАНОЇ мітки: назва й опис.
+    PanelWidgetClass MarkerNameFrame {
+     visible 1
+     ignorepointer 1
+     color 0.31 0.31 0.35 1
+     position 7 171
+     size 246 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
+    PanelWidgetClass MarkerNameFill {
+     visible 1
+     ignorepointer 1
+     color 0.078 0.078 0.09 1
+     position 8 172
+     size 244 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
     EditBoxWidgetClass MarkerName {
      visible 1
      position 8 172
@@ -107,7 +133,33 @@ FrameWidgetClass OZ_PageMap {
      priority 2
     }
 
-    MultilineEditBoxWidgetClass MarkerDesc {
+    MultilinePanelWidgetClass MarkerDescFrame {
+ visible 1
+ ignorepointer 1
+ color 0.31 0.31 0.35 1
+ position 7 197
+ size 246 42
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ priority 0
+ style rover_sim_colorable
+}
+PanelWidgetClass MarkerDescFill {
+ visible 1
+ ignorepointer 1
+ color 0.078 0.078 0.09 1
+ position 8 198
+ size 244 40
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ priority 0
+ style rover_sim_colorable
+}
+EditBoxWidgetClass MarkerDesc {
      visible 1
      position 8 198
      size 244 40
@@ -133,6 +185,20 @@ FrameWidgetClass OZ_PageMap {
      text ""
      priority 2
      {
+     PanelWidgetClass BtnMarkSaveEdge {
+      visible 1
+      ignorepointer 1
+      color 0.31 0.31 0.35 1
+      position -1 -1
+      size 120 26
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+
       PanelWidgetClass BtnMarkSaveBg {
        visible 1
        ignorepointer 1
@@ -177,6 +243,20 @@ FrameWidgetClass OZ_PageMap {
      text ""
      priority 2
      {
+     PanelWidgetClass BtnMarkDelEdge {
+      visible 1
+      ignorepointer 1
+      color 0.31 0.31 0.35 1
+      position -1 -1
+      size 120 26
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+
       PanelWidgetClass BtnMarkDelBg {
        visible 1
        ignorepointer 1
@@ -222,6 +302,20 @@ FrameWidgetClass OZ_PageMap {
      text ""
      priority 2
      {
+     PanelWidgetClass BtnMarkShareEdge {
+      visible 1
+      ignorepointer 1
+      color 0.31 0.31 0.35 1
+      position -1 -1
+      size 246 26
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+
       PanelWidgetClass BtnMarkShareBg {
        visible 1
        ignorepointer 1
@@ -269,6 +363,20 @@ FrameWidgetClass OZ_PageMap {
      text ""
      priority 2
      {
+     PanelWidgetClass BtnMarkToCarEdge {
+      visible 1
+      ignorepointer 1
+      color 0.31 0.31 0.35 1
+      position -1 -1
+      size 246 26
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+
       PanelWidgetClass BtnMarkToCarBg {
        visible 1
        ignorepointer 1
@@ -319,6 +427,20 @@ FrameWidgetClass OZ_PageMap {
    text ""
    priority 3
    {
+   PanelWidgetClass BtnListEdge {
+    visible 1
+    ignorepointer 1
+    color 0.31 0.31 0.35 1
+    position -1 -1
+    size 112 28
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    priority 0
+    style rover_sim_colorable
+   }
+
     PanelWidgetClass BtnListBg {
      visible 1
      ignorepointer 1
@@ -379,6 +501,20 @@ FrameWidgetClass OZ_PageMap {
    text ""
    priority 3
    {
+   PanelWidgetClass BtnModeEdge {
+    visible 1
+    ignorepointer 1
+    color 0.31 0.31 0.35 1
+    position -1 -1
+    size 177 28
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    priority 0
+    style rover_sim_colorable
+   }
+
     PanelWidgetClass BtnModeBg {
      visible 1
      ignorepointer 1
@@ -424,6 +560,20 @@ FrameWidgetClass OZ_PageMap {
    text ""
    priority 3
    {
+   PanelWidgetClass BtnCenterEdge {
+    visible 1
+    ignorepointer 1
+    color 0.31 0.31 0.35 1
+    position -1 -1
+    size 122 28
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    priority 0
+    style rover_sim_colorable
+   }
+
     PanelWidgetClass BtnCenterBg {
      visible 1
      ignorepointer 1
@@ -460,6 +610,32 @@ FrameWidgetClass OZ_PageMap {
 
   // Підпис нової мітки. EditBoxWidget ловить клавіатуру сам -- так само, як
   // на сторінці записок, і з тієї ж причини.
+  PanelWidgetClass MarkNameFrame {
+   visible 1
+   ignorepointer 1
+   color 0.31 0.31 0.35 1
+   position 456 377
+   size 202 28
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 0
+   style rover_sim_colorable
+  }
+  PanelWidgetClass MarkNameFill {
+   visible 1
+   ignorepointer 1
+   color 0.078 0.078 0.09 1
+   position 457 378
+   size 200 26
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 0
+   style rover_sim_colorable
+  }
   EditBoxWidgetClass MarkName {
    visible 1
    position 457 378
@@ -486,6 +662,20 @@ FrameWidgetClass OZ_PageMap {
    text ""
    priority 3
    {
+   PanelWidgetClass BtnMarkEdge {
+    visible 1
+    ignorepointer 1
+    color 0.31 0.31 0.35 1
+    position -1 -1
+    size 122 28
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    priority 0
+    style rover_sim_colorable
+   }
+
     PanelWidgetClass BtnMarkBg {
      visible 1
      ignorepointer 1
@@ -530,6 +720,20 @@ FrameWidgetClass OZ_PageMap {
    text ""
    priority 3
    {
+   PanelWidgetClass BtnSpawnEdge {
+    visible 1
+    ignorepointer 1
+    color 0.31 0.31 0.35 1
+    position -1 -1
+    size 112 28
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    priority 0
+    style rover_sim_colorable
+   }
+
     PanelWidgetClass BtnSpawnBg {
      visible 1
      ignorepointer 1
@@ -578,6 +782,20 @@ FrameWidgetClass OZ_PageMap {
    text ""
    priority 3
    {
+   PanelWidgetClass BtnSpawnOffEdge {
+    visible 1
+    ignorepointer 1
+    color 0.31 0.31 0.35 1
+    position -1 -1
+    size 112 28
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    priority 0
+    style rover_sim_colorable
+   }
+
     PanelWidgetClass BtnSpawnOffBg {
      visible 1
      ignorepointer 1

@@ -60,6 +60,20 @@ FrameWidgetClass OZ_PageNotes {
    text ""
    priority 3
    {
+   PanelWidgetClass BtnNewEdge {
+    visible 1
+    ignorepointer 1
+    color 0.31 0.31 0.35 1
+    position -1 -1
+    size 342 28
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    priority 0
+    style rover_sim_colorable
+   }
+
     PanelWidgetClass BtnNewBg {
      visible 1
      ignorepointer 1
@@ -107,6 +121,32 @@ FrameWidgetClass OZ_PageNotes {
    priority 1
    style rover_sim_colorable
    {
+    PanelWidgetClass NoteTitleFrame {
+     visible 1
+     ignorepointer 1
+     color 0.31 0.31 0.35 1
+     position 9 7
+     size 639 28
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
+    PanelWidgetClass NoteTitleFill {
+     visible 1
+     ignorepointer 1
+     color 0.078 0.078 0.09 1
+     position 10 8
+     size 637 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
     EditBoxWidgetClass NoteTitle {
      visible 1
      position 10 8
@@ -125,7 +165,33 @@ FrameWidgetClass OZ_PageNotes {
     // Той самий віджет, яким ваниль дає писати на папері
     // (gui/layouts/day_z_inventory_note.layout). Клавіатуру він ловить сам --
     // на відміну від OnKeyPress меню, куди ввід доходить не з усякого джерела.
-    MultilineEditBoxWidgetClass NoteBody {
+    MultilinePanelWidgetClass NoteBodyFrame {
+ visible 1
+ ignorepointer 1
+ color 0.31 0.31 0.35 1
+ position 9 41
+ size 639 306
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ priority 0
+ style rover_sim_colorable
+}
+PanelWidgetClass NoteBodyFill {
+ visible 1
+ ignorepointer 1
+ color 0.078 0.078 0.09 1
+ position 10 42
+ size 637 304
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ priority 0
+ style rover_sim_colorable
+}
+EditBoxWidgetClass NoteBody {
      visible 1
      position 10 42
      size 637 304
@@ -155,6 +221,20 @@ FrameWidgetClass OZ_PageNotes {
    text ""
    priority 3
    {
+   PanelWidgetClass BtnSaveEdge {
+    visible 1
+    ignorepointer 1
+    color 0.31 0.31 0.35 1
+    position -1 -1
+    size 162 28
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    priority 0
+    style rover_sim_colorable
+   }
+
     PanelWidgetClass BtnSaveBg {
      visible 1
      ignorepointer 1
@@ -200,6 +280,20 @@ FrameWidgetClass OZ_PageNotes {
    text ""
    priority 3
    {
+   PanelWidgetClass BtnDeleteEdge {
+    visible 1
+    ignorepointer 1
+    color 0.31 0.31 0.35 1
+    position -1 -1
+    size 162 28
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    priority 0
+    style rover_sim_colorable
+   }
+
     PanelWidgetClass BtnDeleteBg {
      visible 1
      ignorepointer 1
@@ -247,6 +341,20 @@ FrameWidgetClass OZ_PageNotes {
      text ""
      priority 2
      {
+     PanelWidgetClass BtnNoteToCarEdge {
+      visible 1
+      ignorepointer 1
+      color 0.31 0.31 0.35 1
+      position -1 -1
+      size 132 24
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+
       PanelWidgetClass BtnNoteToCarBg {
        visible 1
        ignorepointer 1

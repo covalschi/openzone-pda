@@ -278,6 +278,20 @@ FrameWidgetClass OZ_PdaRoot {
           text ""
           priority 2
           {
+          PanelWidgetClass Key1Edge {
+           visible 1
+           ignorepointer 1
+           color 0.31 0.31 0.35 1
+           position -1 -1
+           size 58 36
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           priority 0
+           style rover_sim_colorable
+          }
+
            PanelWidgetClass Key1Bg {
             visible 1
             ignorepointer 1
@@ -324,6 +338,20 @@ FrameWidgetClass OZ_PdaRoot {
           text ""
           priority 2
           {
+          PanelWidgetClass Key2Edge {
+           visible 1
+           ignorepointer 1
+           color 0.31 0.31 0.35 1
+           position -1 -1
+           size 58 36
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           priority 0
+           style rover_sim_colorable
+          }
+
            PanelWidgetClass Key2Bg {
             visible 1
             ignorepointer 1
@@ -370,6 +398,20 @@ FrameWidgetClass OZ_PdaRoot {
           text ""
           priority 2
           {
+          PanelWidgetClass Key3Edge {
+           visible 1
+           ignorepointer 1
+           color 0.31 0.31 0.35 1
+           position -1 -1
+           size 58 36
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           priority 0
+           style rover_sim_colorable
+          }
+
            PanelWidgetClass Key3Bg {
             visible 1
             ignorepointer 1
@@ -416,6 +458,20 @@ FrameWidgetClass OZ_PdaRoot {
           text ""
           priority 2
           {
+          PanelWidgetClass Key4Edge {
+           visible 1
+           ignorepointer 1
+           color 0.31 0.31 0.35 1
+           position -1 -1
+           size 58 36
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           priority 0
+           style rover_sim_colorable
+          }
+
            PanelWidgetClass Key4Bg {
             visible 1
             ignorepointer 1
@@ -462,6 +518,20 @@ FrameWidgetClass OZ_PdaRoot {
           text ""
           priority 2
           {
+          PanelWidgetClass Key5Edge {
+           visible 1
+           ignorepointer 1
+           color 0.31 0.31 0.35 1
+           position -1 -1
+           size 58 36
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           priority 0
+           style rover_sim_colorable
+          }
+
            PanelWidgetClass Key5Bg {
             visible 1
             ignorepointer 1
@@ -508,6 +578,20 @@ FrameWidgetClass OZ_PdaRoot {
           text ""
           priority 2
           {
+          PanelWidgetClass Key6Edge {
+           visible 1
+           ignorepointer 1
+           color 0.31 0.31 0.35 1
+           position -1 -1
+           size 58 36
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           priority 0
+           style rover_sim_colorable
+          }
+
            PanelWidgetClass Key6Bg {
             visible 1
             ignorepointer 1
@@ -554,6 +638,20 @@ FrameWidgetClass OZ_PdaRoot {
           text ""
           priority 2
           {
+          PanelWidgetClass Key7Edge {
+           visible 1
+           ignorepointer 1
+           color 0.31 0.31 0.35 1
+           position -1 -1
+           size 58 36
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           priority 0
+           style rover_sim_colorable
+          }
+
            PanelWidgetClass Key7Bg {
             visible 1
             ignorepointer 1
@@ -600,6 +698,20 @@ FrameWidgetClass OZ_PdaRoot {
           text ""
           priority 2
           {
+          PanelWidgetClass Key8Edge {
+           visible 1
+           ignorepointer 1
+           color 0.31 0.31 0.35 1
+           position -1 -1
+           size 58 36
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           priority 0
+           style rover_sim_colorable
+          }
+
            PanelWidgetClass Key8Bg {
             visible 1
             ignorepointer 1
@@ -646,6 +758,20 @@ FrameWidgetClass OZ_PdaRoot {
           text ""
           priority 2
           {
+          PanelWidgetClass Key9Edge {
+           visible 1
+           ignorepointer 1
+           color 0.31 0.31 0.35 1
+           position -1 -1
+           size 58 36
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           priority 0
+           style rover_sim_colorable
+          }
+
            PanelWidgetClass Key9Bg {
             visible 1
             ignorepointer 1
@@ -692,6 +818,20 @@ FrameWidgetClass OZ_PdaRoot {
           text ""
           priority 2
           {
+          PanelWidgetClass KeyBackEdge {
+           visible 1
+           ignorepointer 1
+           color 0.31 0.31 0.35 1
+           position -1 -1
+           size 58 36
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           priority 0
+           style rover_sim_colorable
+          }
+
            PanelWidgetClass KeyBackBg {
             visible 1
             ignorepointer 1
@@ -738,6 +878,20 @@ FrameWidgetClass OZ_PdaRoot {
           text ""
           priority 2
           {
+          PanelWidgetClass Key0Edge {
+           visible 1
+           ignorepointer 1
+           color 0.31 0.31 0.35 1
+           position -1 -1
+           size 58 36
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           priority 0
+           style rover_sim_colorable
+          }
+
            PanelWidgetClass Key0Bg {
             visible 1
             ignorepointer 1
@@ -784,6 +938,20 @@ FrameWidgetClass OZ_PdaRoot {
           text ""
           priority 2
           {
+          PanelWidgetClass KeyOkEdge {
+           visible 1
+           ignorepointer 1
+           color 0.31 0.31 0.35 1
+           position -1 -1
+           size 58 36
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           priority 0
+           style rover_sim_colorable
+          }
+
            PanelWidgetClass KeyOkBg {
             visible 1
             ignorepointer 1
@@ -834,6 +1002,20 @@ FrameWidgetClass OZ_PdaRoot {
          text ""
          priority 5
          {
+         PanelWidgetClass BtnCrackEdge {
+          visible 1
+          ignorepointer 1
+          color 0.31 0.31 0.35 1
+          position -1 -1
+          size 242 32
+          hexactpos 1
+          vexactpos 1
+          hexactsize 1
+          vexactsize 1
+          priority 0
+          style rover_sim_colorable
+         }
+
           PanelWidgetClass BtnCrackBg {
            visible 1
            ignorepointer 1
@@ -940,7 +1122,23 @@ FrameWidgetClass OZ_PdaRoot {
      priority 6
      text ""
      style "DayZButton"
+     {
+     PanelWidgetClass BtnCloseEdge {
+       visible 1
+       ignorepointer 1
+       color 0.31 0.31 0.35 1
+       position -1 -1
+       size 36 36
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+     }
     }
+
    }
   }
  }
