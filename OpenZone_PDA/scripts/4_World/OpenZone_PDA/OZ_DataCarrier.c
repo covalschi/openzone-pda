@@ -103,7 +103,10 @@ class OZ_DataCarrier_Base : ItemBase
 
         ctx.Write(m_Written);
         ctx.Write(m_Kind);
-        ctx.Write(m_Payload);
+        // Пейлоад -- шматками: книжка з Drive легко переростає 1023 байти,
+        // а рядок сховища понад цю межу зносить ВЕСЬ блоб предмета при
+        // завантаженні (зміряно зондом; подробиці в OZ_StoreBig).
+        OZ_StoreBig.Write(ctx, m_Payload);
     }
 
     override bool CF_OnStoreLoad(CF_ModStorageMap storage)
@@ -119,7 +122,7 @@ class OZ_DataCarrier_Base : ItemBase
             return false;
         if (!ctx.Read(m_Kind))
             return false;
-        if (!ctx.Read(m_Payload))
+        if (!OZ_StoreBig.Read(ctx, m_Payload))
             return false;
 
         if (m_Written)

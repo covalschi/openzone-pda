@@ -74,7 +74,10 @@ class OZ_PdaConst
     // тред Discord, у якого своя межа повідомлення.
     static const int NOTES_MAX      = 50;
     static const int NOTE_TITLE_MAX = 64;
-    static const int NOTE_BODY_MAX  = 1500;
+    // 1000, НЕ більше: JsonFileLoader.LoadData ріже значення-рядок до 1023
+    // байтів (зміряно зондом 2026-08-28), і стеля вища за це -- обіцянка,
+    // якої гра дотримати не може. Міст ріже свої тіла до тих самих 1000.
+    static const int NOTE_BODY_MAX  = 1000;
 
     // Скільки міток -- каже профіль пристрою; тут лише довжина підпису.
     static const int MARKER_NAME_MAX = 32;

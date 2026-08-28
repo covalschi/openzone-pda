@@ -883,11 +883,16 @@ class OZ_PDA_Base : ItemBase
         ctx.Write(m_AutoLock);
         ctx.Write(m_SessionUid);
         ctx.Write(m_SessionEpoch);
-        ctx.Write(m_Snapshot);
+        // Знімок і мітки -- шматками: JSON сорока міток чи книжки давно за
+        // 1023 байти, а рядок сховища понад цю межу зносить ВЕСЬ блоб
+        // предмета при завантаженні -- разом із піном (зміряно зондом;
+        // подробиці в OZ_StoreBig). Сумісність зі старим одно-рядковим
+        // форматом читач OZ_StoreBig тримає сам.
+        OZ_StoreBig.Write(ctx, m_Snapshot);
         ctx.Write(m_SnapshotAt);
         // v2 і далі -- ДОПИСУЄТЬСЯ В КІНЕЦЬ. Вставка в середину зсунула б
         // потік і зробила б нечитними всі старіші збереження.
-        ctx.Write(m_MarkersJson);
+        OZ_StoreBig.Write(ctx, m_MarkersJson);
         // v3 -- знову В КІНЕЦЬ.
         ctx.Write(m_Seeded);
     }
@@ -909,7 +914,7 @@ class OZ_PDA_Base : ItemBase
             return false;
         if (!ctx.Read(m_SessionEpoch))
             return false;
-        if (!ctx.Read(m_Snapshot))
+        if (!OZ_StoreBig.Read(ctx, m_Snapshot))
             return false;
         if (!ctx.Read(m_SnapshotAt))
             return false;
@@ -918,7 +923,7 @@ class OZ_PDA_Base : ItemBase
         // читати звідти нічого -- інакше ми зчитали б чужі байти.
         if (ctx.GetVersion() >= 2)
         {
-            if (!ctx.Read(m_MarkersJson))
+            if (!OZ_StoreBig.Read(ctx, m_MarkersJson))
                 return false;
         }
 
