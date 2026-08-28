@@ -8,18 +8,33 @@
 // позначене смужкою ліворуч і кольором імені. Стрілка «>» більше не потрібна:
 // вона була обхідним шляхом там, де в списку не було чим фарбувати.
 
-PanelWidgetClass OZ_ChatLine {
+ButtonWidgetClass OZ_ChatLine {
  visible 1
- ignorepointer 1
  position 0 0
  size 697 58
+ text ""
  hexactpos 1
  vexactpos 1
  hexactsize 1
  vexactsize 1
- color 0 0 0 0
- style rover_sim_colorable
  {
+  // Непрозора підкладка. Не косметика: дефолтну hover-графіку безстильного
+  // ButtonWidget ховає лише непрозорий нащадок поверх неї -- саме тому
+  // клавіші пін-панелі не біліють, а цей рядок білів, поки підкладки не було.
+  PanelWidgetClass LineBg {
+   visible 1
+   ignorepointer 1
+   color 0.043 0.043 0.051 1
+   position 0 0
+   size 697 58
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 1
+   style rover_sim_colorable
+  }
+
   // Смужка «це сказав я». У чужих невидима.
   PanelWidgetClass LineMine {
    visible 0

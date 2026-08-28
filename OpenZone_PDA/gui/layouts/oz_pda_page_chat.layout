@@ -184,19 +184,65 @@ FrameWidgetClass OZ_PageChat {
   EditBoxWidgetClass ChatInput {
    visible 1
    position 332 346
-   size 537 26
+   size 378 22
    hexactpos 1
    vexactpos 1
    hexactsize 1
    vexactsize 1
    text ""
-   font "gui/fonts/sdf_MetronBook24"
+   font "gui/fonts/MetronBook14"
    "exact text" 1
-   "exact text size" 13
    color 0.788 0.788 0.816 1
    priority 3
   }
 
+
+  // «Сказати без імені» -- лише для ефіру Зони; сторінка ховає її в
+  // особистих і групових розмовах.
+  ButtonWidgetClass BtnAnon {
+   visible 0
+   position 716 346
+   size 62 22
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnAnonBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 62 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnAnonText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 62 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.549 0.549 0.576 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 12
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
   ButtonWidgetClass BtnSend {
    visible 1
    position 881 346

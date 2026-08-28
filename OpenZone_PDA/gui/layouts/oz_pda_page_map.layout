@@ -70,7 +70,7 @@ FrameWidgetClass OZ_PageMap {
     ScrollWidgetClass MarkerScroll {
      visible 1
      position 4 26
-     size 252 196
+     size 252 162
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -81,7 +81,7 @@ FrameWidgetClass OZ_PageMap {
       WrapSpacerWidgetClass MarkerRows {
        visible 1
        position 0 0
-       size 252 196
+       size 252 162
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -94,7 +94,7 @@ FrameWidgetClass OZ_PageMap {
     // Редагування ОБРАНОЇ мітки: назва й опис.
     EditBoxWidgetClass MarkerName {
      visible 1
-     position 8 230
+     position 8 194
      size 244 22
      hexactpos 1
      vexactpos 1
@@ -102,31 +102,29 @@ FrameWidgetClass OZ_PageMap {
      vexactsize 1
      color 0.918 0.918 0.933 1
      text ""
-     font "gui/fonts/sdf_MetronBook24"
+     font "gui/fonts/MetronBook14"
      "exact text" 1
-     "exact text size" 13
      priority 2
     }
 
     MultilineEditBoxWidgetClass MarkerDesc {
      visible 1
-     position 8 256
-     size 244 48
+     position 8 220
+     size 244 44
      hexactpos 1
      vexactpos 1
      hexactsize 1
      vexactsize 1
      color 0.788 0.788 0.816 1
      text ""
-     font "gui/fonts/sdf_MetronBook24"
+     font "gui/fonts/MetronBook14"
      "exact text" 1
-     "exact text size" 12
      priority 2
     }
 
     ButtonWidgetClass BtnMarkSave {
      visible 1
-     position 8 310
+     position 8 270
      size 118 26
      hexactpos 1
      vexactpos 1
@@ -159,9 +157,8 @@ FrameWidgetClass OZ_PageMap {
        vexactsize 1
        color 1 0.478 0.102 1
        text ""
-       font "gui/fonts/sdf_MetronBook24"
+       font "gui/fonts/MetronBook14"
        "exact text" 1
-       "exact text size" 12
        "text halign" center
        "text valign" center
        priority 2
@@ -171,7 +168,7 @@ FrameWidgetClass OZ_PageMap {
 
     ButtonWidgetClass BtnMarkDel {
      visible 1
-     position 134 310
+     position 134 270
      size 118 26
      hexactpos 1
      vexactpos 1
@@ -204,6 +201,51 @@ FrameWidgetClass OZ_PageMap {
        vexactsize 1
        color 0.918 0.918 0.933 1
        text ""
+       font "gui/fonts/MetronBook14"
+       "exact text" 1
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+    // «У ЧАТ»: обрана мітка їде повідомленням. Одержувач тисне рядок --
+    // і мітка стає його.
+    ButtonWidgetClass BtnMarkShare {
+     visible 1
+     position 8 302
+     size 244 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 2
+     {
+      PanelWidgetClass BtnMarkShareBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 244 26
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnMarkShareText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 244 26
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
        font "gui/fonts/sdf_MetronBook24"
        "exact text" 1
        "exact text size" 12
@@ -213,6 +255,7 @@ FrameWidgetClass OZ_PageMap {
       }
      }
     }
+
    }
   }
 
@@ -262,6 +305,19 @@ FrameWidgetClass OZ_PageMap {
    }
   }
 
+
+  // Невидима лінійка розклейки переносів: ТОЙ САМИЙ шрифт, що в полі, бо
+  // мірятись чужим шрифтом означало б брехати на кожній літері.
+  TextWidgetClass DescRuler {
+   visible 0
+   ignorepointer 1
+   position 0 0
+   size 10 10
+   color 1 1 1 1
+   text ""
+   font "gui/fonts/MetronBook14"
+   "exact text" 1
+  }
   // БЕЗ style "DayZButton": стиль малює власну графіку ПОВЕРХ дочірніх
   // віджетів, і напис усередині зникає.
   ButtonWidgetClass BtnMode {
@@ -365,9 +421,8 @@ FrameWidgetClass OZ_PageMap {
    hexactsize 1
    vexactsize 1
    text ""
-   font "gui/fonts/sdf_MetronBook24"
+   font "gui/fonts/MetronBook14"
    "exact text" 1
-   "exact text size" 13
    color 0.788 0.788 0.816 1
    priority 3
   }

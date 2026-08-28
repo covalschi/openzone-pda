@@ -29,8 +29,291 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         if (op == "sealed")
             return Sealed(sender, ok, error);
 
+        if (op == "carrier_write")
+            return CarrierWrite(json, sender, ok, error);
+
+        if (op == "carrier_read")
+            return CarrierRead(sender, ok, error);
+
+        if (op == "carrier_import")
+            return CarrierImport(sender, ok, error);
+
+        if (op == "carrier_erase")
+            return CarrierErase(sender, ok, error);
+
         return "";
     }
+
+    // ------------------------------------------------------------ носій
+    //
+    // Чип -- фізична річ для фізичного обміну: записав мітки, віддав у руки,
+    // той вставив і забрав собі. Пейлоад живе НА ПРЕДМЕТІ (CF ModStorage),
+    // переживає рестарти і їде з чипом у кишені, у сховку, на трупі.
+    //
+    // Ворота доступу безкоштовні: ці опи не входять у винятки живлення й
+    // замка, тож OZ_PdaAccess вже вимагає ввімкнений і відімкнений пристрій.
+
+    private OZ_DataCarrier_Base CarrierOf(PlayerIdentity sender, out string error)
+    {
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        if (!pda)
+        {
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return null;
+        }
+
+        OZ_DataCarrier_Base c = OZ_DataCarrier_Base.Cast(pda.OZ_Attached(OZ_PdaConst.SLOT_CARRIER));
+        if (!c)
+        {
+            error = "STR_OZ_ERR_NO_CARRIER";
+            return null;
+        }
+
+        return c;
+    }
+
+    private string CarrierWrite(string json, PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_CarrierWriteOp opw;
+        string err;
+        if (!JsonFileLoader<OZ_CarrierWriteOp>.LoadData(json, opw, err) || !opw)
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        OZ_DataCarrier_Base c = CarrierOf(sender, error);
+        if (!c)
+            return "";
+
+        // Перше справжнє застосування Writable з Hardware.json: чип, який
+        // конфіг оголосив лише читаним, не перезаписується ніколи.
+        OZ_CarrierSpec spec = OZ_PdaHardware.CarrierFor(c.GetType());
+        if (spec && !spec.Writable)
+        {
+            error = "STR_OZ_ERR_CARRIER_LOCKED";
+            return "";
+        }
+
+        if (opw.Kind == "markers")
+        {
+            OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+            string payload = pda.OZ_MarkersJson();
+            if (payload == "")
+                payload = "{\"Version\":1,\"Items\":[]}";
+
+            c.OZ_Write("markers", payload);
+            ok = true;
+            error = "";
+            return "";
+        }
+
+        if (opw.Kind == "notes")
+        {
+            // Записки живуть у Discord -- їх спершу треба ПРИНЕСТИ. Відповідь
+            // відкладена, як усе, що ходить через міст.
+            if (!OZ_BridgeClient.IsRunning())
+            {
+                error = "STR_OZ_ERR_NO_BRIDGE";
+                return "";
+            }
+
+            string uid = sender.GetPlainId();
+            OZ_NotesAskList a = new OZ_NotesAskList();
+            a.Uid = uid;
+
+            string letter;
+            if (!JsonFileLoader<OZ_NotesAskList>.MakeData(a, letter, err, false))
+            {
+                error = "STR_OZ_ERR_INTERNAL";
+                return "";
+            }
+
+            OZ_BridgeClient.Call("v1/notes/list", letter, new OZ_CarrierNotesReply(uid));
+            error = OZ_Const.DEFER;
+            return "";
+        }
+
+        error = "STR_OZ_ERR_INTERNAL";
+        return "";
+    }
+
+    private string CarrierRead(PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_DataCarrier_Base c = CarrierOf(sender, error);
+        if (!c)
+            return "";
+
+        if (!c.OZ_IsWritten())
+        {
+            error = "STR_OZ_ERR_CARRIER_BLANK";
+            return "";
+        }
+
+        // Тіло як є: клієнт розбере за Kind. Що на чипі -- те й видно, і
+        // саме тому крадений КПК з чужим чипом читає чужі мітки: така ціна
+        // фізичного носія, і вона навмисна.
+        OZ_CarrierView v = new OZ_CarrierView();
+        v.Kind    = c.OZ_Kind();
+        v.Payload = c.OZ_Payload();
+
+        string outJson;
+        string err;
+        if (!JsonFileLoader<OZ_CarrierView>.MakeData(v, outJson, err, false))
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        ok = true;
+        error = "";
+        return outJson;
+    }
+
+    private string CarrierImport(PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_DataCarrier_Base c = CarrierOf(sender, error);
+        if (!c)
+            return "";
+
+        if (!c.OZ_IsWritten())
+        {
+            error = "STR_OZ_ERR_CARRIER_BLANK";
+            return "";
+        }
+
+        if (c.OZ_Kind() == "markers")
+        {
+            OZ_MarkerList incoming;
+            string err;
+            if (!JsonFileLoader<OZ_MarkerList>.LoadData(c.OZ_Payload(), incoming, err) || !incoming || !incoming.Items)
+            {
+                error = "STR_OZ_ERR_INTERNAL";
+                return "";
+            }
+
+            OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+            OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(pda.GetType());
+
+            OZ_MarkerList mine = new OZ_MarkerList();
+            string raw = pda.OZ_MarkersJson();
+            if (raw != "")
+            {
+                OZ_MarkerList parsed;
+                if (JsonFileLoader<OZ_MarkerList>.LoadData(raw, parsed, err) && parsed && parsed.Items)
+                    mine = parsed;
+            }
+
+            int limit = 0;
+            if (prof && prof.Limits)
+                limit = prof.Limits.Markers;
+
+            int taken = 0;
+            for (int i = 0; i < incoming.Items.Count(); i++)
+            {
+                if (limit > 0 && mine.Items.Count() >= limit)
+                    break;
+
+                OZ_MapMarker m = incoming.Items[i];
+
+                // Id карбуємо ЗАНОВО: чужі id зіткнулись би з нашими, і
+                // видалення по id зносило б не ту мітку.
+                s_CarrierSeq++;
+                m.Id = OZ_Time.NowUtc() + "#c" + s_CarrierSeq.ToString();
+                mine.Items.Insert(m);
+                taken++;
+            }
+
+            string outJson;
+            if (!JsonFileLoader<OZ_MarkerList>.MakeData(mine, outJson, err, false))
+            {
+                error = "STR_OZ_ERR_INTERNAL";
+                return "";
+            }
+
+            pda.OZ_SetMarkersJson(outJson);
+            OZ_Log.Info("carrier: imported " + taken.ToString() + " marker(s) for " + sender.GetPlainId());
+
+            ok = true;
+            error = "";
+            return "";
+        }
+
+        if (c.OZ_Kind() == "notes")
+        {
+            if (!OZ_BridgeClient.IsRunning())
+            {
+                error = "STR_OZ_ERR_NO_BRIDGE";
+                return "";
+            }
+
+            OZ_NoteBook book;
+            string err2;
+            if (!JsonFileLoader<OZ_NoteBook>.LoadData(c.OZ_Payload(), book, err2) || !book || !book.Notes)
+            {
+                error = "STR_OZ_ERR_INTERNAL";
+                return "";
+            }
+
+            // Кожна записка -- окремий лист мостові з ПОРОЖНІМ Id: це
+            // «створи мені таку саму», а не «редагуй чужу».
+            string uid = sender.GetPlainId();
+            int sent = 0;
+            for (int k = 0; k < book.Notes.Count(); k++)
+            {
+                OZ_NotesAskSave a = new OZ_NotesAskSave();
+                a.Uid   = uid;
+                a.Id    = "";
+                a.Title = book.Notes[k].Title;
+                a.Body  = book.Notes[k].Body;
+                a.Name  = sender.GetName();
+
+                string letter;
+                if (!JsonFileLoader<OZ_NotesAskSave>.MakeData(a, letter, err2, false))
+                    continue;
+
+                OZ_BridgeClient.Call("v1/notes/save", letter, new OZ_NotesReply(uid, "carrier_note", false));
+                sent++;
+            }
+
+            OZ_Log.Info("carrier: importing " + sent.ToString() + " note(s) for " + uid);
+            ok = true;
+            error = "";
+            return "";
+        }
+
+        error = "STR_OZ_ERR_INTERNAL";
+        return "";
+    }
+
+    private string CarrierErase(PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_DataCarrier_Base c = CarrierOf(sender, error);
+        if (!c)
+            return "";
+
+        OZ_CarrierSpec spec = OZ_PdaHardware.CarrierFor(c.GetType());
+        if (spec && !spec.Writable)
+        {
+            error = "STR_OZ_ERR_CARRIER_LOCKED";
+            return "";
+        }
+
+        c.OZ_Erase();
+        ok = true;
+        error = "";
+        return "";
+    }
+
+    private static int s_CarrierSeq = 0;
 
     private string Status(PlayerIdentity sender, out bool ok, out string error)
     {
@@ -160,7 +443,11 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         {
             OZ_CarrierSpec cs = OZ_PdaHardware.CarrierFor(st.CarrierClass);
             if (cs)
-                st.CarrierKind = cs.DefaultKind;
+            {
+                st.CarrierKind     = cs.DefaultKind;
+                st.CarrierWritable = cs.Writable;
+                st.CarrierDisplay  = cs.DisplayName;
+            }
 
             OZ_DataCarrier_Base carrier = OZ_DataCarrier_Base.Cast(pda.OZ_Attached(OZ_PdaConst.SLOT_CARRIER));
             if (carrier)
@@ -519,6 +806,11 @@ class OZ_PdaModule : CF_ModuleWorld
                                  "#STR_OZ_PAGE_CHAT",
                                  "set:oz_pda image:chat",
                                  new OZ_PdaHandlerChat());
+
+        OZ_PageRegistry.Register(OZ_PdaConst.PAGE_NEWS,
+                                 "#STR_OZ_PAGE_NEWS",
+                                 "set:oz_pda image:news",
+                                 new OZ_PdaHandlerNews());
 
         // Розмови живуть у Discord, тож на диску їм каталогу не треба -- а
         // ось вухо для вхідних рядків треба. Підписка не залежить від того,

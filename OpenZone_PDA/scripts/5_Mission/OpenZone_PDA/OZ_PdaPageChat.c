@@ -24,6 +24,11 @@ class OZ_PdaPageChat : OZ_PdaPage
     private ref array<Widget> m_LineRows;
     private EditBoxWidget m_Input;
     private ButtonWidget m_BtnSend;
+
+    // «Сказати без імені». Живе лише в «Зоні»; стан тумблера скидається
+    // при зміні розмови -- анонімність мусить бути свідомим рухом щоразу.
+    private ButtonWidget m_BtnAnon;
+    private bool m_Anon = false;
     private ButtonWidget m_BtnGroup;
     private ButtonWidget m_BtnInvite;
 
@@ -55,6 +60,7 @@ class OZ_PdaPageChat : OZ_PdaPage
         m_LineRows  = new array<Widget>();
         m_Input     = EditBoxWidget.Cast(Wgt("ChatInput"));
         m_BtnSend   = ButtonWidget.Cast(Wgt("BtnSend"));
+        m_BtnAnon   = ButtonWidget.Cast(Wgt("BtnAnon"));
         m_BtnGroup  = ButtonWidget.Cast(Wgt("BtnGroup"));
         m_BtnInvite = ButtonWidget.Cast(Wgt("BtnInvite"));
 
@@ -65,6 +71,12 @@ class OZ_PdaPageChat : OZ_PdaPage
 
     override void OnSelected()
     {
+        string pending = OZ_PdaCompose.Take();
+        if (pending != "" && m_Input)
+        {
+            m_Input.SetText(pending);
+            SetHintSticky("ChatHint", "#STR_OZ_CHAT_MARK_HINT");
+        }
         if (s_Wanted != "")
         {
             m_OpenId = s_Wanted;
@@ -128,6 +140,19 @@ class OZ_PdaPageChat : OZ_PdaPage
             return true;
         }
 
+        if (w.GetUserID() == 6)
+        {
+            TakeMark(w.GetName().ToInt());
+            return true;
+        }
+
+        if (w == m_BtnAnon)
+        {
+            m_Anon = !m_Anon;
+            PaintAnon();
+            return true;
+        }
+
         if (w == m_BtnGroup)
         {
             // Назву групи беремо з того ж рядка вводу: окреме поле заради
@@ -160,6 +185,59 @@ class OZ_PdaPageChat : OZ_PdaPage
         return false;
     }
 
+    // Забрати мітку з повідомлення. Формат пише той самий мод з карти:
+    // "[MARK] назва @ x z — опис". Не мітка -- клік нічого не робить.
+    private void TakeMark(int idx)
+    {
+        if (!m_View || !m_View.Lines)
+            return;
+        if (idx < 0 || idx >= m_View.Lines.Count())
+            return;
+
+        string text = m_View.Lines[idx].Text;
+        if (text.IndexOf("[MARK] ") != 0)
+            return;
+
+        string rest = text.Substring(7, text.Length() - 7);
+
+        int at = rest.IndexOf(" @ ");
+        if (at == -1)
+            return;
+
+        string name = rest.Substring(0, at);
+        string tail = rest.Substring(at + 3, rest.Length() - at - 3);
+
+        string desc = "";
+        int dash = tail.IndexOf(" — ");
+        if (dash != -1)
+        {
+            desc = tail.Substring(dash + 3, tail.Length() - dash - 3);
+            tail = tail.Substring(0, dash);
+        }
+
+        int sp = tail.IndexOf(" ");
+        if (sp == -1)
+            return;
+
+        int px = tail.Substring(0, sp).ToInt();
+        int pz = tail.Substring(sp + 1, tail.Length() - sp - 1).ToInt();
+        if (px <= 0 || pz <= 0)
+            return;
+
+        OZ_MapMarker m = new OZ_MapMarker();
+        m.Name = name;
+        m.Desc = desc;
+        m.Pos  = px.ToString() + " 0 " + pz.ToString();
+
+        string json;
+        string err;
+        if (JsonFileLoader<OZ_MapMarker>.MakeData(m, json, err, false))
+        {
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_MAP, "marker_add", json);
+            SetHintSticky("ChatHint", "#STR_OZ_CHAT_MARK_TAKEN");
+        }
+    }
+
     private void SendMessage()
     {
         if (m_OpenId == "")
@@ -172,6 +250,9 @@ class OZ_PdaPageChat : OZ_PdaPage
         s.Id = m_OpenId;
         if (m_Input)
             s.Text = m_Input.GetText();
+
+        if (m_View && m_View.Kind == "zone")
+            s.Anon = m_Anon;
 
         string json;
         string err;
@@ -319,8 +400,30 @@ class OZ_PdaPageChat : OZ_PdaPage
         {
             if (h.Kind == "group")
                 k.SetText("#STR_OZ_CHAT_GROUP");
+            else if (h.Kind == "zone")
+                k.SetText("#STR_OZ_CHAT_ZONE");
             else
                 k.SetText("");
+        }
+    }
+
+    // Тумблер «без імені»: увімкнений горить попереджувально. Це не
+    // прикраса -- гравець мусить БАЧИТИ, що зараз скаже в ефір анонімно.
+    private void PaintAnon()
+    {
+        TextWidget t = TextWidget.Cast(Wgt("BtnAnonText"));
+        if (!t)
+            return;
+
+        if (m_Anon)
+        {
+            t.SetText("#STR_OZ_CHAT_ANON_ON");
+            t.SetColor(ARGB(255, 255, 122, 26));
+        }
+        else
+        {
+            t.SetText("#STR_OZ_CHAT_ANON");
+            t.SetColor(ARGB(255, 140, 140, 148));
         }
     }
 
@@ -366,6 +469,12 @@ class OZ_PdaPageChat : OZ_PdaPage
             return;
 
         Widget w = GetGame().GetWorkspace().CreateWidgets("OpenZone_PDA/gui/layouts/oz_pda_chat_line.layout", m_Lines);
+        if (!w)
+            return;
+
+        // Рядок клікабельний: одержувач мітки забирає її одним дотиком.
+        w.SetUserID(6);
+        w.SetName(m_LineRows.Count().ToString());
         if (!w)
             return;
 
@@ -425,6 +534,12 @@ class OZ_PdaPageChat : OZ_PdaPage
         // двоє, і третій у ній не «запрошений», а зовсім інша розмова.
         if (m_BtnInvite)
             m_BtnInvite.Show(m_View.Kind == "group");
+
+        if (m_BtnAnon)
+        {
+            m_BtnAnon.Show(m_View.Kind == "zone");
+            PaintAnon();
+        }
 
         int n = 0;
         if (m_View.Lines)

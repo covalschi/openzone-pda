@@ -14,6 +14,13 @@ class OZ_PdaPageDevice : OZ_PdaPage
 
     private ref OZ_PdaDeviceStatus m_Status;
 
+    // Кнопки носія. Видимість веде стан: без чипа їх немає, нечитаний не
+    // імпортується, замкнений конфігом не пишеться й не стирається.
+    private ButtonWidget m_BtnCarWriteM;
+    private ButtonWidget m_BtnCarWriteN;
+    private ButtonWidget m_BtnCarImport;
+    private ButtonWidget m_BtnCarErase;
+
     override string LayoutPath()
     {
         return "OpenZone_PDA/gui/layouts/oz_pda_page_device.layout";
@@ -21,6 +28,14 @@ class OZ_PdaPageDevice : OZ_PdaPage
 
     override void OnBuilt()
     {
+        m_BtnCarWriteM = ButtonWidget.Cast(Wgt("BtnCarWriteM"));
+        m_BtnCarWriteN = ButtonWidget.Cast(Wgt("BtnCarWriteN"));
+        m_BtnCarImport = ButtonWidget.Cast(Wgt("BtnCarImport"));
+        m_BtnCarErase  = ButtonWidget.Cast(Wgt("BtnCarErase"));
+        SetText("BtnCarWriteMText", "#STR_OZ_DEV_WRITE_MARKS");
+        SetText("BtnCarWriteNText", "#STR_OZ_DEV_WRITE_NOTES");
+        SetText("BtnCarImportText", "#STR_OZ_DEV_IMPORT");
+        SetText("BtnCarEraseText", "#STR_OZ_DEV_ERASE");
         m_Preview    = ItemPreviewWidget.Cast(Wgt("Preview"));
         m_ChargeFill = Wgt("ChargeFill");
         m_BtnPower     = ButtonWidget.Cast(Wgt("BtnPower"));
@@ -64,6 +79,30 @@ class OZ_PdaPageDevice : OZ_PdaPage
     // б показати те, чого може не бути.
     override bool OnPageClick(Widget w, int x, int y)
     {
+        if (w == m_BtnCarWriteM)
+        {
+            CarrierOp("carrier_write", "markers");
+            return true;
+        }
+
+        if (w == m_BtnCarWriteN)
+        {
+            CarrierOp("carrier_write", "notes");
+            return true;
+        }
+
+        if (w == m_BtnCarImport)
+        {
+            CarrierOp("carrier_import", "");
+            return true;
+        }
+
+        if (w == m_BtnCarErase)
+        {
+            CarrierOp("carrier_erase", "");
+            return true;
+        }
+
         if (w && w == m_BtnPower)
         {
             bool want = true;
@@ -121,10 +160,36 @@ class OZ_PdaPageDevice : OZ_PdaPage
         return false;
     }
 
+    private void CarrierOp(string op, string kind)
+    {
+        string json = "{}";
+        if (kind != "")
+        {
+            OZ_CarrierWriteOp w = new OZ_CarrierWriteOp();
+            w.Kind = kind;
+
+            string err;
+            if (!JsonFileLoader<OZ_CarrierWriteOp>.MakeData(w, json, err, false))
+                return;
+        }
+
+        OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, op, json);
+    }
+
     override void OnResponse(string op, bool ok, string json, string error)
     {
         // Відповідь на живлення сама по собі нічого не несе: перепитуємо стан
         // і малюємо його, а причину відмови показуємо там, де вона видима.
+        if (op == "carrier_write" || op == "carrier_import" || op == "carrier_erase")
+        {
+            if (ok)
+                SetHintSticky("CarrierText", "#STR_OZ_DEV_CARRIER_DONE");
+            else
+                SetHintSticky("CarrierText", "#" + error);
+            Request();
+            return;
+        }
+
         if (op == "power")
         {
             if (!ok)
@@ -172,6 +237,19 @@ class OZ_PdaPageDevice : OZ_PdaPage
 
     private void Paint()
     {
+        bool hasCar   = m_Status && m_Status.CarrierClass != "";
+        bool carWrit  = m_Status && m_Status.CarrierWritten;
+        bool carCanW  = m_Status && m_Status.CarrierWritable;
+
+        if (m_BtnCarWriteM)
+            m_BtnCarWriteM.Show(hasCar && carCanW);
+        if (m_BtnCarWriteN)
+            m_BtnCarWriteN.Show(hasCar && carCanW);
+        if (m_BtnCarImport)
+            m_BtnCarImport.Show(hasCar && carWrit);
+        if (m_BtnCarErase)
+            m_BtnCarErase.Show(hasCar && carWrit && carCanW);
+
         OZ_PdaDeviceStatus st = m_Status;
 
         SetText("TitleName", st.DisplayName);

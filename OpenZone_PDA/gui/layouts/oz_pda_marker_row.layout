@@ -13,6 +13,20 @@ ButtonWidgetClass OZ_MarkerRow {
  vexactsize 1
  text ""
  {
+  PanelWidgetClass RowBg {
+   visible 1
+   ignorepointer 1
+   color 0.043 0.043 0.051 1
+   position 0 0
+   size 252 34
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 0
+   style rover_sim_colorable
+  }
+
   PanelWidgetClass RowPick {
    visible 0
    ignorepointer 1

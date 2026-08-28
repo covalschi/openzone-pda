@@ -872,6 +872,19 @@ class OZ_PdaMenu : UIScriptedMenu
         return super.OnMouseButtonDown(w, x, y, button);
     }
 
+    // Відпускання лівої так само їде на сторінку: клік по MapWidget не
+    // породжує OnClick, і карта збирає його з пари down+up сама.
+    override bool OnMouseButtonUp(Widget w, int x, int y, int button)
+    {
+        if (button == MouseState.LEFT && m_Current != "" && m_Pages.Contains(m_Current))
+        {
+            if (m_Pages.Get(m_Current).OnPageMouseUp(w, x, y))
+                return true;
+        }
+
+        return super.OnMouseButtonUp(w, x, y, button);
+    }
+
     override bool OnItemSelected(Widget w, int x, int y, int row, int column, int oldRow, int oldColumn)
     {
         if (m_Current != "" && m_Pages.Contains(m_Current))

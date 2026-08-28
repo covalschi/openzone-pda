@@ -61,6 +61,7 @@ class OZ_PdaConst
     static const string PAGE_CONTACTS = "contacts";
     static const string PAGE_NOTES    = "notes";
     static const string PAGE_MAP      = "map";
+    static const string PAGE_NEWS     = "news";
     static const string PAGE_CHAT     = "chat";
 
     // Межі записок. Не смак, а захист: текст їде в JSON на диску, а згодом у

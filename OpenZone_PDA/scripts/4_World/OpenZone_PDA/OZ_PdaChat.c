@@ -40,6 +40,7 @@ class OZ_ChatAskSend
     string Name;
     string Id;
     string Text;
+    bool   Anon;
 }
 
 class OZ_ChatAskStart
@@ -301,8 +302,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
             return "";
         }
 
-        if (text.Length() > OZ_PdaConst.CHAT_MSG_MAX)
-            text = text.Substring(0, OZ_PdaConst.CHAT_MSG_MAX);
+        text = OZ_Text.Clip(text, OZ_PdaConst.CHAT_MSG_MAX);
 
         string uid = sender.GetPlainId();
 
@@ -311,6 +311,13 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         a.Name = sender.GetName();
         a.Id   = s.Id;
         a.Text = text;
+
+        // Анонімність їде далі мостові, а СЛІД лишається тут: гравцям ім'я
+        // не показується ніде, але власник сервера мусить мати, куди
+        // подивитись після нічного погрому в ефірі.
+        a.Anon = s.Anon;
+        if (s.Anon)
+            OZ_Log.Info("chat: anonymous zone message from " + uid);
 
         string letter;
         if (!JsonFileLoader<OZ_ChatAskSend>.MakeData(a, letter, err, false))
@@ -384,8 +391,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         string title = MiscGameplayFunctions.SanitizeString(r.Name);
         if (title == "")
             title = "group";
-        if (title.Length() > OZ_PdaConst.CHAT_TITLE_MAX)
-            title = title.Substring(0, OZ_PdaConst.CHAT_TITLE_MAX);
+        title = OZ_Text.Clip(title, OZ_PdaConst.CHAT_TITLE_MAX);
 
         string uid = sender.GetPlainId();
 

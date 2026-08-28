@@ -90,3 +90,58 @@ class OZ_DataCarrier_Base : ItemBase
         return true;
     }
 }
+
+
+// Що віддає читання чипа: рід і тіло як є. Клієнт розбирає за Kind тим
+// самим класом, яким користується відповідна сторінка.
+class OZ_CarrierView
+{
+    string Kind    = "";
+    string Payload = "";
+}
+
+// «Записати нотатки на чип»: книжка приїхала з моста -- кладемо на предмет.
+// Пристрій і чип ПЕРЕВІРЯЄМО ЗАНОВО: за час дороги гравець міг викласти
+// КПК чи висмикнути чип, і писати тоді нема куди.
+class OZ_CarrierNotesReply : OZ_BridgeReply
+{
+    protected string m_Uid;
+
+    void OZ_CarrierNotesReply(string uid)
+    {
+        m_Uid = uid;
+    }
+
+    override void OnBody(string json)
+    {
+        PlayerIdentity to = OZ_ChatWho.Online(m_Uid);
+        if (!to)
+            return;
+
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(to);
+        if (!pda)
+        {
+            OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "carrier_write", false, "", "STR_OZ_ERR_NO_DEVICE");
+            return;
+        }
+
+        OZ_DataCarrier_Base c = OZ_DataCarrier_Base.Cast(pda.OZ_Attached(OZ_PdaConst.SLOT_CARRIER));
+        if (!c)
+        {
+            OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "carrier_write", false, "", "STR_OZ_ERR_NO_CARRIER");
+            return;
+        }
+
+        c.OZ_Write("notes", json);
+        OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "carrier_write", true, "", "");
+    }
+
+    override void OnFail(int code)
+    {
+        PlayerIdentity to = OZ_ChatWho.Online(m_Uid);
+        if (!to)
+            return;
+
+        OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "carrier_write", false, "", "STR_OZ_ERR_NO_BRIDGE");
+    }
+}

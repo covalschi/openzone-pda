@@ -14,6 +14,19 @@ FrameWidgetClass OZ_PageNotes {
  vexactsize 1
  {
   // --- ліва колонка: перелік ---
+
+  // Невидима лінійка розклейки переносів: ТОЙ САМИЙ шрифт, що в полі, бо
+  // мірятись чужим шрифтом означало б брехати на кожній літері.
+  TextWidgetClass WrapRuler {
+   visible 0
+   ignorepointer 1
+   position 0 0
+   size 10 10
+   color 1 1 1 1
+   text ""
+   font "gui/fonts/MetronBook14"
+   "exact text" 1
+  }
   TextListboxWidgetClass NoteList {
    visible 1
    position 16 12
@@ -103,9 +116,8 @@ FrameWidgetClass OZ_PageNotes {
      hexactsize 1
      vexactsize 1
      text ""
-     font "gui/fonts/sdf_MetronBook24"
+     font "gui/fonts/MetronBook16"
      "exact text" 1
-     "exact text size" 16
      color 1 0.478 0.102 1
      priority 2
     }
@@ -123,11 +135,10 @@ FrameWidgetClass OZ_PageNotes {
      vexactsize 1
      text ""
      "exact text" 1
-     "exact text size" 15
      lines 15
      "limit visible" 1
      color 0.788 0.788 0.816 1
-     font "gui/fonts/sdf_MetronBook24"
+     font "gui/fonts/MetronBook14"
      priority 2
     }
    }

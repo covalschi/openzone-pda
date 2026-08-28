@@ -293,6 +293,187 @@ FrameWidgetClass OZ_PageDevice {
      "text valign" center
     }
 
+
+    ButtonWidgetClass BtnCarWriteM {
+     visible 0
+     position 245 164
+     size 104 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnCarWriteMBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 104 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnCarWriteMText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 104 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
+    ButtonWidgetClass BtnCarWriteN {
+     visible 0
+     position 353 164
+     size 104 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnCarWriteNBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 104 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnCarWriteNText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 104 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
+    ButtonWidgetClass BtnCarImport {
+     visible 0
+     position 461 164
+     size 104 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnCarImportBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 104 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnCarImportText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 104 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
+    ButtonWidgetClass BtnCarErase {
+     visible 0
+     position 569 164
+     size 104 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnCarEraseBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 104 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnCarEraseText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 104 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
     // --- сесія й знімок ---
     TextWidgetClass SessionText {
      visible 1

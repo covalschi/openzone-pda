@@ -1,0 +1,142 @@
+// Сторінка «Новини». Кладеться скриптом у PageHost меню (1045x414 одиниць).
+// Імена читає OZ_PdaPageNews.c: NewsRows, PostTitle, PostMeta, PostBody,
+// NewsHint.
+
+FrameWidgetClass OZ_PageNews {
+ visible 1
+ position 0 0
+ size 1045 414
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ {
+  ScrollWidgetClass NewsScroll {
+   visible 1
+   position 16 12
+   size 320 356
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   "Scrollbar V" 1
+   priority 2
+   {
+    WrapSpacerWidgetClass NewsRows {
+     visible 1
+     position 0 0
+     size 320 356
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+    }
+   }
+  }
+
+  PanelWidgetClass NewsEdge {
+   visible 1
+   ignorepointer 1
+   color 1 1 1 0.07
+   position 348 12
+   size 1 356
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 2
+   style rover_sim_colorable
+  }
+
+  TextWidgetClass PostTitle {
+   visible 1
+   ignorepointer 1
+   position 364 12
+   size 665 24
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 1 0.478 0.102 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 17
+   "text halign" left
+   "text valign" center
+   priority 2
+  }
+
+  TextWidgetClass PostMeta {
+   visible 1
+   ignorepointer 1
+   position 364 38
+   size 665 16
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.549 0.549 0.576 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 12
+   "text halign" left
+   "text valign" center
+   priority 2
+  }
+
+  ScrollWidgetClass PostScroll {
+   visible 1
+   position 364 62
+   size 665 306
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   "Scrollbar V" 1
+   priority 2
+   {
+    MultilineTextWidgetClass PostBody {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 645 306
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.918 0.918 0.933 1
+     text ""
+     wrap 1
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 14
+     "text halign" left
+     "text valign" top
+     priority 1
+    }
+   }
+  }
+
+  TextWidgetClass NewsHint {
+   visible 1
+   ignorepointer 1
+   position 16 380
+   size 1013 22
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.549 0.549 0.576 1
+   text ""
+   font "gui/fonts/sdf_MetronBook24"
+   "exact text" 1
+   "exact text size" 13
+   "text halign" left
+   "text valign" center
+   priority 2
+  }
+ }
+}

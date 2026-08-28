@@ -98,6 +98,7 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
         p.Pages.Insert(OZ_PdaConst.PAGE_NOTES);
         p.Pages.Insert(OZ_PdaConst.PAGE_MAP);
         p.Pages.Insert(OZ_PdaConst.PAGE_CHAT);
+        p.Pages.Insert(OZ_PdaConst.PAGE_NEWS);
 
         p.BatteryClassNames = new array<string>();
         p.BatteryClassNames.Insert("Battery9V");
@@ -120,6 +121,7 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
         a.Pages.Insert(OZ_PdaConst.PAGE_NOTES);
         a.Pages.Insert(OZ_PdaConst.PAGE_MAP);
         a.Pages.Insert(OZ_PdaConst.PAGE_CHAT);
+        a.Pages.Insert(OZ_PdaConst.PAGE_NEWS);
 
         a.BatteryClassNames = new array<string>();
         a.BatteryClassNames.Insert("Battery9V");

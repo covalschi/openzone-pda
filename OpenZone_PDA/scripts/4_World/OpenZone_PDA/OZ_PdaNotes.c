@@ -183,10 +183,8 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
         incoming.Title = MiscGameplayFunctions.SanitizeString(incoming.Title);
         incoming.Body  = MiscGameplayFunctions.SanitizeString(incoming.Body);
 
-        if (incoming.Title.Length() > OZ_PdaConst.NOTE_TITLE_MAX)
-            incoming.Title = incoming.Title.Substring(0, OZ_PdaConst.NOTE_TITLE_MAX);
-        if (incoming.Body.Length() > OZ_PdaConst.NOTE_BODY_MAX)
-            incoming.Body = incoming.Body.Substring(0, OZ_PdaConst.NOTE_BODY_MAX);
+        incoming.Title = OZ_Text.Clip(incoming.Title, OZ_PdaConst.NOTE_TITLE_MAX);
+        incoming.Body = OZ_Text.Clip(incoming.Body, OZ_PdaConst.NOTE_BODY_MAX);
 
         string uid = sender.GetPlainId();
 

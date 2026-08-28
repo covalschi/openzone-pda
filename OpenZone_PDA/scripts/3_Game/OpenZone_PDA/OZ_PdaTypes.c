@@ -48,6 +48,8 @@ class OZ_PdaDeviceStatus
     // --- залізо ---
     ref array<ref OZ_BayInfo> Bays;
     string CarrierClass = "";
+    bool   CarrierWritable = false;
+    string CarrierDisplay  = "";
     string CarrierKind  = "";
     bool   CarrierWritten = false;
 
@@ -339,6 +341,15 @@ class OZ_MarkerRef
     string Id = "";
 }
 
+// --- носій даних ---
+//
+// Що писати на чип. Kind -- "markers" або "notes"; порожні списки
+// означають «усе, що є».
+class OZ_CarrierWriteOp
+{
+    string Kind = "";
+}
+
 // --- сторінка «Зв'язок» ---
 //
 // По проводу їдуть ІМЕНА, а не Steam64: клієнт чужих id не бачить ніде, і
@@ -398,6 +409,10 @@ class OZ_ChatSend
 {
     string Id   = "";
     string Text = "";
+
+    // Тільки для «Зони»: сказати в ефір без імені. Міст сам відмовить
+    // будь-якій іншій розмові -- там співрозмовник обирав, З КИМ говорить.
+    bool Anon = false;
 }
 
 class OZ_ChatAdd

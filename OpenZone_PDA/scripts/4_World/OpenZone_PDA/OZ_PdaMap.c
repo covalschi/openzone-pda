@@ -258,12 +258,10 @@ class OZ_PdaHandlerMap : OZ_PageHandler
     private void Scrub(OZ_MapMarker m)
     {
         m.Name = MiscGameplayFunctions.SanitizeString(m.Name);
-        if (m.Name.Length() > OZ_PdaConst.MARKER_NAME_MAX)
-            m.Name = m.Name.Substring(0, OZ_PdaConst.MARKER_NAME_MAX);
+        m.Name = OZ_Text.Clip(m.Name, OZ_PdaConst.MARKER_NAME_MAX);
 
         m.Desc = MiscGameplayFunctions.SanitizeString(m.Desc);
-        if (m.Desc.Length() > OZ_PdaConst.MARKER_DESC_MAX)
-            m.Desc = m.Desc.Substring(0, OZ_PdaConst.MARKER_DESC_MAX);
+        m.Desc = OZ_Text.Clip(m.Desc, OZ_PdaConst.MARKER_DESC_MAX);
     }
 
     private int MarkerLimit(OZ_PdaProfile prof)

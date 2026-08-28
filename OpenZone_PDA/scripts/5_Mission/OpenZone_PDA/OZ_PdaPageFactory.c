@@ -24,6 +24,7 @@ class OZ_PdaPageFactory
         Add(OZ_PdaConst.PAGE_NOTES, OZ_PdaPageNotes);
         Add(OZ_PdaConst.PAGE_MAP, OZ_PdaPageMap);
         Add(OZ_PdaConst.PAGE_CHAT, OZ_PdaPageChat);
+        Add(OZ_PdaConst.PAGE_NEWS, OZ_PdaPageNews);
     }
 
     static void Add(string pageId, typename pageClass)
@@ -69,6 +70,27 @@ class OZ_PdaPageFactory
         if (pageId == OZ_PdaConst.PAGE_CHAT) return "@";
         if (pageId == "radio")    return "R";
         if (pageId == OZ_PdaConst.PAGE_NOTES) return "N";
+        if (pageId == OZ_PdaConst.PAGE_NEWS) return "i";
         return "?";
+    }
+}
+
+
+// Передача тексту МІЖ сторінками: карта кладе, чат забирає при відкритті.
+// Статик, а не поле меню: сторінки одна одну не знають і знати не повинні.
+class OZ_PdaCompose
+{
+    private static string s_Pending = "";
+
+    static void Put(string text)
+    {
+        s_Pending = text;
+    }
+
+    static string Take()
+    {
+        string t = s_Pending;
+        s_Pending = "";
+        return t;
     }
 }

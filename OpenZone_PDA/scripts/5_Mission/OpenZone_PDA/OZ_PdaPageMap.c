@@ -22,6 +22,7 @@ class OZ_PdaPageMap : OZ_PdaPage
     private EditBoxWidget          m_EditName;
     private MultilineEditBoxWidget m_EditDesc;
     private ButtonWidget           m_BtnSave;
+    private ButtonWidget           m_BtnShare;
     private ButtonWidget           m_BtnDel;
     private ref array<Widget>      m_RowWgts;
     private bool                   m_ListOpen = false;
@@ -99,6 +100,8 @@ class OZ_PdaPageMap : OZ_PdaPage
         m_EditName = EditBoxWidget.Cast(Wgt("MarkerName"));
         m_EditDesc = MultilineEditBoxWidget.Cast(Wgt("MarkerDesc"));
         m_BtnSave  = ButtonWidget.Cast(Wgt("BtnMarkSave"));
+        m_BtnShare = ButtonWidget.Cast(Wgt("BtnMarkShare"));
+        SetText("BtnMarkShareText", "#STR_OZ_MAP_SHARE");
         m_BtnDel   = ButtonWidget.Cast(Wgt("BtnMarkDel"));
         m_RowWgts  = new array<Widget>();
 
@@ -116,6 +119,16 @@ class OZ_PdaPageMap : OZ_PdaPage
             m_DownX = x;
             m_DownY = y;
         }
+        return false;
+    }
+
+    // «Клік» по карті живе на відпусканні: OnClick MapWidget не породжує
+    // (зміряно; ваніль слухає OnDoubleClick обробником на самому віджеті).
+    // false завжди -- рушію відпускання потрібне для його власного стану.
+    override bool OnPageMouseUp(Widget w, int x, int y)
+    {
+        if (w == m_Map)
+            MapClick(x, y);
         return false;
     }
 
@@ -149,14 +162,8 @@ class OZ_PdaPageMap : OZ_PdaPage
             return true;
         }
 
-        // Клік по самій карті: спершу питаємо, чи не влучив він у наявну
-        // мітку. Це має бути ПЕРШЕ питання -- інакше кожна спроба обрати
-        // мітку ставила б поверх неї нову.
-        if (w == m_Map)
-        {
-            MapClick(x, y);
-            return true;
-        }
+        // Кліка по самій карті ТУТ немає: MapWidget -- не кнопка, OnClick
+        // по ньому не приходить (зміряно). Він збирається в OnPageMouseUp.
 
         // ЗОНА СПАВНА -- ТУТ, ДЕ Я СТОЮ.
         //
@@ -233,6 +240,35 @@ class OZ_PdaPageMap : OZ_PdaPage
         if (w == m_BtnSave)
         {
             SendMarkerEdit();
+            return true;
+        }
+
+        if (w == m_BtnShare)
+        {
+            if (m_PickedId == "")
+            {
+                SetHintSticky("MapHint", "#STR_OZ_MAP_PICK_FIRST");
+                return true;
+            }
+
+            OZ_MapMarker mk = FindMarker(m_PickedId);
+            if (!mk)
+                return true;
+
+            // Формат розбирає одержувач: "[MARK] назва @ x z — опис".
+            vector mp = mk.Pos.ToVector();
+            int sx = Math.Round(mp[0]);
+            int sz = Math.Round(mp[2]);
+
+            string line = "[MARK] " + mk.Name + " @ " + sx.ToString() + " " + sz.ToString();
+            if (mk.Desc != "")
+                line += " — " + mk.Desc;
+
+            OZ_PdaCompose.Put(line);
+
+            OZ_PdaMenu menu = OZ_PdaMenu.Cast(GetGame().GetUIManager().FindMenu(OZ_PdaConst.MENU_PDA));
+            if (menu)
+                menu.Select(OZ_PdaConst.PAGE_CHAT);
             return true;
         }
 
@@ -398,8 +434,8 @@ class OZ_PdaPageMap : OZ_PdaPage
         {
             // GetText багаторядкового поля пише в out-параметр, а не
             // повертає: він успадкований від іншого прото, ніж у EditBox.
-            string d;
-            m_EditDesc.GetText(d);
+            // Через розклейку: опис теж обростав переносами посеред слів.
+            string d = OZ_Unwrap.Read(m_EditDesc, TextWidget.Cast(Wgt("DescRuler")));
             m.Desc = d;
         }
 

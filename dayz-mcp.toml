@@ -30,7 +30,7 @@ noise        = ["Bridge.Url is not https"]
 # тут 7 сторінок і 6 модулів, і це НЕ помилка -- це договір, що працює.
 [expect.counters]
 profiles = 3
-pages    = 6
+pages    = 7
 modules  = 4
 factions = 8
 carriers = 1

@@ -111,6 +111,15 @@ class OZ_PdaPage
         return false;
     }
 
+    // ВІДПУСКАННЯ над віджетом сторінки. MapWidget -- не кнопка: OnClick
+    // меню по ньому не приходить ВЗАГАЛІ (зміряно живцем; ваніль вішає
+    // обробник на сам віджет і слухає OnDoubleClick). Тож «клік по карті»
+    // складається зі своїх down+up, і up -- єдине місце, де він стається.
+    bool OnPageMouseUp(Widget w, int x, int y)
+    {
+        return false;
+    }
+
     bool OnPageItemSelected(Widget w, int row)
     {
         return false;

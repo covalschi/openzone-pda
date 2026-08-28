@@ -149,7 +149,10 @@ class OZ_PdaPageNotes : OZ_PdaPage
         if (m_Body)
         {
             string body;
-            m_Body.GetText(body);
+            // Не сирий GetText: він віддає ВІЗУАЛЬНІ переноси як \n, і
+            // збережений текст обростав розривами посеред слів ("the b/arn").
+            // OZ_Unwrap лишає тільки Enter-и людини.
+            body = OZ_Unwrap.Read(m_Body, TextWidget.Cast(Wgt("WrapRuler")));
             n.Body = body;
         }
 
@@ -250,7 +253,11 @@ class OZ_PdaPageNotes : OZ_PdaPage
                 row = "#STR_OZ_NOTES_UNTITLED";
 
             if (m_List)
-                m_List.AddItem(row, NULL, 0);
+                // Дата поруч із назвою: "12.08" вистачає, щоб упізнати свіже.
+                string when = "";
+                if (n.EditedAt.Length() >= 10)
+                    when = "  " + n.EditedAt.Substring(8, 2) + "." + n.EditedAt.Substring(5, 2);
+                m_List.AddItem(row + when, NULL, 0);
         }
 
         if (m_Book.Notes.Count() == 0 && !m_Draft)
