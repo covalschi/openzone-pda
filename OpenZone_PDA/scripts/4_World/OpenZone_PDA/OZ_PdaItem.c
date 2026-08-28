@@ -805,6 +805,32 @@ class OZ_PDA_Base : ItemBase
         return OZ_Battery() != null;
     }
 
+    // Список дозволених батарей -- у профілі (BatteryClassNames), і досі він
+    // був мертвим полем: обіцяв адмінові контроль, якого ніхто не перевіряв.
+    // Порожній список означає «влазить усе, що сідає в слот» -- модові
+    // батареї з іншою ємністю працюють одразу, бо відсоток рахується від
+    // GetEnergyMax() ВСТАВЛЕНОЇ батареї, а не від константи.
+    //
+    // Лише сервер: у клієнта профілів немає, і його відмова була б
+    // ворожінням. Серверна відмова повертає предмет чесно й сама.
+    override bool CanReceiveAttachment(EntityAI attachment, int slotId)
+    {
+        if (!super.CanReceiveAttachment(attachment, slotId))
+            return false;
+
+        if (!GetGame().IsServer())
+            return true;
+
+        if (slotId != InventorySlots.GetSlotIdFromString(OZ_PdaConst.SLOT_BATTERY))
+            return true;
+
+        OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(GetType());
+        if (!prof || !prof.BatteryClassNames || prof.BatteryClassNames.Count() == 0)
+            return true;
+
+        return prof.BatteryClassNames.Find(attachment.GetType()) != -1;
+    }
+
     // Заряд беремо з БАТАРЕЇ, а не з себе: energyStorageMax=0, свого запасу
     // пристрій не має й не повинен.
     private void PushState()

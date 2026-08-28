@@ -128,19 +128,8 @@ class OZ_PdaAccess : OZ_PageAccess
 
 class OZ_PdaLookup
 {
-    // Буфер під обхід інвентаря: один на цього ходока, а не new на кожен
-    // виклик. EnumerateInventory оголошений як `out array<EntityAI> items`
-    // (inventory.c:127) -- він ЗАПОВНЮЄ переданий масив, а не повертає свій,
-    // тож алокація на кожен виклик була чистою витратою: на сорока гравцях
-    // це порядку 2400 масивів за хвилину.
-    //
-    // ПРАВИЛО ДО БУФЕРА: не тримати його між викликами. Він спільний, і
-    // вкладений виклик перезаповнить його під ногами того, хто ітерує.
-    // Сьогодні вкладених немає -- перевірено по всіх дванадцяти місцях
-    // виклику HeldBy. `ref` стоїть на МАСИВІ (він наш), а не на елементах:
-    // сутності належать рушію, і ref на них тримав би їх живими після
-    // знищення.
-    private static ref array<EntityAI> s_Walk;
+// Знайти КПК, який гравець тримає або НОСИТЬ. Рюкзак не рахується --
+    // рішення власника 2026-08-28, і воно ж прибрало обхід інвентаря звідси.
 
     // Знайти КПК, який гравець тримає або несе.
     //
@@ -169,26 +158,19 @@ class OZ_PdaLookup
         if (inHands)
             return inHands;
 
-        // Ваниль сама перевіряє GetInventory() на сутностях у русі
-        // (weapon_base.c:1163), і після цієї правки сюди заходить більше
-        // викликів, ніж раніше.
+        // Рішення власника 2026-08-28: у РЮКЗАКУ пристрій НЕ активний.
+        // Активний він у руках або в слоті носіння на грудях -- і крапка.
+        // Це ще й дешевше: замість обходу всього інвентаря (PREORDER по
+        // кожному контейнеру на кожен запит) -- одна вибірка слота.
         GameInventory inv = player.GetInventory();
         if (!inv)
             return null;
 
-        if (!s_Walk)
-            s_Walk = new array<EntityAI>();
+        int slotId = InventorySlots.GetSlotIdFromString(OZ_PdaConst.SLOT_WEAR);
+        if (slotId == -1)
+            return null;
 
-        inv.EnumerateInventory(InventoryTraversalType.PREORDER, s_Walk);
-
-        for (int i = 0; i < s_Walk.Count(); i++)
-        {
-            OZ_PDA_Base pda = OZ_PDA_Base.Cast(s_Walk[i]);
-            if (pda)
-                return pda;
-        }
-
-        return null;
+        return OZ_PDA_Base.Cast(inv.FindAttachment(slotId));
     }
 
     static PlayerBase PlayerOf(PlayerIdentity who)

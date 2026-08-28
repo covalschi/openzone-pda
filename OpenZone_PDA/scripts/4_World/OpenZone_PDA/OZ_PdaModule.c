@@ -915,6 +915,7 @@ class OZ_PdaModule : CF_ModuleWorld
     {
         CheckSlot(OZ_PdaConst.SLOT_BATTERY);
         CheckSlot(OZ_PdaConst.SLOT_CARRIER);
+        CheckSlot(OZ_PdaConst.SLOT_WEAR);
         for (int i = 0; i < OZ_PdaConst.MODULE_SLOTS_MAX; i++)
             CheckSlot(OZ_PdaConst.ModuleSlot(i));
     }

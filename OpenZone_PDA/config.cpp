@@ -40,6 +40,14 @@ class CfgSlots
         displayName = "$STR_OZ_SLOT_CARRIER";
     };
 
+    // The wear slot on the CHARACTER: the device is active in hands or
+    // here, and a PDA buried in a backpack stays silent.
+    class Slot_OZ_PdaWear
+    {
+        name = "OZ_PdaWear";
+        displayName = "$STR_OZ_SLOT_PDA";
+    };
+
     class Slot_OZ_Module1
     {
         name = "OZ_Module1";
@@ -90,6 +98,9 @@ class CfgPatches
             // The core's CfgPatches class name -- that string IS the addon
             // identity, and nothing else resolves to it.
             "OpenZone_Core",
+            // The survivor classes gain our wear slot below, so the
+            // characters must be defined before this addon loads.
+            "DZ_Characters",
             // Vanilla models borrowed until dayz-3d delivers our own.
             // Consumables is here for \dz\gear\consumables\9v_battery.p3d --
             // the module placeholder. It is easy to miss because the battery
@@ -139,6 +150,14 @@ class CfgMods
 
 class CfgVehicles
 {
+    // Every survivor carries ONE wear slot for the device. += keeps the
+    // vanilla attachment list intact -- we add, never redeclare.
+    class Man;
+    class SurvivorBase : Man
+    {
+        attachments[] += {"OZ_PdaWear"};
+    };
+
     class Inventory_Base;
 
     class OZ_PDA_Base : Inventory_Base
@@ -167,6 +186,9 @@ class CfgVehicles
             "OZ_Module2",
             "OZ_Module3"
         };
+
+        // The device itself seats in the character's wear slot.
+        inventorySlot[] = {"OZ_PdaWear"};
 
         class EnergyManager
         {

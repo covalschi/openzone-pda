@@ -1,74 +1,217 @@
-// Смужка КПК у кутку екрана.
+// HUD КПК: смужка живлення, тост чату, мінімапа.
 //
-// Створюється ПРЯМО НА РОБОЧІЙ ОБЛАСТІ, повз меню -- вона мусить жити, поки
-// гравець ходить, а не поки дивиться в пристрій.
+// Створюється ПРЯМО НА РОБОЧІЙ ОБЛАСТІ, повз меню -- живе, поки гравець
+// ходить. Корінь на весь екран і прозорий: позиції трьох блоків незалежні,
+// а ховаються вони поодинці (OZ_PdaHud вирішує, кому світитись).
 //
-// Імена читає OZ_PdaHud.c: HudPower, HudMark.
+// Імена читає OZ_PdaHud.c: StripPane, HudPower, ToastPane, ToastWho,
+// ToastText, MiniPane, MiniMap.
 //
-// priority нижче 256: ItemPreviewWidget тут не потрібен, але правило
-// стосується всього дерева (див. §13 у скилі), і ламати його заради кута
-// екрана немає причин.
+// priority нижче 256: правило §13 зі скила діє на все дерево.
 
 FrameWidgetClass OZ_PdaHudRoot {
  visible 0
  clipchildren 0
  inheritalpha 0
  ignorepointer 1
- position 0.845 0.845
- size 0.14 0.05
+ position 0 0
+ size 1 1
  hexactpos 0
  vexactpos 0
  hexactsize 0
  vexactsize 0
  priority 8
  {
-  PanelWidgetClass HudBg {
-   visible 1
+  // ------------------------------------------------------------- смужка
+  FrameWidgetClass StripPane {
+   visible 0
    ignorepointer 1
-   color 0.055 0.055 0.062 0.62
-   position 0 0
-   size 1 1
+   position 0.845 0.845
+   size 0.14 0.05
    hexactpos 0
    vexactpos 0
    hexactsize 0
    vexactsize 0
-   priority 1
-   style rover_sim_colorable
-  }
-
-  // Оранжева риска ліворуч -- та сама, що на корпусі. Смужку впізнають по
-  // ній, а не по тексту: текст на периферії зору не читають.
-  PanelWidgetClass HudMark {
-   visible 1
-   ignorepointer 1
-   color 1 0.478 0.102 1
-   position 0 0
-   size 3 1
-   hexactpos 1
-   vexactpos 1
-   hexactsize 1
-   vexactsize 0
    priority 2
-   style rover_sim_colorable
+   {
+    PanelWidgetClass HudBg {
+     visible 1
+     ignorepointer 1
+     color 0.055 0.055 0.062 0.62
+     position 0 0
+     size 1 1
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     priority 1
+     style rover_sim_colorable
+    }
+
+    // Оранжева риска ліворуч -- та сама, що на корпусі. Смужку впізнають по
+    // ній, а не по тексту: текст на периферії зору не читають.
+    PanelWidgetClass HudMark {
+     visible 1
+     ignorepointer 1
+     color 1 0.478 0.102 1
+     position 0 0
+     size 3 1
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 0
+     priority 2
+     style rover_sim_colorable
+    }
+
+    TextWidgetClass HudPower {
+     visible 1
+     ignorepointer 1
+     position 10 0
+     size 1 1
+     hexactpos 1
+     vexactpos 1
+     hexactsize 0
+     vexactsize 0
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 14
+     "text halign" left
+     "text valign" center
+     priority 3
+    }
+   }
   }
 
-  TextWidgetClass HudPower {
-   visible 1
+  // -------------------------------------------------------------- тост
+  //
+  // Прийшло повідомлення, а меню закрите: пристрій «пікає» рядком над
+  // смужкою. Показує ОСТАННЄ і кілька секунд -- це дзвінок, а не журнал.
+  FrameWidgetClass ToastPane {
+   visible 0
    ignorepointer 1
-   position 10 0
-   size 1 1
-   hexactpos 1
-   vexactpos 1
+   position 0.69 0.845
+   size 0.15 0.05
+   hexactpos 0
+   vexactpos 0
    hexactsize 0
    vexactsize 0
-   color 0.788 0.788 0.816 1
-   text ""
-   font "gui/fonts/sdf_MetronBook24"
-   "exact text" 1
-   "exact text size" 14
-   "text halign" left
-   "text valign" center
-   priority 3
+   priority 2
+   {
+    PanelWidgetClass ToastBg {
+     visible 1
+     ignorepointer 1
+     color 0.055 0.055 0.062 0.62
+     position 0 0
+     size 1 1
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     priority 1
+     style rover_sim_colorable
+    }
+
+    PanelWidgetClass ToastMark {
+     visible 1
+     ignorepointer 1
+     color 1 0.478 0.102 1
+     position 0 0
+     size 3 1
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 0
+     priority 2
+     style rover_sim_colorable
+    }
+
+    TextWidgetClass ToastWho {
+     visible 1
+     ignorepointer 1
+     position 10 2
+     size 1 0.45
+     hexactpos 1
+     vexactpos 1
+     hexactsize 0
+     vexactsize 0
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 12
+     "text halign" left
+     "text valign" center
+     priority 3
+    }
+
+    TextWidgetClass ToastText {
+     visible 1
+     ignorepointer 1
+     position 10 0.45
+     size 1 0.5
+     hexactpos 1
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" left
+     "text valign" center
+     priority 3
+    }
+   }
+  }
+
+  // ----------------------------------------------------------- мінімапа
+  //
+  // MapWidget малює себе поверх власних дітей (зміряно, §19 скила), тому
+  // рамка -- це ПІДКЛАДКА більшого розміру, а не накладка: мапа лежить у
+  // ній із відступом, і край підкладки видно довкола.
+  FrameWidgetClass MiniPane {
+   visible 0
+   ignorepointer 1
+   position 0.845 0.6
+   size 0.14 0.235
+   hexactpos 0
+   vexactpos 0
+   hexactsize 0
+   vexactsize 0
+   priority 2
+   {
+    PanelWidgetClass MiniFrame {
+     visible 1
+     ignorepointer 1
+     color 0.055 0.055 0.062 0.85
+     position 0 0
+     size 1 1
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     priority 1
+     style rover_sim_colorable
+    }
+
+    MapWidgetClass MiniMap {
+     visible 1
+     clipchildren 1
+     inheritalpha 0
+     ignorepointer 1
+     position 3 3
+     size 0.985 0.985
+     hexactpos 1
+     vexactpos 1
+     hexactsize 0
+     vexactsize 0
+     priority 2
+    }
+   }
   }
  }
 }
