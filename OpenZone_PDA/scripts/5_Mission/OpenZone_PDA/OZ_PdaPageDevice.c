@@ -18,8 +18,11 @@ class OZ_PdaPageDevice : OZ_PdaPage
     // імпортується, замкнений конфігом не пишеться й не стирається.
     private ButtonWidget m_BtnCarWriteM;
     private ButtonWidget m_BtnCarWriteN;
-    private ButtonWidget m_BtnCarImport;
+    private ButtonWidget m_BtnCarView;
     private ButtonWidget m_BtnCarErase;
+    private Widget       m_CarPane;
+    private ButtonWidget m_BtnCarDoImport;
+    private ButtonWidget m_BtnCarClose;
 
     override string LayoutPath()
     {
@@ -28,14 +31,19 @@ class OZ_PdaPageDevice : OZ_PdaPage
 
     override void OnBuilt()
     {
-        m_BtnCarWriteM = ButtonWidget.Cast(Wgt("BtnCarWriteM"));
-        m_BtnCarWriteN = ButtonWidget.Cast(Wgt("BtnCarWriteN"));
-        m_BtnCarImport = ButtonWidget.Cast(Wgt("BtnCarImport"));
-        m_BtnCarErase  = ButtonWidget.Cast(Wgt("BtnCarErase"));
+        m_BtnCarWriteM   = ButtonWidget.Cast(Wgt("BtnCarWriteM"));
+        m_BtnCarWriteN   = ButtonWidget.Cast(Wgt("BtnCarWriteN"));
+        m_BtnCarView     = ButtonWidget.Cast(Wgt("BtnCarView"));
+        m_BtnCarErase    = ButtonWidget.Cast(Wgt("BtnCarErase"));
+        m_CarPane        = Wgt("CarPane");
+        m_BtnCarDoImport = ButtonWidget.Cast(Wgt("BtnCarDoImport"));
+        m_BtnCarClose    = ButtonWidget.Cast(Wgt("BtnCarClose"));
         SetText("BtnCarWriteMText", "#STR_OZ_DEV_WRITE_MARKS");
         SetText("BtnCarWriteNText", "#STR_OZ_DEV_WRITE_NOTES");
-        SetText("BtnCarImportText", "#STR_OZ_DEV_IMPORT");
+        SetText("BtnCarViewText", "#STR_OZ_DEV_CAR_VIEW");
         SetText("BtnCarEraseText", "#STR_OZ_DEV_ERASE");
+        SetText("BtnCarDoImportText", "#STR_OZ_DEV_IMPORT");
+        SetText("BtnCarCloseText", "#STR_OZ_DEV_CAR_CLOSE");
         m_Preview    = ItemPreviewWidget.Cast(Wgt("Preview"));
         m_ChargeFill = Wgt("ChargeFill");
         m_BtnPower     = ButtonWidget.Cast(Wgt("BtnPower"));
@@ -46,6 +54,9 @@ class OZ_PdaPageDevice : OZ_PdaPage
 
     override void OnSelected()
     {
+        if (m_CarPane)
+            m_CarPane.Show(false);
+
         ClearHintHold();
         Request();
     }
@@ -91,7 +102,20 @@ class OZ_PdaPageDevice : OZ_PdaPage
             return true;
         }
 
-        if (w == m_BtnCarImport)
+        if (w == m_BtnCarView)
+        {
+            CarrierOp("carrier_read", "");
+            return true;
+        }
+
+        if (w == m_BtnCarClose)
+        {
+            if (m_CarPane)
+                m_CarPane.Show(false);
+            return true;
+        }
+
+        if (w == m_BtnCarDoImport)
         {
             CarrierOp("carrier_import", "");
             return true;
@@ -180,8 +204,23 @@ class OZ_PdaPageDevice : OZ_PdaPage
     {
         // Відповідь на живлення сама по собі нічого не несе: перепитуємо стан
         // і малюємо його, а причину відмови показуємо там, де вона видима.
+        if (op == "carrier_read")
+        {
+            if (!ok)
+            {
+                SetHintSticky("CarrierText", "#" + error);
+                return;
+            }
+
+            ShowCarrierPreview(json);
+            return;
+        }
+
         if (op == "carrier_import")
         {
+            if (m_CarPane)
+                m_CarPane.Show(false);
+
             if (!ok)
             {
                 SetHintSticky("CarrierText", "#" + error);
@@ -266,8 +305,10 @@ class OZ_PdaPageDevice : OZ_PdaPage
             m_BtnCarWriteM.Show(hasCar && carCanW);
         if (m_BtnCarWriteN)
             m_BtnCarWriteN.Show(hasCar && carCanW);
-        if (m_BtnCarImport)
-            m_BtnCarImport.Show(hasCar && carWrit);
+        if (m_BtnCarView)
+            m_BtnCarView.Show(hasCar && carWrit);
+        if (m_CarPane && !(hasCar && carWrit))
+            m_CarPane.Show(false);
         if (m_BtnCarErase)
             m_BtnCarErase.Show(hasCar && carWrit && carCanW);
 
@@ -394,6 +435,84 @@ class OZ_PdaPageDevice : OZ_PdaPage
 
             w.SetText(line);
         }
+    }
+
+    // Зібрати текст прев'ю з того, що чип чесно віддав. Знаємо СВОЇ два
+    // роди; чужий показуємо словом роду -- його вміст знає лише його
+    // сторінка, а гравцеві досить бачити, що чип не порожній.
+    private void ShowCarrierPreview(string json)
+    {
+        OZ_CarrierView v;
+        string err;
+        if (!JsonFileLoader<OZ_CarrierView>.LoadData(json, v, err) || !v)
+            return;
+
+        string head = "";
+        string body = "";
+
+        if (v.Kind == "markers")
+        {
+            OZ_MarkerList ml;
+            if (JsonFileLoader<OZ_MarkerList>.LoadData(v.Payload, ml, err) && ml && ml.Items)
+            {
+                head = "#STR_OZ_DEV_CAR_MARKS  " + ml.Items.Count().ToString();
+                for (int i = 0; i < ml.Items.Count(); i++)
+                {
+                    OZ_MapMarker m = ml.Items[i];
+                    vector at = m.Pos.ToVector();
+                    int px = Math.Round(at[0]);
+                    int pz = Math.Round(at[2]);
+
+                    body += m.Name + "  @ " + px.ToString() + " " + pz.ToString();
+                    if (m.Desc != "")
+                        body += "  -- " + OneLine(m.Desc);
+                    body += "\n";
+                }
+            }
+        }
+        else if (v.Kind == "notes")
+        {
+            OZ_NoteBook nb;
+            if (JsonFileLoader<OZ_NoteBook>.LoadData(v.Payload, nb, err) && nb && nb.Notes)
+            {
+                head = "#STR_OZ_DEV_CAR_NOTES  " + nb.Notes.Count().ToString();
+                for (int k = 0; k < nb.Notes.Count(); k++)
+                {
+                    OZ_Note n = nb.Notes[k];
+                    body += n.Title;
+                    if (n.Body != "")
+                        body += "  -- " + OneLine(n.Body);
+                    body += "\n";
+                }
+            }
+        }
+
+        if (head == "")
+        {
+            head = v.Kind;
+            body = "#STR_OZ_DEV_CARRIER_UNKNOWN";
+        }
+
+        SetText("CarPaneHead", head);
+
+        TextWidget tw = TextWidget.Cast(Wgt("CarBody"));
+        if (tw)
+            tw.SetText(body);
+
+        if (m_CarPane)
+            m_CarPane.Show(true);
+    }
+
+    // Один рядок прев'ю на запис: переноси -- в пробіли, хвіст -- геть.
+    private string OneLine(string text)
+    {
+        string t = text;
+        t.Replace("\n", " ");
+
+        string cut = OZ_Text.Clip(t, 96);
+        if (cut.Length() < t.Length())
+            cut += "...";
+        return cut;
     }
 
     private void PaintCarrier(OZ_PdaDeviceStatus st)

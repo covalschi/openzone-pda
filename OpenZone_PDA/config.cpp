@@ -229,6 +229,22 @@ class CfgVehicles
         descriptionShort = "$STR_OZ_CARRIER_CHIP_DESC";
     };
 
+    // Same prop, different capacities: the class name is the tier lever,
+    // Hardware.json says how much fits on each.
+    class OZ_DataCarrier_Floppy : OZ_DataCarrier_Base
+    {
+        scope = 2;
+        displayName = "$STR_OZ_CARRIER_FLOPPY";
+        descriptionShort = "$STR_OZ_CARRIER_FLOPPY_DESC";
+    };
+
+    class OZ_DataCarrier_Drive : OZ_DataCarrier_Base
+    {
+        scope = 2;
+        displayName = "$STR_OZ_CARRIER_DRIVE";
+        descriptionShort = "$STR_OZ_CARRIER_DRIVE_DESC";
+    };
+
     // ------------------------------------------------------------- modules
     //
     // A module fits ANY bay: one inventorySlot[] listing all three, so the

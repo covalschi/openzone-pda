@@ -384,7 +384,7 @@ FrameWidgetClass OZ_PageDevice {
      }
     }
 
-    ButtonWidgetClass BtnCarImport {
+    ButtonWidgetClass BtnCarView {
      visible 0
      position 461 164
      size 104 22
@@ -395,7 +395,7 @@ FrameWidgetClass OZ_PageDevice {
      text ""
      priority 3
      {
-      PanelWidgetClass BtnCarImportBg {
+      PanelWidgetClass BtnCarViewBg {
        visible 1
        ignorepointer 1
        color 0.145 0.145 0.161 1
@@ -408,7 +408,7 @@ FrameWidgetClass OZ_PageDevice {
        priority 1
        style rover_sim_colorable
       }
-      TextWidgetClass BtnCarImportText {
+      TextWidgetClass BtnCarViewText {
        visible 1
        ignorepointer 1
        position 0 0
@@ -473,6 +473,164 @@ FrameWidgetClass OZ_PageDevice {
       }
      }
     }
+
+    // Прев'ю вмісту носія. Накриває нижню половину панелі стану, поки
+    // відкрите; IMPORT живе ТУТ -- спершу дивишся, потім забираєш.
+    PanelWidgetClass CarPane {
+     visible 0
+     position 0 190
+     size 677 192
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.043 0.043 0.051 1
+     priority 5
+     style rover_sim_colorable
+     {
+      TextWidgetClass CarPaneHead {
+       visible 1
+       ignorepointer 1
+       position 8 4
+       size 500 16
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/MetronBook14"
+       "exact text" 1
+       "text halign" left
+       "text valign" center
+       priority 2
+      }
+
+      ScrollWidgetClass CarScroll {
+       visible 1
+       position 8 26
+       size 661 128
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       contentwidth 645
+       contentheight 800
+       priority 2
+       {
+        MultilineTextWidgetClass CarBody {
+         visible 1
+         ignorepointer 1
+         position 0 0
+         size 645 800
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         wrap 1
+         color 0.788 0.788 0.816 1
+         text ""
+         font "gui/fonts/MetronBook14"
+         "exact text" 1
+         "text halign" left
+         "text valign" top
+         priority 1
+        }
+       }
+      }
+
+      ButtonWidgetClass BtnCarDoImport {
+       visible 1
+       position 449 162
+       size 104 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       text ""
+       priority 3
+       {
+        PanelWidgetClass BtnCarDoImportBg {
+         visible 1
+         ignorepointer 1
+         color 0.145 0.145 0.161 1
+         position 0 0
+         size 104 22
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         priority 1
+         style rover_sim_colorable
+        }
+        TextWidgetClass BtnCarDoImportText {
+         visible 1
+         ignorepointer 1
+         position 0 0
+         size 104 22
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         color 1 0.478 0.102 1
+         text ""
+         font "gui/fonts/sdf_MetronBook24"
+         "exact text" 1
+         "exact text size" 12
+         "text halign" center
+         "text valign" center
+         priority 2
+        }
+       }
+      }
+
+      ButtonWidgetClass BtnCarClose {
+       visible 1
+       position 561 162
+       size 104 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       text ""
+       priority 3
+       {
+        PanelWidgetClass BtnCarCloseBg {
+         visible 1
+         ignorepointer 1
+         color 0.145 0.145 0.161 1
+         position 0 0
+         size 104 22
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         priority 1
+         style rover_sim_colorable
+        }
+        TextWidgetClass BtnCarCloseText {
+         visible 1
+         ignorepointer 1
+         position 0 0
+         size 104 22
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         color 1 0.478 0.102 1
+         text ""
+         font "gui/fonts/sdf_MetronBook24"
+         "exact text" 1
+         "exact text size" 12
+         "text halign" center
+         "text valign" center
+         priority 2
+        }
+       }
+      }
+     }
+    }
+
 
     // --- сесія й знімок ---
     TextWidgetClass SessionText {

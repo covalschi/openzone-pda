@@ -138,6 +138,106 @@ class OZ_CarrierView
     string Payload = "";
 }
 
+// «Злити нотатки З чипа»: спершу питаємо міст, СКІЛЬКИ МІСЦЯ лишилось у
+// книжці одержувача, і шлемо рівно стільки. Без цього кроку імпорт у повну
+// книжку рапортував би успіх, а міст мовчки відкидав би кожен лист: стеля
+// живе в мості, і рахувати місце може лише той, хто спитав.
+class OZ_CarrierImportReply : OZ_BridgeReply
+{
+    protected string m_Uid;
+    // Знімок книжки З ЧИПА, як він лежав на предметі в мить запиту: чип за
+    // час дороги міг зникнути з гнізда, а імпортуємо ми не гніздо, а вміст.
+    protected string m_BookJson;
+
+    void OZ_CarrierImportReply(string uid, string bookJson)
+    {
+        m_Uid      = uid;
+        m_BookJson = bookJson;
+    }
+
+    override void OnBody(string json)
+    {
+        PlayerIdentity to = OZ_ChatWho.Online(m_Uid);
+        if (!to)
+            return;
+
+        string err;
+
+        OZ_NoteBook have;
+        if (!JsonFileLoader<OZ_NoteBook>.LoadData(json, have, err) || !have || !have.Notes)
+        {
+            OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "carrier_import", false, "", "STR_OZ_ERR_INTERNAL");
+            return;
+        }
+
+        OZ_NoteBook book;
+        if (!JsonFileLoader<OZ_NoteBook>.LoadData(m_BookJson, book, err) || !book || !book.Notes)
+        {
+            OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "carrier_import", false, "", "STR_OZ_ERR_INTERNAL");
+            return;
+        }
+
+        // Стелю каже міст; старий міст без поля Max покриває наша власна.
+        int ceiling = have.Max;
+        if (ceiling <= 0)
+            ceiling = OZ_PdaConst.NOTES_MAX;
+
+        int room = ceiling - have.Notes.Count();
+        if (room <= 0)
+        {
+            OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "carrier_import", false, "", "STR_OZ_ERR_NOTES_FULL");
+            return;
+        }
+
+        int wanted = book.Notes.Count();
+        int cap = wanted;
+        if (cap > room)
+            cap = room;
+
+        // Кожна записка -- окремий лист з ПОРОЖНІМ Id: «створи таку саму»,
+        // а не «редагуй чужу». Межі -- ті самі, що й у прямого збереження.
+        int sent = 0;
+        for (int k = 0; k < cap; k++)
+        {
+            OZ_NotesAskSave a = new OZ_NotesAskSave();
+            a.Uid   = m_Uid;
+            a.Id    = "";
+            a.Title = OZ_Text.Clip(book.Notes[k].Title, OZ_PdaConst.NOTE_TITLE_MAX);
+            a.Body  = OZ_Text.Clip(book.Notes[k].Body, OZ_PdaConst.NOTE_BODY_MAX);
+            a.Name  = to.GetName();
+
+            string letter;
+            if (!JsonFileLoader<OZ_NotesAskSave>.MakeData(a, letter, err, false))
+                continue;
+
+            OZ_BridgeClient.Call("v1/notes/save", letter, new OZ_NotesReply(m_Uid, "carrier_note", false));
+            sent++;
+        }
+
+        OZ_Log.Info("carrier: importing " + sent.ToString() + "/" + wanted.ToString() + " note(s) for " + m_Uid + " (room " + room.ToString() + ")");
+
+        OZ_CarrierTaken t = new OZ_CarrierTaken();
+        t.Taken = sent;
+        t.Total = wanted;
+
+        string tj;
+        if (!JsonFileLoader<OZ_CarrierTaken>.MakeData(t, tj, err, false))
+            tj = "";
+
+        OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "carrier_import", true, tj, "");
+    }
+
+    override void OnFail(int code)
+    {
+        PlayerIdentity to = OZ_ChatWho.Online(m_Uid);
+        if (!to)
+            return;
+
+        OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "carrier_import", false, "", "STR_OZ_ERR_NO_BRIDGE");
+    }
+}
+
+
 // «Записати нотатки на чип»: книжка приїхала з моста -- кладемо на предмет.
 // Пристрій і чип ПЕРЕВІРЯЄМО ЗАНОВО: за час дороги гравець міг викласти
 // КПК чи висмикнути чип, і писати тоді нема куди.
@@ -199,8 +299,33 @@ class OZ_CarrierNotesReply : OZ_BridgeReply
             return;
         }
 
-        c.OZ_Write("notes", json, book.Notes.Count());
-        OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "carrier_write", true, "", "");
+        // Місткість класу: на малий носій лягають ПЕРШІ записки, і
+        // відповідь чесно каже скільки з скількох.
+        int total = book.Notes.Count();
+        int wrote = total;
+        if (spec.MaxNotes > 0 && total > spec.MaxNotes)
+        {
+            book.Notes.Resize(spec.MaxNotes);
+            wrote = spec.MaxNotes;
+
+            if (!JsonFileLoader<OZ_NoteBook>.MakeData(book, json, berr, false))
+            {
+                OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "carrier_write", false, "", "STR_OZ_ERR_INTERNAL");
+                return;
+            }
+        }
+
+        c.OZ_Write("notes", json, wrote);
+
+        OZ_CarrierTaken t = new OZ_CarrierTaken();
+        t.Taken = wrote;
+        t.Total = total;
+
+        string tj;
+        if (!JsonFileLoader<OZ_CarrierTaken>.MakeData(t, tj, berr, false))
+            tj = "";
+
+        OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_DEVICE, "carrier_write", true, tj, "");
     }
 
     override void OnFail(int code)

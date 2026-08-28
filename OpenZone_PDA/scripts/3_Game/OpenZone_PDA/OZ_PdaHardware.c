@@ -52,6 +52,11 @@ class OZ_CarrierSpec
     // Чи можна перезаписати носій із КПК. Одноразовий чип із чужої схованки
     // перезаписувати не можна -- у цьому половина його цінності.
     bool   Writable    = true;
+    // Місткість: скільки міток і скільки записок ВЛАЗИТЬ на цей клас.
+    // 0 -- без стелі. Це другий важіль тиру після відсіків: дискета на
+    // чотири мітки і польовий накопичувач -- різні речі за той самий слот.
+    int    MaxMarks    = 0;
+    int    MaxNotes    = 0;
 }
 
 class OZ_PdaHardwareConfig : OZ_ConfigBase
@@ -114,12 +119,32 @@ class OZ_PdaHardwareConfig : OZ_ConfigBase
         dec.EnablesPages = new array<string>();
         Modules.Insert(dec);
 
+        // Три класи -- три місткості. Числа СТЕНДОВІ: баланс задає адмін
+        // у Hardware.json, а не цей файл.
+        OZ_CarrierSpec floppy = new OZ_CarrierSpec();
+        floppy.ClassName   = "OZ_DataCarrier_Floppy";
+        floppy.DisplayName = "#STR_OZ_CARRIER_FLOPPY";
+        floppy.DefaultKind = "";
+        floppy.Writable    = true;
+        floppy.MaxMarks    = 4;
+        floppy.MaxNotes    = 2;
+        Carriers.Insert(floppy);
+
         OZ_CarrierSpec chip = new OZ_CarrierSpec();
         chip.ClassName   = "OZ_DataCarrier_Chip";
         chip.DisplayName = "#STR_OZ_CARRIER_CHIP";
         chip.DefaultKind = "";
         chip.Writable    = true;
+        chip.MaxMarks    = 16;
+        chip.MaxNotes    = 8;
         Carriers.Insert(chip);
+
+        OZ_CarrierSpec drive = new OZ_CarrierSpec();
+        drive.ClassName   = "OZ_DataCarrier_Drive";
+        drive.DisplayName = "#STR_OZ_CARRIER_DRIVE";
+        drive.DefaultKind = "";
+        drive.Writable    = true;
+        Carriers.Insert(drive);
     }
 
     override bool Migrate(int from)

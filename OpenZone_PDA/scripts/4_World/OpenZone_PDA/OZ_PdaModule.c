@@ -122,10 +122,34 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             if (JsonFileLoader<OZ_MarkerList>.LoadData(payload, pl, perr) && pl && pl.Items)
                 cnt = pl.Items.Count();
 
-            c.OZ_Write("markers", payload, cnt);
+            // Місткість класу: на дискету йде стільки, скільки влазить, --
+            // ПЕРШІ зі списку, і відповідь чесно каже скільки.
+            int wrote = cnt;
+            if (spec.MaxMarks > 0 && pl && pl.Items && cnt > spec.MaxMarks)
+            {
+                pl.Items.Resize(spec.MaxMarks);
+                wrote = spec.MaxMarks;
+
+                if (!JsonFileLoader<OZ_MarkerList>.MakeData(pl, payload, perr, false))
+                {
+                    error = "STR_OZ_ERR_INTERNAL";
+                    return "";
+                }
+            }
+
+            c.OZ_Write("markers", payload, wrote);
+
+            OZ_CarrierTaken wt = new OZ_CarrierTaken();
+            wt.Taken = wrote;
+            wt.Total = cnt;
+
+            string wtj;
+            if (!JsonFileLoader<OZ_CarrierTaken>.MakeData(wt, wtj, perr, false))
+                wtj = "";
+
             ok = true;
             error = "";
-            return "";
+            return wtj;
         }
 
         if (opw.Kind == "notes")
@@ -306,47 +330,25 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 return "";
             }
 
-            // Кожна записка -- окремий лист мостові з ПОРОЖНІМ Id: це
-            // «створи мені таку саму», а не «редагуй чужу». Стеля та сама,
-            // що й у книжки (NOTES_MAX): один дотик не має права висипати в
-            // Discord більше, ніж книжка взагалі вміщає.
+            // Скільки з книжки чипа ВЛІЗЕ -- знає лише міст: стеля живе в
+            // нього, і лічити місце можна тільки спитавши. Тому імпорт
+            // двофазний і відкладений: спершу v1/notes/list, а листи шле
+            // вже відповідь, коли бачить і стелю, і зайняте.
             string uid = sender.GetPlainId();
-            int wanted = book.Notes.Count();
-            int cap = wanted;
-            if (cap > OZ_PdaConst.NOTES_MAX)
-                cap = OZ_PdaConst.NOTES_MAX;
 
-            int sent = 0;
-            for (int k = 0; k < cap; k++)
+            OZ_NotesAskList al = new OZ_NotesAskList();
+            al.Uid = uid;
+
+            string letter2;
+            if (!JsonFileLoader<OZ_NotesAskList>.MakeData(al, letter2, err2, false))
             {
-                OZ_NotesAskSave a = new OZ_NotesAskSave();
-                a.Uid   = uid;
-                a.Id    = "";
-                a.Title = OZ_Text.Clip(book.Notes[k].Title, OZ_PdaConst.NOTE_TITLE_MAX);
-                a.Body  = OZ_Text.Clip(book.Notes[k].Body, OZ_PdaConst.NOTE_BODY_MAX);
-                a.Name  = sender.GetName();
-
-                string letter;
-                if (!JsonFileLoader<OZ_NotesAskSave>.MakeData(a, letter, err2, false))
-                    continue;
-
-                OZ_BridgeClient.Call("v1/notes/save", letter, new OZ_NotesReply(uid, "carrier_note", false));
-                sent++;
+                error = "STR_OZ_ERR_INTERNAL";
+                return "";
             }
 
-            OZ_Log.Info("carrier: importing " + sent.ToString() + "/" + wanted.ToString() + " note(s) for " + uid);
-
-            OZ_CarrierTaken tn = new OZ_CarrierTaken();
-            tn.Taken = sent;
-            tn.Total = wanted;
-
-            string tnj;
-            if (!JsonFileLoader<OZ_CarrierTaken>.MakeData(tn, tnj, err2, false))
-                tnj = "";
-
-            ok = true;
-            error = "";
-            return tnj;
+            OZ_BridgeClient.Call("v1/notes/list", letter2, new OZ_CarrierImportReply(uid, c.OZ_Payload()));
+            error = OZ_Const.DEFER;
+            return "";
         }
 
         error = "STR_OZ_ERR_INTERNAL";

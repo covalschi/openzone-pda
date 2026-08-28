@@ -65,6 +65,9 @@ class OZ_NotesFail
 class OZ_NoteBook
 {
     int Version = 1;
+    // Стеля книжки, як її знає міст. 0 у старих знімках на чипах -- тоді
+    // читач бере власну OZ_PdaConst.NOTES_MAX як запасну.
+    int Max = 0;
     ref array<ref OZ_Note> Notes;
 
     void OZ_NoteBook()
