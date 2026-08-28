@@ -281,6 +281,22 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 m.Name = OZ_Text.Clip(m.Name, OZ_PdaConst.MARKER_NAME_MAX);
                 m.Desc = OZ_Text.Clip(m.Desc, OZ_PdaConst.MARKER_DESC_MAX);
 
+                // Дедуп за ВМІСТОМ: та сама назва в тій самій точці вже на
+                // пристрої -- не дублюємо. Без цього резервна копія (записав
+                // усі мітки на чип, потім імпортував) плодила б другий
+                // комплект, а цикл експорт->імпорт множив мітку щоразу.
+                bool dup = false;
+                for (int d = 0; d < mine.Items.Count(); d++)
+                {
+                    if (mine.Items[d].Name == m.Name && mine.Items[d].Pos == m.Pos)
+                    {
+                        dup = true;
+                        break;
+                    }
+                }
+                if (dup)
+                    continue;
+
                 // Id карбуємо ЗАНОВО: чужі id зіткнулись би з нашими, і
                 // видалення по id зносило б не ту мітку.
                 s_CarrierSeq++;

@@ -835,6 +835,8 @@ class OZ_PDA_Base : ItemBase
     // пристрій не має й не повинен.
     private void PushState()
     {
+        bool wasOn = m_IsOn;
+
         m_IsOn = false;
         m_Charge01 = 0;
 
@@ -847,6 +849,18 @@ class OZ_PDA_Base : ItemBase
             float maxE = batt.GetCompEM().GetEnergyMax();
             if (maxE > 0)
                 m_Charge01 = batt.GetCompEM().GetEnergy() / maxE;
+        }
+
+        // Втратив живлення посеред злому -- злам ПЕРЕРВАНО, не «на паузі».
+        // Дешифратор рахує безперервно (PowerFactor 2.0 недарма); лінива
+        // OZ_EvaluateCrack ловить лише стан «у цю мить» і проґавила б
+        // вимкнення між стартом і поглядом -- гравець вимкнув, зачекав без
+        // батареї, увімкнув і відкрив за нуль енергії. Перериваємо саме тут,
+        // ПОДІЄЮ втрати живлення, а не наступним поглядом.
+        if (wasOn && !m_IsOn && m_CrackUntil > 0 && GetGame().IsServer())
+        {
+            m_CrackUntil = 0;
+            OZ_Log.Dbg("crack aborted: device lost power mid-crack");
         }
 
         SetSynchDirty();

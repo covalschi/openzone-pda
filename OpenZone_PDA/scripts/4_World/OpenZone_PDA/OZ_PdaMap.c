@@ -100,10 +100,15 @@ class OZ_PdaHandlerMap : OZ_PageHandler
                 carried = parsed;
         }
 
+        // Дедуп за ВМІСТОМ (назва + місце), а не за Id. Id мітки не переживає
+        // імпорту -- при завантаженні з чипа він карбується заново, щоб чужі
+        // id не зіткнулися з нашими. Тож повторний експорт тієї самої мітки
+        // після циклу експорт->імпорт мав би вже інший Id і плодив би копію.
+        // Однакова назва в одній точці -- це та сама мітка, хоч би звідки.
         int at = -1;
         for (int k = 0; k < carried.Items.Count(); k++)
         {
-            if (carried.Items[k].Id == found.Id)
+            if (carried.Items[k].Name == found.Name && carried.Items[k].Pos == found.Pos)
             {
                 at = k;
                 break;
@@ -196,7 +201,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
 
         OZ_MapMarker incoming;
         string err;
-        if (!JsonFileLoader<OZ_MapMarker>.LoadData(json, incoming, err))
+        if (!JsonFileLoader<OZ_MapMarker>.LoadData(json, incoming, err) || !incoming)
         {
             error = "STR_OZ_ERR_INTERNAL";
             return "";
@@ -254,7 +259,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
 
         OZ_MarkerRef r;
         string err;
-        if (!JsonFileLoader<OZ_MarkerRef>.LoadData(json, r, err))
+        if (!JsonFileLoader<OZ_MarkerRef>.LoadData(json, r, err) || !r)
         {
             error = "STR_OZ_ERR_INTERNAL";
             return "";
@@ -527,7 +532,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
 
         OZ_TransponderOp t;
         string err;
-        if (!JsonFileLoader<OZ_TransponderOp>.LoadData(json, t, err))
+        if (!JsonFileLoader<OZ_TransponderOp>.LoadData(json, t, err) || !t)
         {
             error = "STR_OZ_ERR_INTERNAL";
             return "";
