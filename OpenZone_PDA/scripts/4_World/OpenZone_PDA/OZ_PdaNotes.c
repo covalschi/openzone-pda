@@ -169,7 +169,13 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
             return "";
         }
 
-        // Той самий санітар, що й у збереження: клієнт шле тіло сам.
+        // Той самий санітар, що й у збереження: клієнт шле тіло сам. Id теж
+        // приходить від клієнта й лягає в пейлоад чипа назавжди -- без
+        // стелі підроблений carrier_add ніс би на чип мегабайтний Id (RPC
+        // склеює частини без обмеження), який потім щоразу серіалізується у
+        // ModStorage і їде назад кожному, хто натисне VIEW. Id -- це наш
+        // "дата#seq", ~24 байти; 64 з запасом.
+        n.Id    = OZ_Text.Clip(n.Id, 64);
         n.Title = OZ_Text.Clip(n.Title, OZ_PdaConst.NOTE_TITLE_MAX);
         n.Body  = OZ_Text.Clip(n.Body, OZ_PdaConst.NOTE_BODY_MAX);
 

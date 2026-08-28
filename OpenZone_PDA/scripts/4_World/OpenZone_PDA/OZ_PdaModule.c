@@ -520,8 +520,13 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 st.CarrierDisplay  = cs.DisplayName;
             }
 
+            // ВМІСТ чипа -- лише на УВІМКНЕНОМУ пристрої. Наявність носія
+            // видно фізично (клас вище), а от що на ньому записано, якого
+            // роду й скільки -- це вже читання, і мертвий КПК його не робить.
+            // Інакше знайдений вимкнений прилад видавав би вміст чужого чипа
+            // тим самим статусом, у якому carrier_read чесно відмовляє.
             OZ_DataCarrier_Base carrier = OZ_DataCarrier_Base.Cast(pda.OZ_Attached(OZ_PdaConst.SLOT_CARRIER));
-            if (carrier)
+            if (carrier && st.Powered)
             {
                 st.CarrierWritten = carrier.OZ_IsWritten();
                 st.CarrierCount   = carrier.OZ_Count();
@@ -541,13 +546,19 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         st.Cracking     = pda.OZ_IsCracking();
         st.CrackLeftSec = pda.OZ_CrackLeftSec();
 
-        st.Online      = pda.OZ_IsOnline(pd.SessionEpoch);
-        st.SessionMine = pda.OZ_HasSession(sender.GetPlainId(), pd.SessionEpoch);
-        if (!st.Online)
-            st.SnapshotAt = pda.OZ_SnapshotAt();
+        // Сесія й прив'язка -- теж читання, і теж лише на увімкненому.
+        // Хто востаннє тримав пристрій живим і чи прив'язаний його акаунт --
+        // не те, що видно ззовні з мертвого приладу.
+        if (st.Powered)
+        {
+            st.Online      = pda.OZ_IsOnline(pd.SessionEpoch);
+            st.SessionMine = pda.OZ_HasSession(sender.GetPlainId(), pd.SessionEpoch);
+            if (!st.Online)
+                st.SnapshotAt = pda.OZ_SnapshotAt();
 
-        st.DiscordLinked = (pd.DiscordId != "");
-        st.FirstSeen     = pd.FirstSeen;
+            st.DiscordLinked = (pd.DiscordId != "");
+            st.FirstSeen     = pd.FirstSeen;
+        }
 
         // Радіацію питаємо ЛИШЕ якщо є чим міряти. Питати те, чого нема чим
         // виміряти, і малювати відповідь -- це вигадувати цифри.
