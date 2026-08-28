@@ -38,7 +38,9 @@ FrameWidgetClass OZ_PageNotes {
    style NoScrollBar
    "title visible" 0
    "highlight row" 1
-   colums "text;100;"
+   // Дві колонки: назва обрізається СВОЄЮ шириною, а дата живе в правій
+   // і не з'їдається довгою назвою. "colums" -- ванільна опечатка ключа.
+   colums "text;74;date;26;"
    lines 14
    font "gui/fonts/sdf_MetronBook24"
    "exact text" 1
@@ -332,8 +334,8 @@ EditBoxWidgetClass NoteBody {
     // гуртова: чип -- збірка, яку складають свідомо.
     ButtonWidgetClass BtnNoteToCar {
      visible 1
-     position 924 552
-     size 130 22
+     position 716 376
+     size 150 26
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -346,7 +348,7 @@ EditBoxWidgetClass NoteBody {
       ignorepointer 1
       color 0.31 0.31 0.35 1
       position -1 -1
-      size 132 24
+      size 152 28
       hexactpos 1
       vexactpos 1
       hexactsize 1
@@ -360,7 +362,7 @@ EditBoxWidgetClass NoteBody {
        ignorepointer 1
        color 0.145 0.145 0.161 1
        position 0 0
-       size 130 22
+       size 150 26
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -372,7 +374,7 @@ EditBoxWidgetClass NoteBody {
        visible 1
        ignorepointer 1
        position 0 0
-       size 130 22
+       size 150 26
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -395,7 +397,7 @@ EditBoxWidgetClass NoteBody {
    ignorepointer 1
    halign right_ref
    position 16 376
-   size 300 26
+   size 180 26
    hexactpos 1
    vexactpos 1
    hexactsize 1

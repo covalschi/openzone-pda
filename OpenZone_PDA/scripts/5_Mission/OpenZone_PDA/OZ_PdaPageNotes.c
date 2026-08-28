@@ -292,11 +292,16 @@ class OZ_PdaPageNotes : OZ_PdaPage
                 row = "#STR_OZ_NOTES_UNTITLED";
 
             if (m_List)
-                // Дата поруч із назвою: "12.08" вистачає, щоб упізнати свіже.
+            {
+                // Дата -- ОКРЕМА колонка: довга назва обрізається своєю
+                // шириною й дати не чіпає. "12.08" вистачає, щоб упізнати свіже.
                 string when = "";
                 if (n.EditedAt.Length() >= 10)
-                    when = "  " + n.EditedAt.Substring(8, 2) + "." + n.EditedAt.Substring(5, 2);
-                m_List.AddItem(row + when, NULL, 0);
+                    when = n.EditedAt.Substring(8, 2) + "." + n.EditedAt.Substring(5, 2);
+
+                int at = m_List.AddItem(row, NULL, 0);
+                m_List.SetItem(at, when, NULL, 1);
+            }
         }
 
         if (m_Book.Notes.Count() == 0 && !m_Draft)
