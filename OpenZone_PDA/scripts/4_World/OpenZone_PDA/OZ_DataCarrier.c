@@ -130,6 +130,47 @@ class OZ_DataCarrier_Base : ItemBase
 }
 
 
+// Спільні ворота запису на носій. Одна логіка на ТРИ входи: гуртовий запис
+// з пристрою, експорт мітки з карти, експорт записки з нотатника. Право
+// писати не залежить від того, звідки прийшов запит.
+class OZ_CarrierOps
+{
+    static OZ_DataCarrier_Base ResolveWritable(PlayerIdentity sender, string kind, out string error)
+    {
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        if (!pda)
+        {
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return null;
+        }
+
+        OZ_DataCarrier_Base c = OZ_DataCarrier_Base.Cast(pda.OZ_Attached(OZ_PdaConst.SLOT_CARRIER));
+        if (!c)
+        {
+            error = "STR_OZ_ERR_NO_CARRIER";
+            return null;
+        }
+
+        // Клас без запису в таблиці -- замок, як і клас із Writable=false.
+        OZ_CarrierSpec spec = OZ_PdaHardware.CarrierFor(c.GetType());
+        if (!spec || !spec.Writable)
+        {
+            error = "STR_OZ_ERR_CARRIER_LOCKED";
+            return null;
+        }
+
+        // Інший род поверх записаного -- лише через явне стирання.
+        if (c.OZ_IsWritten() && c.OZ_Kind() != kind)
+        {
+            error = "STR_OZ_ERR_CARRIER_KIND";
+            return null;
+        }
+
+        return c;
+    }
+}
+
+
 // Що віддає читання чипа: рід і тіло як є. Клієнт розбирає за Kind тим
 // самим класом, яким користується відповідна сторінка.
 class OZ_CarrierView

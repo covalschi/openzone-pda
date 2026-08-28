@@ -131,6 +131,12 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
         ok    = false;
         error = "STR_OZ_ERR_UNKNOWN_OP";
 
+        // Експорт на носій -- ЛОКАЛЬНИЙ: тіло записки клієнт має з list і
+        // шле сам, чип лежить у слоті. Міст цій операції не потрібен, тому
+        // вона стоїть ПЕРЕД ворітьми моста.
+        if (op == "carrier_add")
+            return CarrierAdd(json, sender, ok, error);
+
         if (!OZ_BridgeClient.IsRunning())
         {
             error = "STR_OZ_ERR_NO_BRIDGE";
@@ -146,6 +152,75 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
         if (op == "delete")
             return Delete(json, sender, error);
 
+        return "";
+    }
+
+    // Одна записка на чип, за вибором гравця. Повторний експорт тієї самої
+    // (той самий Id) оновлює її на чипі, а не плодить копію.
+    private string CarrierAdd(string json, PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_Note n;
+        string err;
+        if (!JsonFileLoader<OZ_Note>.LoadData(json, n, err) || !n || n.Id == "")
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        // Той самий санітар, що й у збереження: клієнт шле тіло сам.
+        n.Title = OZ_Text.Clip(n.Title, OZ_PdaConst.NOTE_TITLE_MAX);
+        n.Body  = OZ_Text.Clip(n.Body, OZ_PdaConst.NOTE_BODY_MAX);
+
+        OZ_DataCarrier_Base c = OZ_CarrierOps.ResolveWritable(sender, "notes", error);
+        if (!c)
+            return "";
+
+        OZ_NoteBook book = new OZ_NoteBook();
+        if (c.OZ_IsWritten() && c.OZ_Payload() != "")
+        {
+            OZ_NoteBook parsed;
+            if (JsonFileLoader<OZ_NoteBook>.LoadData(c.OZ_Payload(), parsed, err) && parsed && parsed.Notes)
+                book = parsed;
+        }
+
+        int at = -1;
+        for (int i = 0; i < book.Notes.Count(); i++)
+        {
+            if (book.Notes[i].Id == n.Id)
+            {
+                at = i;
+                break;
+            }
+        }
+
+        if (at >= 0)
+        {
+            book.Notes.Set(at, n);
+        }
+        else
+        {
+            OZ_CarrierSpec spec = OZ_PdaHardware.CarrierFor(c.GetType());
+            if (spec && spec.MaxNotes > 0 && book.Notes.Count() >= spec.MaxNotes)
+            {
+                error = "STR_OZ_ERR_NOTES_FULL";
+                return "";
+            }
+            book.Notes.Insert(n);
+        }
+
+        string outJson;
+        if (!JsonFileLoader<OZ_NoteBook>.MakeData(book, outJson, err, false))
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        c.OZ_Write("notes", outJson, book.Notes.Count());
+
+        ok = true;
+        error = "";
         return "";
     }
 

@@ -70,7 +70,7 @@ FrameWidgetClass OZ_PageMap {
     ScrollWidgetClass MarkerScroll {
      visible 1
      position 4 26
-     size 252 162
+     size 252 140
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -81,7 +81,7 @@ FrameWidgetClass OZ_PageMap {
       WrapSpacerWidgetClass MarkerRows {
        visible 1
        position 0 0
-       size 252 162
+       size 252 140
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -94,7 +94,7 @@ FrameWidgetClass OZ_PageMap {
     // Редагування ОБРАНОЇ мітки: назва й опис.
     EditBoxWidgetClass MarkerName {
      visible 1
-     position 8 194
+     position 8 172
      size 244 22
      hexactpos 1
      vexactpos 1
@@ -109,8 +109,8 @@ FrameWidgetClass OZ_PageMap {
 
     MultilineEditBoxWidgetClass MarkerDesc {
      visible 1
-     position 8 220
-     size 244 44
+     position 8 198
+     size 244 40
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -124,8 +124,8 @@ FrameWidgetClass OZ_PageMap {
 
     ButtonWidgetClass BtnMarkSave {
      visible 1
-     position 8 270
-     size 118 26
+     position 8 244
+     size 118 24
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -138,7 +138,7 @@ FrameWidgetClass OZ_PageMap {
        ignorepointer 1
        color 0.145 0.145 0.161 1
        position 0 0
-       size 118 26
+       size 118 24
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -150,7 +150,7 @@ FrameWidgetClass OZ_PageMap {
        visible 1
        ignorepointer 1
        position 0 0
-       size 118 26
+       size 118 24
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -168,8 +168,8 @@ FrameWidgetClass OZ_PageMap {
 
     ButtonWidgetClass BtnMarkDel {
      visible 1
-     position 134 270
-     size 118 26
+     position 134 244
+     size 118 24
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -182,7 +182,7 @@ FrameWidgetClass OZ_PageMap {
        ignorepointer 1
        color 0.145 0.145 0.161 1
        position 0 0
-       size 118 26
+       size 118 24
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -194,7 +194,7 @@ FrameWidgetClass OZ_PageMap {
        visible 1
        ignorepointer 1
        position 0 0
-       size 118 26
+       size 118 24
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -213,8 +213,8 @@ FrameWidgetClass OZ_PageMap {
     // і мітка стає його.
     ButtonWidgetClass BtnMarkShare {
      visible 1
-     position 8 302
-     size 244 26
+     position 8 272
+     size 244 24
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -227,7 +227,7 @@ FrameWidgetClass OZ_PageMap {
        ignorepointer 1
        color 0.145 0.145 0.161 1
        position 0 0
-       size 244 26
+       size 244 24
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -239,7 +239,7 @@ FrameWidgetClass OZ_PageMap {
        visible 1
        ignorepointer 1
        position 0 0
-       size 244 26
+       size 244 24
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -255,6 +255,54 @@ FrameWidgetClass OZ_PageMap {
       }
      }
     }
+
+    // «НА НОСІЙ»: обрана мітка їде на чип. Поруч із «У ЧАТ» -- обидві
+    // кнопки віддають мітку, різниця лише в адресаті.
+    ButtonWidgetClass BtnMarkToCar {
+     visible 1
+     position 8 300
+     size 244 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 2
+     {
+      PanelWidgetClass BtnMarkToCarBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 244 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnMarkToCarText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 244 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
 
    }
   }

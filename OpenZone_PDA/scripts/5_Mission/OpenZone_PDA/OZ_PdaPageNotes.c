@@ -17,6 +17,7 @@ class OZ_PdaPageNotes : OZ_PdaPage
     private ButtonWidget m_BtnNew;
     private ButtonWidget m_BtnSave;
     private ButtonWidget m_BtnDelete;
+    private ButtonWidget m_BtnToCar;
 
     private ref OZ_NoteBook m_Book;
     private string m_CurrentId = "";
@@ -35,10 +36,12 @@ class OZ_PdaPageNotes : OZ_PdaPage
         m_BtnNew    = ButtonWidget.Cast(Wgt("BtnNew"));
         m_BtnSave   = ButtonWidget.Cast(Wgt("BtnSave"));
         m_BtnDelete = ButtonWidget.Cast(Wgt("BtnDelete"));
+        m_BtnToCar = ButtonWidget.Cast(Wgt("BtnNoteToCar"));
 
         SetText("BtnNewText", "#STR_OZ_NOTES_NEW");
         SetText("BtnSaveText", "#STR_OZ_NOTES_SAVE");
         SetText("BtnDeleteText", "#STR_OZ_NOTES_DELETE");
+        SetText("BtnNoteToCarText", "#STR_OZ_TO_CARRIER");
     }
 
     override void OnSelected()
@@ -77,6 +80,33 @@ class OZ_PdaPageNotes : OZ_PdaPage
         if (w == m_BtnSave)
         {
             SendSave();
+            return true;
+        }
+
+        if (w == m_BtnToCar)
+        {
+            // Експорт ОБРАНОЇ записки в тому вигляді, як вона ЗБЕРЕЖЕНА:
+            // чернетка та незбережені правки на чип не їдуть.
+            if (m_CurrentId == "" || m_Draft || !m_Book || !m_Book.Notes)
+                return true;
+
+            OZ_Note picked;
+            for (int ci = 0; ci < m_Book.Notes.Count(); ci++)
+            {
+                if (m_Book.Notes[ci].Id == m_CurrentId)
+                {
+                    picked = m_Book.Notes[ci];
+                    break;
+                }
+            }
+
+            if (!picked)
+                return true;
+
+            string cjson;
+            string cerr;
+            if (JsonFileLoader<OZ_Note>.MakeData(picked, cjson, cerr, false))
+                OZ_Rpc.Request(OZ_PdaConst.PAGE_NOTES, "carrier_add", cjson);
             return true;
         }
 
@@ -172,6 +202,15 @@ class OZ_PdaPageNotes : OZ_PdaPage
 
     override void OnResponse(string op, bool ok, string json, string error)
     {
+        if (op == "carrier_add")
+        {
+            if (ok)
+                SetHintSticky("NotesHint", "#STR_OZ_CARRIER_SAVED");
+            else
+                SetHintSticky("NotesHint", "#" + error);
+            return;
+        }
+
         if (op == "save" || op == "delete")
         {
             if (!ok)

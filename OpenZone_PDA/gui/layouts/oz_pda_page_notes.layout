@@ -234,6 +234,54 @@ FrameWidgetClass OZ_PageNotes {
    }
   }
 
+    // «НА НОСІЙ»: обрана записка їде на чип у слоті. Вибіркова, а не
+    // гуртова: чип -- збірка, яку складають свідомо.
+    ButtonWidgetClass BtnNoteToCar {
+     visible 1
+     position 924 552
+     size 130 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 2
+     {
+      PanelWidgetClass BtnNoteToCarBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 130 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnNoteToCarText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 130 22
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
+
   TextWidgetClass NotesHint {
    visible 1
    ignorepointer 1

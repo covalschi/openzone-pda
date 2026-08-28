@@ -23,6 +23,7 @@ class OZ_PdaPageMap : OZ_PdaPage
     private MultilineEditBoxWidget m_EditDesc;
     private ButtonWidget           m_BtnSave;
     private ButtonWidget           m_BtnShare;
+    private ButtonWidget           m_BtnToCar;
     private ButtonWidget           m_BtnDel;
     private ref array<Widget>      m_RowWgts;
     private bool                   m_ListOpen = false;
@@ -102,6 +103,8 @@ class OZ_PdaPageMap : OZ_PdaPage
         m_BtnSave  = ButtonWidget.Cast(Wgt("BtnMarkSave"));
         m_BtnShare = ButtonWidget.Cast(Wgt("BtnMarkShare"));
         SetText("BtnMarkShareText", "#STR_OZ_MAP_SHARE");
+        m_BtnToCar = ButtonWidget.Cast(Wgt("BtnMarkToCar"));
+        SetText("BtnMarkToCarText", "#STR_OZ_TO_CARRIER");
         m_BtnDel   = ButtonWidget.Cast(Wgt("BtnMarkDel"));
         m_RowWgts  = new array<Widget>();
 
@@ -240,6 +243,24 @@ class OZ_PdaPageMap : OZ_PdaPage
         if (w == m_BtnSave)
         {
             SendMarkerEdit();
+            return true;
+        }
+
+        if (w == m_BtnToCar)
+        {
+            if (m_PickedId == "")
+            {
+                SetHintSticky("MapHint", "#STR_OZ_MAP_PICK_FIRST");
+                return true;
+            }
+
+            OZ_MarkerRef cref = new OZ_MarkerRef();
+            cref.Id = m_PickedId;
+
+            string cjson;
+            string cerr;
+            if (JsonFileLoader<OZ_MarkerRef>.MakeData(cref, cjson, cerr, false))
+                OZ_Rpc.Request(OZ_PdaConst.PAGE_MAP, "carrier_add", cjson);
             return true;
         }
 
@@ -600,6 +621,15 @@ class OZ_PdaPageMap : OZ_PdaPage
 
     override void OnResponse(string op, bool ok, string json, string error)
     {
+        if (op == "carrier_add")
+        {
+            if (ok)
+                SetHintSticky("MapHint", "#STR_OZ_CARRIER_SAVED");
+            else
+                SetHintSticky("MapHint", "#" + error);
+            return;
+        }
+
         if (op == "transponder" || op == "marker_add" || op == "marker_del" || op == "marker_edit")
         {
             if (!ok)

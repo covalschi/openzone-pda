@@ -38,6 +38,9 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         if (op == "marker_edit")
             return MarkerEdit(json, sender, ok, error);
 
+        if (op == "carrier_add")
+            return CarrierAdd(json, sender, ok, error);
+
         return "";
     }
 
@@ -45,6 +48,96 @@ class OZ_PdaHandlerMap : OZ_PageHandler
     //
     // Читаються й пишуться на самому ПРИСТРОЇ. Через це межа в профілі щось
     // означає, а вкрадений КПК віддає чужі схованки -- обидва навмисно.
+
+    // Експорт ОДНІЄЇ мітки на носій -- вибір гравця, а не «все гуртом».
+    // Повторний експорт тієї самої мітки ОНОВЛЮЄ її на чипі за Id, а не
+    // плодить копію: чип -- збірка, яку складають свідомо.
+    private string CarrierAdd(string json, PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        if (!pda)
+        {
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return "";
+        }
+
+        OZ_MarkerRef r;
+        string err;
+        if (!JsonFileLoader<OZ_MarkerRef>.LoadData(json, r, err) || !r)
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        OZ_MarkerList mine = LoadMarkers(pda);
+        OZ_MapMarker found;
+        for (int i = 0; i < mine.Items.Count(); i++)
+        {
+            if (mine.Items[i].Id == r.Id)
+            {
+                found = mine.Items[i];
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        OZ_DataCarrier_Base c = OZ_CarrierOps.ResolveWritable(sender, "markers", error);
+        if (!c)
+            return "";
+
+        OZ_MarkerList carried = new OZ_MarkerList();
+        if (c.OZ_IsWritten() && c.OZ_Payload() != "")
+        {
+            OZ_MarkerList parsed;
+            if (JsonFileLoader<OZ_MarkerList>.LoadData(c.OZ_Payload(), parsed, err) && parsed && parsed.Items)
+                carried = parsed;
+        }
+
+        int at = -1;
+        for (int k = 0; k < carried.Items.Count(); k++)
+        {
+            if (carried.Items[k].Id == found.Id)
+            {
+                at = k;
+                break;
+            }
+        }
+
+        if (at >= 0)
+        {
+            carried.Items.Set(at, found);
+        }
+        else
+        {
+            OZ_CarrierSpec spec = OZ_PdaHardware.CarrierFor(c.GetType());
+            if (spec && spec.MaxMarks > 0 && carried.Items.Count() >= spec.MaxMarks)
+            {
+                error = "STR_OZ_ERR_MARKERS_FULL";
+                return "";
+            }
+            carried.Items.Insert(found);
+        }
+
+        string outJson;
+        if (!JsonFileLoader<OZ_MarkerList>.MakeData(carried, outJson, err, false))
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        c.OZ_Write("markers", outJson, carried.Items.Count());
+
+        ok = true;
+        error = "";
+        return "";
+    }
 
     private OZ_MarkerList LoadMarkers(OZ_PDA_Base pda)
     {
