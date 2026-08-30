@@ -289,6 +289,16 @@ class OZ_PdaPageNotes : OZ_PdaPage
         }
 
         m_Book = b;
+
+        // Читальня капсули: писати нема куди, лишається читати й
+        // виносити на чип.
+        if (m_BtnNew)
+            m_BtnNew.Show(!b.Frozen);
+        if (m_BtnSave)
+            m_BtnSave.Show(!b.Frozen);
+        if (m_BtnDelete)
+            m_BtnDelete.Show(!b.Frozen);
+
         Paint();
     }
 
@@ -320,7 +330,7 @@ class OZ_PdaPageNotes : OZ_PdaPage
             w.SetUserID(7);
             w.SetName(i.ToString());
             w.SetPos(0, m_NotesY);
-            m_NotesY += 26;
+            m_NotesY += 32;
 
             TextWidget tw = TextWidget.Cast(w.FindAnyWidget("RowTitle"));
             if (tw)
@@ -337,10 +347,7 @@ class OZ_PdaPageNotes : OZ_PdaPage
 
         if (m_Canvas)
         {
-            int want = m_NotesY;
-            if (want < 356)
-                want = 356;
-            m_Canvas.SetSize(340, want);
+            m_Canvas.SetSize(425, m_NotesY);
         }
 
         PaintPicks();

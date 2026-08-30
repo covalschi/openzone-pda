@@ -124,6 +124,11 @@ class OZ_ActionExchangeContacts : ActionSingleUseBase
         {
             if (!pda.GetCompEM().IsWorking())
                 return false;
+
+            // Замкнений пристрій соціально німий: обмін контактами -- дія
+            // СЕСІЇ, а не заліза. Біт синхронний, умова чесна й на клієнті.
+            if (pda.OZ_LockedForViewer())
+                return false;
         }
 
         PlayerBase other = PlayerBase.Cast(target.GetObject());
@@ -135,7 +140,25 @@ class OZ_ActionExchangeContacts : ActionSingleUseBase
             return false;
 
         // Мертвому контакти не потрібні.
-        return other.IsAlive();
+        if (!other.IsAlive())
+            return false;
+
+        // Обмін -- МІЖ ПРИСТРОЯМИ (рішення власника 2026-08-29): і другий
+        // учасник мусить ТРИМАТИ свій КПК у руках, увімкнений і
+        // відімкнений. Тиснуть руки два термінали, а не дві людини --
+        // записується акаунт, до якого прив'язаний пристрій.
+        OZ_PDA_Base otherPda = OZ_PDA_Base.Cast(other.GetItemInHands());
+        if (!otherPda)
+            return false;
+        if (otherPda.HasEnergyManager())
+        {
+            if (!otherPda.GetCompEM().IsWorking())
+                return false;
+            if (otherPda.OZ_LockedForViewer())
+                return false;
+        }
+
+        return true;
     }
 
     override void OnExecuteServer(ActionData action_data)
@@ -147,6 +170,28 @@ class OZ_ActionExchangeContacts : ActionSingleUseBase
         if (!other)
             return;
 
-        OZ_PdaContactSwap.Offer(action_data.m_Player.GetIdentity(), other.GetIdentity());
+        // Акаунти беруться З ПРИСТРОЇВ, не з тих, хто їх тримає: контакт
+        // прив'язаний до сесії КПК. Нічийний термінал ні за кого не
+        // говорить, капсула нічого не міняє -- обидва чесно відмовляють.
+        OZ_PDA_Base myPda = OZ_PDA_Base.Cast(action_data.m_Player.GetItemInHands());
+        OZ_PDA_Base otherPda = OZ_PDA_Base.Cast(other.GetItemInHands());
+        if (!myPda || !otherPda)
+            return;
+
+        PlayerIdentity fromId = action_data.m_Player.GetIdentity();
+
+        if (myPda.OZ_SessionUid() == "" || otherPda.OZ_SessionUid() == "")
+        {
+            OZ_PdaContactSwap.Say(fromId, "STR_OZ_ERR_NOT_INIT");
+            return;
+        }
+
+        if (OZ_PdaCapsule.IsFrozen(myPda) || OZ_PdaCapsule.IsFrozen(otherPda))
+        {
+            OZ_PdaContactSwap.Say(fromId, "STR_OZ_ERR_FROZEN");
+            return;
+        }
+
+        OZ_PdaContactSwap.Offer(fromId, other.GetIdentity(), myPda.OZ_SessionUid(), otherPda.OZ_SessionUid());
     }
 }

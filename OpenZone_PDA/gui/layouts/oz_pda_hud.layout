@@ -89,11 +89,13 @@ FrameWidgetClass OZ_PdaHudRoot {
   //
   // Прийшло повідомлення, а меню закрите: пристрій «пікає» рядком над
   // смужкою. Показує ОСТАННЄ і кілька секунд -- це дзвінок, а не журнал.
+  // Тост: заголовок «хто [канал]» і ДВА рядки тіла з переносом. Довше --
+  // ріжеться по краю другого рядка; повний текст завжди у розмові.
   FrameWidgetClass ToastPane {
    visible 0
    ignorepointer 1
-   position 0.69 0.845
-   size 0.15 0.05
+   position 0.655 0.825
+   size 0.2 0.078
    hexactpos 0
    vexactpos 0
    hexactsize 0
@@ -103,7 +105,7 @@ FrameWidgetClass OZ_PdaHudRoot {
     PanelWidgetClass ToastBg {
      visible 1
      ignorepointer 1
-     color 0.055 0.055 0.062 0.62
+     color 0.055 0.055 0.062 0.72
      position 0 0
      size 1 1
      hexactpos 0
@@ -131,12 +133,12 @@ FrameWidgetClass OZ_PdaHudRoot {
     TextWidgetClass ToastWho {
      visible 1
      ignorepointer 1
-     position 10 2
-     size 1 0.45
+     position 10 4
+     size 0.94 20
      hexactpos 1
      vexactpos 1
      hexactsize 0
-     vexactsize 0
+     vexactsize 1
      color 1 0.478 0.102 1
      text ""
      font "gui/fonts/sdf_MetronBook24"
@@ -147,22 +149,23 @@ FrameWidgetClass OZ_PdaHudRoot {
      priority 3
     }
 
-    TextWidgetClass ToastText {
+    MultilineTextWidgetClass ToastText {
      visible 1
      ignorepointer 1
-     position 10 0.45
-     size 1 0.5
+     wrap 1
+     position 10 26
+     size 0.94 40
      hexactpos 1
-     vexactpos 0
+     vexactpos 1
      hexactsize 0
-     vexactsize 0
+     vexactsize 1
      color 0.788 0.788 0.816 1
      text ""
      font "gui/fonts/sdf_MetronBook24"
      "exact text" 1
      "exact text size" 13
      "text halign" left
-     "text valign" center
+     "text valign" top
      priority 3
     }
    }
@@ -204,12 +207,33 @@ FrameWidgetClass OZ_PdaHudRoot {
      inheritalpha 0
      ignorepointer 1
      position 3 3
-     size 0.985 0.985
+     size 0.985 0.885
      hexactpos 1
      vexactpos 1
      hexactsize 0
      vexactsize 0
      priority 2
+    }
+
+    TextWidgetClass MiniTrack {
+     visible 0
+     ignorepointer 1
+     halign left
+     valign bottom_ref
+     position 6 4
+     size 300 16
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" left
+     "text valign" center
+     priority 3
     }
    }
   }

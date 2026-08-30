@@ -1,0 +1,557 @@
+// Сторінка «Фракція». Ліворуч -- люди, праворуч -- дії.
+// Імена віджетів читає OZ_PdaPageFaction.c -- НЕ перейменовувати.
+
+FrameWidgetClass OZ_PageFaction {
+ visible 1
+ position 0 0
+ size 1306 518
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ {
+
+    TextWidgetClass FactionTitle {
+     visible 1
+     ignorepointer 1
+     position 20 14
+     size 620 30
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 20
+     "text halign" left
+     "text valign" center
+     priority 2
+    }
+
+    TextWidgetClass FactionMine {
+     visible 1
+     ignorepointer 1
+     position 20 46
+     size 620 20
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.541 0.541 0.565 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 14
+     "text halign" left
+     "text valign" center
+     priority 2
+    }
+
+
+    PanelWidgetClass SecMembBar {
+     visible 1
+     ignorepointer 1
+     color 1 0.478 0.102 1
+     position 20 78
+     size 3 16
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 2
+     style rover_sim_colorable
+    }
+    TextWidgetClass SecMembLbl {
+     visible 1
+     ignorepointer 1
+     position 32 77
+     size 558 18
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.85 0.85 0.87 1
+     text "MEMBERS"
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" left
+     "text valign" center
+     priority 2
+    }
+    PanelWidgetClass SecMembRule {
+     visible 1
+     ignorepointer 1
+     color 0.22 0.24 0.28 1
+     position 20 102
+     size 570 1
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 2
+     style rover_sim_colorable
+    }
+  ScrollWidgetClass FactionScroll {
+   visible 1
+   position 20 110
+   size 570 396
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   "Scrollbar V" 1
+   priority 2
+   {
+    PanelWidgetClass FactionRows {
+     visible 1
+     position 0 0
+     size 560 396
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+    }
+   }
+  }
+
+  PanelWidgetClass InvitePane {
+   visible 0
+   color 0.09 0.07 0.045 1
+   position 660 14
+   size 626 60
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 2
+   style rover_sim_colorable
+   {
+    PanelWidgetClass InviteBar {
+     visible 1
+     ignorepointer 1
+     color 1 0.478 0.102 1
+     position 0 0
+     size 3 60
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+
+    TextWidgetClass InviteText {
+     visible 1
+     ignorepointer 1
+     position 14 4
+     size 596 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 14
+     "text halign" left
+     "text valign" center
+     priority 2
+    }
+
+    ButtonWidgetClass BtnFJoin {
+     visible 1
+     position 14 30
+     size 140 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnFJoinEdge {
+       visible 1
+       ignorepointer 1
+       color 0.2 0.35 0.24 1
+       position -1 -1
+       size 142 26
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+      PanelWidgetClass BtnFJoinBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.2 0.145 1
+       position 0 0
+       size 140 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnFJoinText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 140 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 0.494 0.784 0.627 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
+    ButtonWidgetClass BtnFRefuse {
+     visible 1
+     position 166 30
+     size 140 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnFRefuseEdge {
+       visible 1
+       ignorepointer 1
+       color 0.45 0.2 0.2 1
+       position -1 -1
+       size 142 26
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+      PanelWidgetClass BtnFRefuseBg {
+       visible 1
+       ignorepointer 1
+       color 0.2 0.145 0.145 1
+       position 0 0
+       size 140 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnFRefuseText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 140 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 0.9 0.45 0.35 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+   }
+  }
+
+
+    PanelWidgetClass SecActBar {
+     visible 1
+     ignorepointer 1
+     color 1 0.478 0.102 1
+     position 660 100
+     size 3 16
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 2
+     style rover_sim_colorable
+    }
+    TextWidgetClass SecActLbl {
+     visible 1
+     ignorepointer 1
+     position 672 99
+     size 614 18
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.85 0.85 0.87 1
+     text "ACTIONS"
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" left
+     "text valign" center
+     priority 2
+    }
+    PanelWidgetClass SecActRule {
+     visible 1
+     ignorepointer 1
+     color 0.22 0.24 0.28 1
+     position 660 124
+     size 626 1
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 2
+     style rover_sim_colorable
+    }
+
+    ButtonWidgetClass BtnFKick {
+     visible 0
+     position 660 140
+     size 190 28
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnFKickEdge {
+       visible 1
+       ignorepointer 1
+       color 0.45 0.2 0.2 1
+       position -1 -1
+       size 192 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+      PanelWidgetClass BtnFKickBg {
+       visible 1
+       ignorepointer 1
+       color 0.2 0.145 0.145 1
+       position 0 0
+       size 190 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnFKickText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 190 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 0.9 0.45 0.35 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
+    ButtonWidgetClass BtnFLead {
+     visible 0
+     position 870 140
+     size 190 28
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnFLeadEdge {
+       visible 1
+       ignorepointer 1
+       color 0.31 0.31 0.35 1
+       position -1 -1
+       size 192 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+      PanelWidgetClass BtnFLeadBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 190 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnFLeadText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 190 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
+  ButtonWidgetClass BtnCandNext {
+   visible 1
+   position 660 192
+   size 626 26
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+
+    TextWidgetClass CandText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 626 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.541 0.541 0.565 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" left
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
+    ButtonWidgetClass BtnFInvite {
+     visible 0
+     position 660 226
+     size 240 28
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnFInviteEdge {
+       visible 1
+       ignorepointer 1
+       color 0.2 0.35 0.24 1
+       position -1 -1
+       size 242 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+      PanelWidgetClass BtnFInviteBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.2 0.145 1
+       position 0 0
+       size 240 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnFInviteText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 240 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 0.494 0.784 0.627 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
+
+    TextWidgetClass FactionHint {
+     visible 1
+     ignorepointer 1
+     position 660 480
+     size 626 22
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.65 0.65 0.68 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" left
+     "text valign" center
+     priority 2
+    }
+ }
+}

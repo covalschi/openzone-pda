@@ -7,7 +7,7 @@
 FrameWidgetClass OZ_PageNotes {
  visible 1
  position 0 0
- size 1045 414
+ size 1306 518
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -21,7 +21,7 @@ FrameWidgetClass OZ_PageNotes {
    visible 0
    ignorepointer 1
    position 0 0
-   size 10 10
+   size 12 12
    color 1 1 1 1
    text ""
    font "gui/fonts/MetronBook14"
@@ -31,8 +31,8 @@ FrameWidgetClass OZ_PageNotes {
   // записку), а канва в скролі гортає список -- як і належить.
   ScrollWidgetClass NotesScroll {
    visible 1
-   position 16 12
-   size 340 356
+   position 20 15
+   size 425 445
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -43,7 +43,7 @@ FrameWidgetClass OZ_PageNotes {
     PanelWidgetClass NotesCanvas {
      visible 1
      position 0 0
-     size 340 356
+     size 425 445
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -57,8 +57,8 @@ FrameWidgetClass OZ_PageNotes {
   // віджетів, і напис усередині зникає.
   ButtonWidgetClass BtnNew {
    visible 1
-   position 16 376
-   size 340 26
+   position 20 470
+   size 425 32
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -71,7 +71,7 @@ FrameWidgetClass OZ_PageNotes {
     ignorepointer 1
     color 0.31 0.31 0.35 1
     position -1 -1
-    size 342 28
+    size 428 35
     hexactpos 1
     vexactpos 1
     hexactsize 1
@@ -85,7 +85,7 @@ FrameWidgetClass OZ_PageNotes {
      ignorepointer 1
      color 0.145 0.145 0.161 1
      position 0 0
-     size 340 26
+     size 425 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -97,7 +97,7 @@ FrameWidgetClass OZ_PageNotes {
      visible 1
      ignorepointer 1
      position 0 0
-     size 340 26
+     size 425 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -118,8 +118,8 @@ FrameWidgetClass OZ_PageNotes {
   PanelWidgetClass EditorPane {
    visible 1
    color 0.067 0.067 0.075 1
-   position 372 12
-   size 657 356
+   position 465 15
+   size 821 445
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -131,8 +131,8 @@ FrameWidgetClass OZ_PageNotes {
      visible 1
      ignorepointer 1
      color 0.31 0.31 0.35 1
-     position 9 7
-     size 639 28
+     position 11 9
+     size 799 35
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -144,8 +144,8 @@ FrameWidgetClass OZ_PageNotes {
      visible 1
      ignorepointer 1
      color 0.078 0.078 0.09 1
-     position 10 8
-     size 637 26
+     position 12 10
+     size 796 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -155,8 +155,8 @@ FrameWidgetClass OZ_PageNotes {
     }
     EditBoxWidgetClass NoteTitle {
      visible 1
-     position 10 8
-     size 637 26
+     position 12 10
+     size 796 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -175,8 +175,8 @@ FrameWidgetClass OZ_PageNotes {
  visible 1
  ignorepointer 1
  color 0.31 0.31 0.35 1
- position 9 41
- size 639 306
+ position 11 51
+ size 799 382
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -188,8 +188,8 @@ PanelWidgetClass NoteBodyFill {
  visible 1
  ignorepointer 1
  color 0.078 0.078 0.09 1
- position 10 42
- size 637 304
+ position 12 52
+ size 796 380
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -199,8 +199,8 @@ PanelWidgetClass NoteBodyFill {
 }
 MultilineEditBoxWidgetClass NoteBody {
      visible 1
-     position 10 42
-     size 637 304
+     position 12 52
+     size 796 380
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -218,8 +218,8 @@ MultilineEditBoxWidgetClass NoteBody {
 
   ButtonWidgetClass BtnSave {
    visible 1
-   position 372 376
-   size 160 26
+   position 465 470
+   size 200 32
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -232,7 +232,7 @@ MultilineEditBoxWidgetClass NoteBody {
     ignorepointer 1
     color 0.31 0.31 0.35 1
     position -1 -1
-    size 162 28
+    size 202 35
     hexactpos 1
     vexactpos 1
     hexactsize 1
@@ -246,7 +246,7 @@ MultilineEditBoxWidgetClass NoteBody {
      ignorepointer 1
      color 0.145 0.145 0.161 1
      position 0 0
-     size 160 26
+     size 200 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -258,7 +258,7 @@ MultilineEditBoxWidgetClass NoteBody {
      visible 1
      ignorepointer 1
      position 0 0
-     size 160 26
+     size 200 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -277,8 +277,8 @@ MultilineEditBoxWidgetClass NoteBody {
 
   ButtonWidgetClass BtnDelete {
    visible 1
-   position 544 376
-   size 160 26
+   position 680 470
+   size 200 32
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -291,7 +291,7 @@ MultilineEditBoxWidgetClass NoteBody {
     ignorepointer 1
     color 0.31 0.31 0.35 1
     position -1 -1
-    size 162 28
+    size 202 35
     hexactpos 1
     vexactpos 1
     hexactsize 1
@@ -305,7 +305,7 @@ MultilineEditBoxWidgetClass NoteBody {
      ignorepointer 1
      color 0.145 0.145 0.161 1
      position 0 0
-     size 160 26
+     size 200 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -317,7 +317,7 @@ MultilineEditBoxWidgetClass NoteBody {
      visible 1
      ignorepointer 1
      position 0 0
-     size 160 26
+     size 200 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -338,8 +338,8 @@ MultilineEditBoxWidgetClass NoteBody {
     // гуртова: чип -- збірка, яку складають свідомо.
     ButtonWidgetClass BtnNoteToCar {
      visible 1
-     position 716 376
-     size 150 26
+     position 895 470
+     size 188 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -352,7 +352,7 @@ MultilineEditBoxWidgetClass NoteBody {
       ignorepointer 1
       color 0.31 0.31 0.35 1
       position -1 -1
-      size 152 28
+      size 190 35
       hexactpos 1
       vexactpos 1
       hexactsize 1
@@ -366,7 +366,7 @@ MultilineEditBoxWidgetClass NoteBody {
        ignorepointer 1
        color 0.145 0.145 0.161 1
        position 0 0
-       size 150 26
+       size 188 32
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -378,7 +378,7 @@ MultilineEditBoxWidgetClass NoteBody {
        visible 1
        ignorepointer 1
        position 0 0
-       size 150 26
+       size 188 32
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -400,8 +400,8 @@ MultilineEditBoxWidgetClass NoteBody {
    visible 1
    ignorepointer 1
    halign right_ref
-   position 16 376
-   size 180 26
+   position 20 470
+   size 225 32
    hexactpos 1
    vexactpos 1
    hexactsize 1

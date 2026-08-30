@@ -69,6 +69,7 @@ class OZ_PdaConst
     static const string PAGE_MAP      = "map";
     static const string PAGE_NEWS     = "news";
     static const string PAGE_CHAT     = "chat";
+    static const string PAGE_FACTION  = "faction";
 
     // Межі записок. Не смак, а захист: текст їде в JSON на диску, а згодом у
     // тред Discord, у якого своя межа повідомлення.

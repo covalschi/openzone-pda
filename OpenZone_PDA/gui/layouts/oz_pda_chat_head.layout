@@ -6,7 +6,7 @@
 ButtonWidgetClass OZ_ChatHead {
  visible 1
  position 0 0
- size 300 40
+ size 375 50
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -18,7 +18,7 @@ ButtonWidgetClass OZ_ChatHead {
    ignorepointer 1
    color 0.043 0.043 0.051 1
    position 0 0
-   size 300 40
+   size 375 50
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -32,7 +32,7 @@ ButtonWidgetClass OZ_ChatHead {
    ignorepointer 1
    color 1 0.478 0.102 0.10
    position 0 0
-   size 300 40
+   size 375 50
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -44,8 +44,8 @@ ButtonWidgetClass OZ_ChatHead {
   TextWidgetClass HeadTitle {
    visible 1
    ignorepointer 1
-   position 12 3
-   size 276 20
+   position 15 4
+   size 345 25
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -64,8 +64,8 @@ ButtonWidgetClass OZ_ChatHead {
   TextWidgetClass HeadKind {
    visible 1
    ignorepointer 1
-   position 12 21
-   size 276 15
+   position 15 26
+   size 345 19
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -84,8 +84,8 @@ ButtonWidgetClass OZ_ChatHead {
    visible 1
    ignorepointer 1
    color 1 1 1 0.07
-   position 12 39
-   size 276 1
+   position 15 49
+   size 345 1
    hexactpos 1
    vexactpos 1
    hexactsize 1

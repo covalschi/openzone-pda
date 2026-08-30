@@ -262,6 +262,13 @@ class OZ_PdaPageContacts : OZ_PdaPage
 
     override void OnResponse(string op, bool ok, string json, string error)
     {
+        if (op == "push")
+        {
+            // Ролі змінились -- сервер подзвонив, перечитуємо мовчки.
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_CONTACTS, "list", "{}");
+            return;
+        }
+
         // Дії самі нічого не несуть: перепитуємо список і малюємо його.
         if (op != "list")
         {
@@ -306,8 +313,15 @@ class OZ_PdaPageContacts : OZ_PdaPage
         int n = m_Data.Entries.Count();
 
         string head = "#STR_OZ_CONTACTS_ONLINE";
+        if (m_Data.Frozen)
+            head = "#STR_OZ_DEV_SNAP_CONTACTS";
         head += "  " + n.ToString();
         SetText("ContactsHeader", head);
+
+        // Капсула: свою присутність із чужого замороженого приладу не
+        // вмикають і не вимикають.
+        if (m_BtnHide)
+            m_BtnHide.Show(!m_Data.Frozen);
 
         if (m_Data.MeHidden)
             SetText("BtnHideText", "#STR_OZ_CONTACTS_SHOW_ME");
@@ -493,23 +507,13 @@ class OZ_PdaPageContacts : OZ_PdaPage
 
     private void PaintButtons()
     {
-        OZ_ContactEntry e = Picked();
-
-        // ЗАПРОШЕННЯ ПЕРЕБИВАЄ ВСЕ. Воно про мене, а не про обраний рядок, і
-        // поки воно висить -- це найважливіше, що є на екрані. Дії над
-        // контактом ховаємо, щоб не пропонувати два різні рішення поруч.
-        bool invited = m_Data && m_Data.InviteFaction != "";
-
-        if (m_BtnJoin)
-            m_BtnJoin.Show(invited);
-        if (m_BtnRefuse)
-            m_BtnRefuse.Show(invited);
-
-        SetText("BtnJoinText",   "#STR_OZ_FACTION_JOIN");
-        SetText("BtnRefuseText", "#STR_OZ_FACTION_REFUSE");
-
-        if (invited)
+        // Капсула: людей пам'ятають, а не бачать -- жодних дій над рядком.
+        if (m_Data && m_Data.Frozen)
         {
+            if (m_BtnJoin)
+                m_BtnJoin.Show(false);
+            if (m_BtnRefuse)
+                m_BtnRefuse.Show(false);
             if (m_BtnFriend)
                 m_BtnFriend.Show(false);
             if (m_BtnMsg)
@@ -520,6 +524,18 @@ class OZ_PdaPageContacts : OZ_PdaPage
                 m_BtnLead.Show(false);
             return;
         }
+
+        OZ_ContactEntry e = Picked();
+
+        // ЗАПРОШЕННЯ ПЕРЕБИВАЄ ВСЕ. Воно про мене, а не про обраний рядок, і
+        // поки воно висить -- це найважливіше, що є на екрані. Дії над
+        // контактом ховаємо, щоб не пропонувати два різні рішення поруч.
+        // Фракційні дії переїхали на СВОЮ вкладку (рішення власника
+        // 2026-08-29): контакти -- про людей, фракція -- про фракцію.
+        if (m_BtnJoin)
+            m_BtnJoin.Show(false);
+        if (m_BtnRefuse)
+            m_BtnRefuse.Show(false);
 
         // Нікого не обрано або обрано себе -- дій немає. Кнопка, яка завжди
         // відмовляє, гірша за кнопку, якої немає.
@@ -551,7 +567,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
         bool lead = m_Data && m_Data.MeLeader && !e.Me;
 
         if (m_BtnFaction)
-            m_BtnFaction.Show(lead);
+            m_BtnFaction.Show(false);
 
         if (lead)
         {
@@ -565,7 +581,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
         // фракцію, і зробити це однією кнопкою означало б прийняти людину
         // й тут-таки віддати їй усе.
         if (m_BtnLead)
-            m_BtnLead.Show(lead && e.Mine);
+            m_BtnLead.Show(false);
         SetText("BtnLeadText", "#STR_OZ_FACTION_HANDOVER");
     }
 }

@@ -31,15 +31,16 @@ class OZ_PdaContactSwap
     // цього не міняється; тут лише час.
     private static ref map<string, int> s_Until;
 
-    static void Offer(PlayerIdentity from, PlayerIdentity to)
+    // from/to -- ЛЮДИ біля яких це відбувається (їм їдуть повідомлення);
+    // myUid/theirUid -- АКАУНТИ, чиї пристрої потисли руки. Для власного
+    // КПК це збігається; для чужого живого -- ні, і це навмисно: рішення
+    // власника 2026-08-29, контакт належить сесії пристрою.
+    static void Offer(PlayerIdentity from, PlayerIdentity to, string myUid, string theirUid)
     {
         if (!GetGame().IsServer())
             return;
         if (!from || !to)
             return;
-
-        string myUid    = from.GetPlainId();
-        string theirUid = to.GetPlainId();
 
         if (myUid == theirUid)
             return;
@@ -78,6 +79,10 @@ class OZ_PdaContactSwap
 
                 OZ_PlayerStore.MarkDirty(myUid);
                 OZ_PlayerStore.MarkDirty(theirUid);
+
+                // Руки потиснуто знову -- заморожена колись розмова
+                // відмикається.
+                OZ_PairFreeze.Send("v1/chat/pair_thaw", myUid, theirUid);
 
                 Say(from, "STR_OZ_SWAP_DONE");
                 Say(to,   "STR_OZ_SWAP_DONE");
@@ -187,7 +192,7 @@ class OZ_PdaContactSwap
 
     // Кажемо ОБОМ і в тому ж каналі, що й решта відповідей КПК: обмін --
     // подія в світі, і мовчазна дія лишила б обох гадати, спрацювало чи ні.
-    private static void Say(PlayerIdentity who, string key)
+    static void Say(PlayerIdentity who, string key)
     {
         if (!who)
             return;

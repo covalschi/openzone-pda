@@ -30,6 +30,10 @@ class OZ_PDA_Base : ItemBase
     // --- замок ---
     private string m_Pin        = "";     // порожній рядок = коду немає
     private bool   m_Unlocked   = false;  // стан ПРИСТРОЮ, не гравця
+    // Дзеркало «пін задано» для КЛІЄНТА: сам пін секретний і на клієнт не
+    // їде ніколи, а от факт його існування мусить бути видно без RPC --
+    // від нього гаснуть худ і дія обміну на замкненому пристрої.
+    private bool   m_HasPinS = false;
     private bool   m_AutoLock   = true;   // можна вимкнути власником сесії
     private int    m_LeftHandsAt = 0;     // GetGame().GetTime() у мс, 0 = в руках
 
@@ -56,6 +60,12 @@ class OZ_PDA_Base : ItemBase
     // елементи, і будь-яка неузгодженість з'їдає потік усіх, хто пише після
     // нас. Один рядок такої проблеми не має.
     private string m_MarkersJson = "";
+    // Записки -- теж пам'ять ПРИСТРОЮ (рішення власника 2026-08-28):
+    // трофей при захопленні, природна капсула, жодного моста.
+    private string m_NotesJson = "";
+    // Маршрут: ВПОРЯДКОВАНИЙ список копій міток (той самий OZ_MarkerList).
+    // Один на пристрій: вести дві нитки одночасно однаково нема кому.
+    private string m_RouteJson = "";
 
     // --- запечатаний пристрій ---
     //
@@ -92,6 +102,7 @@ class OZ_PDA_Base : ItemBase
         // -- це один відсоток, дрібніше ніхто не побачить.
         RegisterNetSyncVariableFloat("m_Charge01", 0, 1, 2);
         RegisterNetSyncVariableBool("m_Unlocked");
+        RegisterNetSyncVariableBool("m_HasPinS");
 
         m_FailUid   = new array<string>();
         m_FailCount = new array<int>();
@@ -264,6 +275,13 @@ class OZ_PDA_Base : ItemBase
         }
     }
 
+    // КЛІЄНТСЬКА правда про замок: обидва біти синхронні, тож худ і умови
+    // дій можуть питати без RPC. Замкнений -- значить пін Є і не введений.
+    bool OZ_LockedForViewer()
+    {
+        return m_HasPinS && !m_Unlocked;
+    }
+
     bool OZ_IsUnlocked()
     {
         if (m_Pin == "")
@@ -366,8 +384,16 @@ class OZ_PDA_Base : ItemBase
         if (!GetGame().IsServer())
             return "STR_OZ_ERR_INTERNAL";
 
+        // Ламається ЗАМОК, а не тільки печатка (рішення власника
+        // 2026-08-28): звичайний замкнений пін дешифратор бере так само.
+        // Мусить бути ЩО ламати: без піна чи на відімкненому нема замка.
         if (!OZ_IsSealed())
-            return "STR_OZ_ERR_NOT_SEALED";
+        {
+            if (m_Pin == "")
+                return "STR_OZ_ERR_NO_PIN";
+            if (m_Unlocked)
+                return "STR_OZ_ERR_NOT_LOCKED";
+        }
 
         if (!OZ_HasDecryptor())
             return "STR_OZ_ERR_NO_DECRYPTOR";
@@ -416,8 +442,32 @@ class OZ_PDA_Base : ItemBase
 
         m_CrackUntil = 0;
         m_Pin        = "";
+        m_HasPinS    = false;
         m_Unlocked   = true;
         SetSynchDirty();
+
+        // Дешифратор ОДНОРАЗОВИЙ: успішний злам спалює плату (рішення
+        // власника 2026-08-28). Руїна лишається в гнізді хламом -- чесний
+        // слід того, чим пристрій відкривали.
+        for (int di = 0; di < OZ_PdaConst.MODULE_SLOTS_MAX; di++)
+        {
+            string dcls = OZ_ModuleClass(di);
+            if (dcls == "")
+                continue;
+
+            OZ_ModuleSpec dspec = OZ_PdaHardware.ModuleFor(dcls);
+            if (!dspec || dspec.Kind != OZ_PdaConst.MOD_DECRYPTOR)
+                continue;
+
+            ItemBase burnt = ItemBase.Cast(OZ_Attached(OZ_PdaConst.ModuleSlot(di)));
+            if (burnt)
+            {
+                burnt.SetHealth("", "", 0);
+                OZ_Log.Info("pda: decryptor burnt out on " + GetType());
+            }
+            break;
+        }
+
         OZ_Log.Dbg("pda cracked open: " + GetType());
     }
 
@@ -469,6 +519,7 @@ class OZ_PDA_Base : ItemBase
             m_Pin += c.ToString();
             m_Pin += d.ToString();
 
+            m_HasPinS  = true;
             m_Unlocked = false;
             m_AutoLock = true;
             SetSynchDirty();
@@ -487,6 +538,34 @@ class OZ_PDA_Base : ItemBase
         if (!GetGame().IsServer())
             return;
         m_MarkersJson = json;
+    }
+
+    // ------------------------------------------------------------- записки
+
+    string OZ_NotesJson()
+    {
+        return m_NotesJson;
+    }
+
+    void OZ_SetNotesJson(string json)
+    {
+        if (!GetGame().IsServer())
+            return;
+        m_NotesJson = json;
+    }
+
+    // ------------------------------------------------------------- маршрут
+
+    string OZ_RouteJson()
+    {
+        return m_RouteJson;
+    }
+
+    void OZ_SetRouteJson(string json)
+    {
+        if (!GetGame().IsServer())
+            return;
+        m_RouteJson = json;
     }
 
     // --------------------------------------------------------------- сесія
@@ -568,6 +647,46 @@ class OZ_PDA_Base : ItemBase
         m_SnapshotAt = "";
     }
 
+    // «До заводських» БЕЗ пінa: знайдений чужий КПК можна зробити своїм,
+    // але ціна чесна -- всі дані попереднього власника згорають. Sealed
+    // сюди не пускаємо: запечатане або ламають дешифратором, або носять
+    // як цеглину. Чип у гнізді -- фізичний носій, його скидання не чіпає.
+    string OZ_FactoryReset()
+    {
+        if (!GetGame().IsServer())
+            return "STR_OZ_ERR_INTERNAL";
+
+        if (OZ_IsSealed())
+            return "STR_OZ_ERR_SEALED";
+
+        m_Pin      = "";
+        m_HasPinS  = false;
+        m_Unlocked = true;
+        m_AutoLock = true;
+
+        m_SessionUid   = "";
+        m_SessionEpoch = 0;
+        m_Snapshot     = "";
+        m_SnapshotAt   = "";
+
+        m_MarkersJson = "";
+        m_NotesJson   = "";
+        m_RouteJson   = "";
+        m_CrackUntil  = 0;
+
+        m_FailUid.Clear();
+        m_FailCount.Clear();
+
+        // Заводські пресети -- заново: скинутий профільний прилад знову
+        // несе свою фабричну начинку.
+        m_Seeded = false;
+        OZ_SeedFromProfile();
+
+        SetSynchDirty();
+        OZ_Log.Info("pda: factory reset of " + GetType());
+        return "";
+    }
+
     // Щоб змінити пін, його треба ЗНАТИ. Сесія тут ні до чого: пристрій не
     // питає, хто ти, він питає старий код. Немає коду -- задати новий може
     // будь-хто, у кого пристрій у руках.
@@ -592,6 +711,7 @@ class OZ_PDA_Base : ItemBase
         }
 
         m_Pin = newPin;
+        m_HasPinS = (m_Pin != "");
         m_Unlocked = true;   // не замикаємо того, хто щойно задав код
         SetSynchDirty();
         ResetFails(uid);
@@ -664,6 +784,14 @@ class OZ_PDA_Base : ItemBase
         EntityAI m = OZ_Attached(OZ_PdaConst.ModuleSlot(i));
         if (!m)
             return "";
+
+        // Зруйнована плата -- мертва електроніка: гніздо зайняте, а модуля
+        // ФУНКЦІОНАЛЬНО немає. Саме так згорілий дешифратор перестає
+        // ламати, а спалений замірник -- міряти.
+        ItemBase mi = ItemBase.Cast(m);
+        if (mi && mi.IsRuined())
+            return "";
+
         return m.GetType();
     }
 
@@ -895,6 +1023,10 @@ class OZ_PDA_Base : ItemBase
         OZ_StoreBig.Write(ctx, m_MarkersJson);
         // v3 -- знову В КІНЕЦЬ.
         ctx.Write(m_Seeded);
+        // v4 -- знову В КІНЕЦЬ. Книжка велика, тому шматками, як мітки.
+        OZ_StoreBig.Write(ctx, m_NotesJson);
+        // v5 -- знову В КІНЕЦЬ.
+        OZ_StoreBig.Write(ctx, m_RouteJson);
     }
 
     override bool CF_OnStoreLoad(CF_ModStorageMap storage)
@@ -933,11 +1065,25 @@ class OZ_PDA_Base : ItemBase
                 return false;
         }
 
+        if (ctx.GetVersion() >= 4)
+        {
+            if (!OZ_StoreBig.Read(ctx, m_NotesJson))
+                return false;
+        }
+
+        if (ctx.GetVersion() >= 5)
+        {
+            if (!OZ_StoreBig.Read(ctx, m_RouteJson))
+                return false;
+        }
+
         // Замок після рестарту закритий: стан «відімкнено» навмисно не
         // зберігається. Пристрій, що пролежав у схроні через рестарт, має
         // питати код.
         m_Unlocked = false;
         m_LeftHandsAt = 0;
+        m_HasPinS = (m_Pin != "");
+        SetSynchDirty();
 
         return true;
     }

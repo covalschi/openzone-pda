@@ -11,6 +11,10 @@ class OZ_PdaPageDevice : OZ_PdaPage
     private ButtonWidget m_BtnPin;
     private ButtonWidget m_BtnPinClear;
     private ButtonWidget m_BtnAutoLock;
+    private ButtonWidget m_BtnLock;
+    private ButtonWidget m_BtnInit;
+    private ButtonWidget m_BtnFactoryDev;
+    private ButtonWidget m_BtnLogout;
 
     private ref OZ_PdaDeviceStatus m_Status;
 
@@ -70,6 +74,14 @@ class OZ_PdaPageDevice : OZ_PdaPage
         m_BtnPin       = ButtonWidget.Cast(Wgt("BtnPin"));
         m_BtnPinClear  = ButtonWidget.Cast(Wgt("BtnPinClear"));
         m_BtnAutoLock  = ButtonWidget.Cast(Wgt("BtnAutoLock"));
+        m_BtnLock      = ButtonWidget.Cast(Wgt("BtnLock"));
+        SetText("BtnLockText", "#STR_OZ_DEV_LOCK_NOW");
+        m_BtnInit      = ButtonWidget.Cast(Wgt("BtnInit"));
+        SetText("BtnInitText", "#STR_OZ_DEV_INIT");
+        m_BtnFactoryDev = ButtonWidget.Cast(Wgt("BtnFactoryDev"));
+        SetText("BtnFactoryDevText", "#STR_OZ_FACTORY_RESET");
+        m_BtnLogout = ButtonWidget.Cast(Wgt("BtnLogout"));
+        SetText("BtnLogoutText", "#STR_OZ_DEV_LOGOUT_OTHERS");
     }
 
     override void OnSelected()
@@ -207,6 +219,30 @@ class OZ_PdaPageDevice : OZ_PdaPage
             return true;
         }
 
+        if (w && w == m_BtnLock)
+        {
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "lock", "{}");
+            return true;
+        }
+
+        if (w && w == m_BtnInit)
+        {
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "initiate", "{}");
+            return true;
+        }
+
+        if (w && w == m_BtnFactoryDev)
+        {
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "factory_reset", "{}");
+            return true;
+        }
+
+        if (w && w == m_BtnLogout)
+        {
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "logout_others", "{}");
+            return true;
+        }
+
         if (w && w == m_BtnAutoLock)
         {
             bool wantLock = true;
@@ -313,6 +349,52 @@ class OZ_PdaPageDevice : OZ_PdaPage
                 SetHintSticky("CarrierText", "#STR_OZ_DEV_CARRIER_DONE");
             else
                 SetHintSticky("CarrierText", "#" + error);
+            Request();
+            return;
+        }
+
+        if (op == "lock")
+        {
+            if (!ok)
+                SetHintSticky("PinText", "#" + error);
+            Request();
+            return;
+        }
+
+        if (op == "initiate")
+        {
+            if (!ok)
+            {
+                SetHintSticky("SessionText", "#" + error);
+                return;
+            }
+
+            // Стрічка вкладок будується ОДИН раз за відкриття, і в нової
+            // сесії їх більше: закриваємо меню, наступне відкриття збере
+            // повний набір.
+            OZ_PdaMenu menu = OZ_PdaMenu.Cast(GetGame().GetUIManager().FindMenu(OZ_PdaConst.MENU_PDA));
+            if (menu)
+                menu.Close();
+            return;
+        }
+
+        if (op == "factory_reset")
+        {
+            if (!ok)
+            {
+                SetHintSticky("SessionText", "#" + error);
+                return;
+            }
+            Request();
+            return;
+        }
+
+        if (op == "logout_others")
+        {
+            if (!ok)
+                SetHintSticky("SessionText", "#" + error);
+            else
+                SetHintSticky("SessionText", "#STR_OZ_DEV_LOGGED_OUT");
             Request();
             return;
         }
@@ -607,7 +689,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
         {
             if (text.Substring(ci, 1) == "\n")
             {
-                lines += 1 + seg / 28;
+                lines += 1 + seg / 66;
                 seg = 0;
             }
             else
@@ -615,12 +697,12 @@ class OZ_PdaPageDevice : OZ_PdaPage
                 seg++;
             }
         }
-        lines += 1 + seg / 28;
+        lines += 1 + seg / 66;
 
         int h = lines * 18 + 6;
         if (h < 108)
             h = 108;
-        tw.SetSize(240, h);
+        tw.SetSize(580, h);
     }
 
     // Клік по рядку списку: повний запис у праву панель.
@@ -746,21 +828,61 @@ class OZ_PdaPageDevice : OZ_PdaPage
 
     private void PaintSession(OZ_PdaDeviceStatus st)
     {
+        if (!st.Owned)
+        {
+            // Нічий: чесно кажемо, що пристрій чекає ініціації.
+            SetText("SessionText", "#STR_OZ_DEV_UNOWNED");
+            SetText("SnapshotText", "");
+            return;
+        }
+
         if (st.Online)
         {
-            SetText("SessionText", "#STR_OZ_DEV_ONLINE");
+            string on = "#STR_OZ_DEV_ONLINE";
+            if (st.OwnerName != "")
+                on += "  " + st.OwnerName;
+            SetText("SessionText", on);
             SetText("SnapshotText", "");
             return;
         }
 
         // Офлайн -- це НЕ поломка, і сказати про це треба так, щоб гравець
         // зрозумів: пристрій живий, але показує світ станом на певну мить.
-        SetText("SessionText", "#STR_OZ_DEV_OFFLINE");
+        // Ім'я власника -- тут же, як і в онлайна: чия це капсула, видно
+        // з першого рядка, а не з розбору дайджеста.
+        string off = "#STR_OZ_DEV_OFFLINE";
+        if (st.OwnerName != "")
+            off += "  " + st.OwnerName;
+        SetText("SessionText", off);
 
         if (st.SnapshotAt != "")
         {
             string s = "#STR_OZ_DEV_SNAPSHOT";
-            s += "  " + st.SnapshotAt;
+            s += "  " + OZ_LocalTime.Stamp(st.SnapshotAt);
+
+            // Капсула часу: що встиг запам'ятати пристрій, поки був живим.
+            if (st.Snapshot != "")
+            {
+                OZ_PdaSnapshot snap;
+                string serr;
+                if (JsonFileLoader<OZ_PdaSnapshot>.LoadData(st.Snapshot, snap, serr) && snap)
+                {
+                    s += "\n#STR_OZ_DEV_SNAP_OWNER " + snap.Owner;
+                    if (snap.Faction != "")
+                        s += " (" + snap.Faction + ")";
+                    if (snap.Contacts && snap.Contacts.Count() > 0)
+                    {
+                        s += "\n#STR_OZ_DEV_SNAP_CONTACTS " + snap.Contacts.Count().ToString() + ": ";
+                        for (int ci = 0; ci < snap.Contacts.Count(); ci++)
+                        {
+                            if (ci > 0)
+                                s += ", ";
+                            s += snap.Contacts[ci];
+                        }
+                    }
+                }
+            }
+
             SetText("SnapshotText", s);
         }
         else
@@ -809,6 +931,22 @@ class OZ_PdaPageDevice : OZ_PdaPage
         // кнопки просто немає -- замість кнопки, яка завжди відмовляє.
         if (m_BtnAutoLock)
             m_BtnAutoLock.Show(!st.ForceAutoLock);
+
+        // Ручний замок має сенс лише тому, хто зараз усередині: пін є і
+        // пристрій розімкнено.
+        if (m_BtnLock)
+            m_BtnLock.Show(st.HasPin && st.Unlocked);
+
+        // ІНІЦІАЦІЯ -- лише нічийному пристрою; скидання -- будь-якому
+        // відімкненому (свій теж можна обнулити, рішення власника).
+        // Ініціацію веде ЕКРАН меню (InitPanel): нічийний пристрій до
+        // сторінок узагалі не пускає. Кнопка тут лишилась би мертвою.
+        if (m_BtnInit)
+            m_BtnInit.Show(false);
+        if (m_BtnFactoryDev)
+            m_BtnFactoryDev.Show(st.Powered && st.Unlocked);
+        if (m_BtnLogout)
+            m_BtnLogout.Show(st.Powered && st.SessionMine);
 
         if (st.AutoLock)
             SetText("BtnAutoLockText", "#STR_OZ_AUTOLOCK_OFF_BTN");

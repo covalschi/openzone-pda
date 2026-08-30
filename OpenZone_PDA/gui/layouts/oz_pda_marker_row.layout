@@ -6,7 +6,7 @@
 ButtonWidgetClass OZ_MarkerRow {
  visible 1
  position 0 0
- size 252 34
+ size 315 42
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -18,7 +18,7 @@ ButtonWidgetClass OZ_MarkerRow {
    ignorepointer 1
    color 0.043 0.043 0.051 1
    position 0 0
-   size 252 34
+   size 315 42
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -32,7 +32,7 @@ ButtonWidgetClass OZ_MarkerRow {
    ignorepointer 1
    color 1 0.478 0.102 0.14
    position 0 0
-   size 252 34
+   size 315 42
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -44,8 +44,8 @@ ButtonWidgetClass OZ_MarkerRow {
   TextWidgetClass RowName {
    visible 1
    ignorepointer 1
-   position 8 1
-   size 148 16
+   position 10 1
+   size 185 20
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -64,8 +64,8 @@ ButtonWidgetClass OZ_MarkerRow {
   TextWidgetClass RowWhere {
    visible 1
    ignorepointer 1
-   position 148 2
-   size 98 14
+   position 185 2
+   size 122 18
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -85,8 +85,8 @@ ButtonWidgetClass OZ_MarkerRow {
   TextWidgetClass RowDesc {
    visible 1
    ignorepointer 1
-   position 8 17
-   size 238 14
+   position 10 21
+   size 298 18
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -105,8 +105,8 @@ ButtonWidgetClass OZ_MarkerRow {
    visible 1
    ignorepointer 1
    color 1 1 1 0.07
-   position 8 33
-   size 238 1
+   position 10 41
+   size 298 1
    hexactpos 1
    vexactpos 1
    hexactsize 1

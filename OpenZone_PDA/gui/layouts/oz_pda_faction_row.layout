@@ -1,0 +1,78 @@
+// Один рядок члена фракції. Ім'я кореня скрипт міняє на ім'я гравця,
+// UserID 8 відрізняє його в OnClick.
+
+ButtonWidgetClass OZ_FactionRow {
+ visible 1
+ position 0 0
+ size 560 32
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ text ""
+ {
+  PanelWidgetClass FRowBg {
+   visible 1
+   ignorepointer 1
+   color 0.055 0.055 0.062 1
+   position 0 0
+   size 560 30
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 0
+   style rover_sim_colorable
+  }
+
+  PanelWidgetClass FRowPick {
+   visible 0
+   ignorepointer 1
+   color 1 0.478 0.102 1
+   position 0 0
+   size 3 30
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 1
+   style rover_sim_colorable
+  }
+
+  TextWidgetClass FRowName {
+   visible 1
+   ignorepointer 1
+   position 12 0
+   size 330 30
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.788 0.788 0.816 1
+   text ""
+   font "gui/fonts/MetronBook14"
+   "exact text" 1
+   "text halign" left
+   "text valign" center
+   priority 2
+  }
+
+  TextWidgetClass FRowRank {
+   visible 1
+   ignorepointer 1
+   position 350 0
+   size 200 30
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.541 0.541 0.565 1
+   text ""
+   font "gui/fonts/MetronBook14"
+   "exact text" 1
+   "text halign" left
+   "text valign" center
+   priority 2
+  }
+ }
+}

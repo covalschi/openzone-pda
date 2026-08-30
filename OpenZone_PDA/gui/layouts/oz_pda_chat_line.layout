@@ -11,7 +11,7 @@
 ButtonWidgetClass OZ_ChatLine {
  visible 1
  position 0 0
- size 697 58
+ size 871 72
  text ""
  hexactpos 1
  vexactpos 1
@@ -26,7 +26,7 @@ ButtonWidgetClass OZ_ChatLine {
    ignorepointer 1
    color 0.043 0.043 0.051 1
    position 0 0
-   size 697 58
+   size 871 72
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -40,8 +40,8 @@ ButtonWidgetClass OZ_ChatLine {
    visible 0
    ignorepointer 1
    color 1 0.478 0.102 1
-   position 0 4
-   size 2 50
+   position 0 5
+   size 2 62
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -53,8 +53,8 @@ ButtonWidgetClass OZ_ChatLine {
   TextWidgetClass LineWho {
    visible 1
    ignorepointer 1
-   position 12 2
-   size 470 18
+   position 15 2
+   size 588 22
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -72,8 +72,8 @@ ButtonWidgetClass OZ_ChatLine {
   TextWidgetClass LineAt {
    visible 1
    ignorepointer 1
-   position 471 2
-   size 194 18
+   position 589 2
+   size 242 22
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -94,8 +94,8 @@ ButtonWidgetClass OZ_ChatLine {
   MultilineTextWidgetClass LineText {
    visible 1
    ignorepointer 1
-   position 12 20
-   size 673 36
+   position 15 25
+   size 841 45
    hexactpos 1
    vexactpos 1
    hexactsize 1

@@ -17,10 +17,35 @@
 
 class OZ_PdaHandlerContacts : OZ_PageHandler
 {
+    // Акаунт називає ПРИСТРІЙ -- див. OZ_PdaHandlerChat. Заморозки тут не
+    // буває: капсулу до контактів не пускають ворота, а їхній стан на мить
+    // заморозки лежить у капсульному дайджесті сторінки пристрою.
+    private string m_Acc;
+
     override string Handle(string op, string json, PlayerIdentity sender, out bool ok, out string error)
     {
         ok = false;
         error = "STR_OZ_ERR_UNKNOWN_OP";
+
+        m_Acc = sender.GetPlainId();
+        OZ_PDA_Base accDev = OZ_PdaLookup.HeldBy(sender);
+        if (accDev && accDev.OZ_SessionUid() != "")
+        {
+            m_Acc = accDev.OZ_SessionUid();
+
+            // КАПСУЛА: список -- імена з дайджеста, і більш нічого. Живої
+            // присутності тут немає навмисне: заморожений прилад не бачить
+            // світ, він пам'ятає людей. Будь-яка дія -- відмова.
+            if (OZ_PdaCapsule.IsFrozen(accDev))
+            {
+                if (op != "list")
+                {
+                    error = "STR_OZ_ERR_FROZEN";
+                    return "";
+                }
+                return FrozenList(accDev, ok, error);
+            }
+        }
 
         if (op == "list")
             return List(sender, ok, error);
@@ -40,11 +65,42 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
 
     // ------------------------------------------------------------- список
 
+    // Капсульні контакти: що пристрій встиг запам'ятати, поки був живим.
+    private string FrozenList(OZ_PDA_Base pda, out bool ok, out string error)
+    {
+        OZ_ContactList list = new OZ_ContactList();
+        list.Frozen = true;
+
+        string serr;
+        OZ_PdaSnapshot snap;
+        if (pda.OZ_Snapshot() != "" && JsonFileLoader<OZ_PdaSnapshot>.LoadData(pda.OZ_Snapshot(), snap, serr) && snap && snap.Contacts)
+        {
+            for (int i = 0; i < snap.Contacts.Count(); i++)
+            {
+                OZ_ContactEntry e = new OZ_ContactEntry();
+                e.Name = snap.Contacts[i];
+                e.Rel  = "friend";
+                list.Entries.Insert(e);
+            }
+        }
+
+        string outJson;
+        if (!JsonFileLoader<OZ_ContactList>.MakeData(list, outJson, serr, false))
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        ok = true;
+        error = "";
+        return outJson;
+    }
+
     private string List(PlayerIdentity sender, out bool ok, out string error)
     {
         ok = false;
 
-        string myUid = sender.GetPlainId();
+        string myUid = m_Acc;
         OZ_PlayerData me = OZ_PlayerStore.Load(myUid);
         PlayerBase mePlayer = OZ_PdaLookup.PlayerOf(sender);
 
@@ -309,7 +365,7 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
             return "";
         }
 
-        string uid = sender.GetPlainId();
+        string uid = m_Acc;
         OZ_PlayerData d = OZ_PlayerStore.Load(uid);
         d.PresenceHidden = flag.Value;
         OZ_PlayerStore.MarkDirty(uid);
@@ -333,7 +389,7 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
             return "";
         }
 
-        string myUid = sender.GetPlainId();
+        string myUid = m_Acc;
         OZ_PlayerData me = OZ_PlayerStore.Load(myUid);
 
         string theirUid = UidByKeyIn(me.Friends, r.Key);
@@ -357,6 +413,11 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
 
         OZ_PlayerStore.MarkDirty(myUid);
         OZ_PlayerStore.MarkDirty(theirUid);
+
+        // Розірваний контакт заморожує особисту розмову: читати можна,
+        // писати -- ні, доки руки не потиснуть знову (рішення власника
+        // 2026-08-29).
+        OZ_PairFreeze.Send("v1/chat/pair_freeze", myUid, theirUid);
 
         ok = true;
         error = "";

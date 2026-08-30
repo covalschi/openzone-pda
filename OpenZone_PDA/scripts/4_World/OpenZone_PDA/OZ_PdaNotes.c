@@ -1,64 +1,19 @@
-// Сторінка «Записки»: приватні нотатки гравця.
+// Сторінка «Записки»: нотатки, які живуть У ПРИСТРОЇ.
 //
-// ДЖЕРЕЛО ПРАВДИ -- DISCORD, як і в чату. Рішення власника 2026-08-28:
-// перша редакція тримала записки файлом сервера, і це БУЛО самовільним
-// відступом від спеки тонкого клієнта -- спека прописувала переїзд, а
-// сесія лишила файли, не спитавши. Повертаємо як задумано.
+// ДЖЕРЕЛО ПРАВДИ -- САМ ПРИЛАД. Рішення власника 2026-08-28: записки
+// відв'язані від Discord і від акаунта разом -- це пам'ять пристрою, як
+// мітки на карті. Наслідки всі навмисні:
 //
-// У бота на гравця -- приватний тред «Нотатник», одна записка -- одне
-// повідомлення. Правок повідомлень немає взагалі: зберегти -- це видалити
-// старе повідомлення й запостити нове (пост вебхука ще й безкоштовно
-// розархівує тред). Id записки карбує МІСТ і він СВІЙ, не id повідомлення:
-// id повідомлення змінюється кожним перепостом.
+//   -- захоплений КПК віддає записки попереднього носія: це здобич;
+//   -- загублений прилад забирає їх із собою, смерть -- теж;
+//   -- капсула читає свою книжку без жодного зрізу: після заморозки в
+//      неї ніхто нічого не допише, тож книжка і Є зріз;
+//   -- моста не треба взагалі: всі операції синхронні, і записки
+//      працюють навіть тоді, коли Discord лежить.
 //
-// Наслідки, які сторінка вже вміє з часів чату:
-//   -- без моста записок НЕМАЄ. Це те саме правило, що для розмов:
-//      немає Discord -- немає функціональності;
-//   -- відповіді ВІДКЛАДЕНІ (OZ_Const.DEFER): RestContext асинхронний,
-//      Handle() відповідає сам, коли міст озветься.
-//
-// Записки належать АКАУНТУ, а не пристрою: міст віддає їх по Uid, тож
-// чужий КПК своїх записок не покаже, а смерть і згублений прилад їх не
-// чіпають. Відсічка пристрою на них не поширюється -- і не мусить.
+// Стеля книжки -- справа моделі пристрою (Limits.Notes у профілі),
+// запасна -- OZ_PdaConst.NOTES_MAX.
 
-// ------------------------------------------------------- листи до моста
-
-class OZ_NotesAskList
-{
-    string Uid;
-}
-
-class OZ_NotesAskSave
-{
-    string Uid;
-    string Id;
-    string Title;
-    string Body;
-    string Name;
-}
-
-class OZ_NotesAskDelete
-{
-    string Uid;
-    string Id;
-}
-
-// Відмова моста. Код машинний, рядок для гравця добирає клієнт.
-class OZ_NotesFail
-{
-    string Error;
-
-    static string KeyOf(string code)
-    {
-        if (code == "no_note")
-            return "STR_OZ_ERR_NO_NOTE";
-        if (code == "notes_full")
-            return "STR_OZ_ERR_NOTES_FULL";
-        if (code == "discord_down")
-            return "STR_OZ_ERR_NO_BRIDGE";
-        return "STR_OZ_ERR_INTERNAL";
-    }
-}
 
 // Книжка цілком -- формат відповіді list. Той самий клас читала стара
 // файлова версія, тож клієнт розбирає обидві епохи одним описом.
@@ -68,6 +23,8 @@ class OZ_NoteBook
     // Стеля книжки, як її знає міст. 0 у старих знімках на чипах -- тоді
     // читач бере власну OZ_PdaConst.NOTES_MAX як запасну.
     int Max = 0;
+    // Читальня капсули: книжка зрізана по заморозці, писати нема куди.
+    bool Frozen = false;
     ref array<ref OZ_Note> Notes;
 
     void OZ_NoteBook()
@@ -76,83 +33,91 @@ class OZ_NoteBook
     }
 }
 
-// ------------------------------------------------------------ відповіді
-
-class OZ_NotesReply : OZ_BridgeReply
-{
-    protected string m_Uid;
-    protected string m_Op;
-    protected bool   m_Body;
-
-    void OZ_NotesReply(string uid, string op, bool body)
-    {
-        m_Uid  = uid;
-        m_Op   = op;
-        m_Body = body;
-    }
-
-    override void OnBody(string json)
-    {
-        PlayerIdentity to = OZ_ChatWho.Online(m_Uid);
-        if (!to)
-            return;
-
-        OZ_NotesFail fail;
-        string err;
-        if (JsonFileLoader<OZ_NotesFail>.LoadData(json, fail, err) && fail && fail.Error != "")
-        {
-            OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_NOTES, m_Op, false, "", OZ_NotesFail.KeyOf(fail.Error));
-            return;
-        }
-
-        string body = "";
-        if (m_Body)
-            body = json;
-
-        OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_NOTES, m_Op, true, body, "");
-    }
-
-    override void OnFail(int code)
-    {
-        PlayerIdentity to = OZ_ChatWho.Online(m_Uid);
-        if (!to)
-            return;
-
-        OZ_Rpc.Respond(to, OZ_PdaConst.PAGE_NOTES, m_Op, false, "", "STR_OZ_ERR_NO_BRIDGE");
-    }
-}
-
 // -------------------------------------------------------------- сторінка
 
 class OZ_PdaHandlerNotes : OZ_PageHandler
 {
+    // Той самий прийом, що в міток: час у секундах зіткнувся б на двох
+    // записках в одну секунду, тому до нього додається лічильник.
+    private static int s_NoteSeq = 0;
+
     override string Handle(string op, string json, PlayerIdentity sender, out bool ok, out string error)
     {
         ok    = false;
         error = "STR_OZ_ERR_UNKNOWN_OP";
 
-        // Експорт на носій -- ЛОКАЛЬНИЙ: тіло записки клієнт має з list і
-        // шле сам, чип лежить у слоті. Міст цій операції не потрібен, тому
-        // вона стоїть ПЕРЕД ворітьми моста.
+        // Експорт на носій: тіло записки клієнт має з list і шле сам, чип
+        // лежить у слоті. Пристрій цій операції не потрібен.
         if (op == "carrier_add")
             return CarrierAdd(json, sender, ok, error);
 
-        if (!OZ_BridgeClient.IsRunning())
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        if (!pda)
         {
-            error = "STR_OZ_ERR_NO_BRIDGE";
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return "";
+        }
+
+        // КАПСУЛА читається, але не пишеться. Зрізати книжку нема по чому
+        // й не треба: після заморозки в неї ніхто нічого не допише, тож
+        // вона і Є стан на мить заморозки.
+        bool frozen = OZ_PdaCapsule.IsFrozen(pda);
+        if (frozen && op != "list")
+        {
+            error = "STR_OZ_ERR_FROZEN";
             return "";
         }
 
         if (op == "list")
-            return List(sender, error);
+            return List(pda, frozen, ok, error);
 
         if (op == "save")
-            return Save(json, sender, error);
+            return Save(json, pda, ok, error);
 
         if (op == "delete")
-            return Delete(json, sender, error);
+            return Delete(json, pda, ok, error);
 
         return "";
+    }
+
+    // Книжка пристрою. Нечитна -- починаємо чисту, але слід у лозі
+    // лишається: мовчки згубити чиїсь записки не можна.
+    private OZ_NoteBook BookOf(OZ_PDA_Base pda)
+    {
+        OZ_NoteBook book = new OZ_NoteBook();
+        if (pda.OZ_NotesJson() == "")
+            return book;
+
+        string err;
+        OZ_NoteBook parsed;
+        if (JsonFileLoader<OZ_NoteBook>.LoadData(pda.OZ_NotesJson(), parsed, err) && parsed && parsed.Notes)
+            return parsed;
+
+        OZ_Log.Warn("notes: unreadable book on " + pda.GetType() + ", starting fresh (" + err + ")");
+        return book;
+    }
+
+    private int LimitOf(OZ_PDA_Base pda)
+    {
+        OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(pda.GetType());
+        if (prof && prof.Limits && prof.Limits.Notes > 0)
+            return prof.Limits.Notes;
+        return OZ_PdaConst.NOTES_MAX;
+    }
+
+    private bool Flush(OZ_PDA_Base pda, OZ_NoteBook book, out string error)
+    {
+        string outJson;
+        string err;
+        if (!JsonFileLoader<OZ_NoteBook>.MakeData(book, outJson, err, false))
+        {
+            OZ_Log.Error("notes: cannot serialise the book: " + err);
+            error = "STR_OZ_ERR_INTERNAL";
+            return false;
+        }
+
+        pda.OZ_SetNotesJson(outJson);
+        return true;
     }
 
     // Одна записка на чип, за вибором гравця. Повторний експорт тієї самої
@@ -235,29 +200,26 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
         return "";
     }
 
-    private string List(PlayerIdentity sender, out string error)
+    private string List(OZ_PDA_Base pda, bool frozen, out bool ok, out string error)
     {
-        string uid = sender.GetPlainId();
+        OZ_NoteBook book = BookOf(pda);
+        book.Max    = LimitOf(pda);
+        book.Frozen = frozen;
 
-        OZ_NotesAskList a = new OZ_NotesAskList();
-        a.Uid = uid;
-
-        string letter;
+        string outJson;
         string err;
-        if (!JsonFileLoader<OZ_NotesAskList>.MakeData(a, letter, err, false))
+        if (!JsonFileLoader<OZ_NoteBook>.MakeData(book, outJson, err, false))
         {
-            OZ_Log.Error("notes: cannot build the letter: " + err);
             error = "STR_OZ_ERR_INTERNAL";
             return "";
         }
 
-        OZ_BridgeClient.Call("v1/notes/list", letter, new OZ_NotesReply(uid, "list", true));
-
-        error = OZ_Const.DEFER;
-        return "";
+        ok = true;
+        error = "";
+        return outJson;
     }
 
-    private string Save(string json, PlayerIdentity sender, out string error)
+    private string Save(string json, OZ_PDA_Base pda, out bool ok, out string error)
     {
         OZ_Note incoming;
         string err;
@@ -269,65 +231,115 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
 
         // БЕЗ ванільного SanitizeString: він -- сліпий Substring(0,512) по
         // БАЙТАХ (miscgameplayfunctions.c:863), тобто і стелю NOTE_BODY_MAX
-        // ламає, і кирилицю ріже навпіл. Записка на повну стелю, що приїхала
-        // з чипа, після першого ж редагування German до 512 з битим хвостом.
-        // Наш Clip ріже по межі символу й по НАШІЙ стелі; JSON і Discord
-        // самі екранують те, що їм треба.
+        // ламає, і кирилицю ріже навпіл. Наш Clip ріже по межі символу й по
+        // НАШІЙ стелі; JSON сам екранує те, що йому треба.
         incoming.Title = OZ_Text.Clip(incoming.Title, OZ_PdaConst.NOTE_TITLE_MAX);
-        incoming.Body = OZ_Text.Clip(incoming.Body, OZ_PdaConst.NOTE_BODY_MAX);
+        incoming.Body  = OZ_Text.Clip(incoming.Body, OZ_PdaConst.NOTE_BODY_MAX);
 
-        string uid = sender.GetPlainId();
+        OZ_NoteBook book = BookOf(pda);
 
-        OZ_NotesAskSave a = new OZ_NotesAskSave();
-        a.Uid   = uid;
-        a.Id    = incoming.Id;
-        a.Title = incoming.Title;
-        a.Body  = incoming.Body;
-        a.Name  = sender.GetName();
-
-        string letter;
-        if (!JsonFileLoader<OZ_NotesAskSave>.MakeData(a, letter, err, false))
+        int at = -1;
+        if (incoming.Id != "")
         {
-            OZ_Log.Error("notes: cannot build the letter: " + err);
+            for (int i = 0; i < book.Notes.Count(); i++)
+            {
+                if (book.Notes[i].Id == incoming.Id)
+                {
+                    at = i;
+                    break;
+                }
+            }
+
+            // Id, якого в книжці немає, -- не «створи під ним»: клієнт
+            // просив правку записки, якої більше не існує.
+            if (at < 0)
+            {
+                error = "STR_OZ_ERR_NO_NOTE";
+                return "";
+            }
+        }
+
+        string now = OZ_Time.NowUtc();
+        if (at >= 0)
+        {
+            book.Notes[at].Title    = incoming.Title;
+            book.Notes[at].Body     = incoming.Body;
+            book.Notes[at].EditedAt = now;
+        }
+        else
+        {
+            if (book.Notes.Count() >= LimitOf(pda))
+            {
+                error = "STR_OZ_ERR_NOTES_FULL";
+                return "";
+            }
+
+            OZ_Note fresh = new OZ_Note();
+            s_NoteSeq++;
+            fresh.Id        = now + "#n" + s_NoteSeq.ToString();
+            fresh.Title     = incoming.Title;
+            fresh.Body      = incoming.Body;
+            fresh.CreatedAt = now;
+            fresh.EditedAt  = now;
+            book.Notes.Insert(fresh);
+            at = book.Notes.Count() - 1;
+        }
+
+        if (!Flush(pda, book, error))
+            return "";
+
+        // Відповідь -- { Id }: саме її чекає сторінка, щоб друге
+        // «Зберегти» правило записку, а не плодило дубль.
+        OZ_NoteRef saved = new OZ_NoteRef();
+        saved.Id = book.Notes[at].Id;
+
+        string outJson;
+        if (!JsonFileLoader<OZ_NoteRef>.MakeData(saved, outJson, err, false))
+        {
             error = "STR_OZ_ERR_INTERNAL";
             return "";
         }
 
-        // Відповідь моста -- { Id } -- їде клієнтові ЯК Є: саме її чекає
-        // сторінка, щоб друге «Зберегти» правило записку, а не плодило дубль.
-        OZ_BridgeClient.Call("v1/notes/save", letter, new OZ_NotesReply(uid, "save", true));
-
-        error = OZ_Const.DEFER;
-        return "";
+        ok = true;
+        error = "";
+        return outJson;
     }
 
-    private string Delete(string json, PlayerIdentity sender, out string error)
+    private string Delete(string json, OZ_PDA_Base pda, out bool ok, out string error)
     {
         OZ_NoteRef r;
         string err;
-        if (!JsonFileLoader<OZ_NoteRef>.LoadData(json, r, err) || !r)
+        if (!JsonFileLoader<OZ_NoteRef>.LoadData(json, r, err) || !r || r.Id == "")
         {
             error = "STR_OZ_ERR_INTERNAL";
             return "";
         }
 
-        string uid = sender.GetPlainId();
+        OZ_NoteBook book = BookOf(pda);
 
-        OZ_NotesAskDelete a = new OZ_NotesAskDelete();
-        a.Uid = uid;
-        a.Id  = r.Id;
-
-        string letter;
-        if (!JsonFileLoader<OZ_NotesAskDelete>.MakeData(a, letter, err, false))
+        int at = -1;
+        for (int i = 0; i < book.Notes.Count(); i++)
         {
-            OZ_Log.Error("notes: cannot build the letter: " + err);
-            error = "STR_OZ_ERR_INTERNAL";
+            if (book.Notes[i].Id == r.Id)
+            {
+                at = i;
+                break;
+            }
+        }
+
+        if (at < 0)
+        {
+            error = "STR_OZ_ERR_NO_NOTE";
             return "";
         }
 
-        OZ_BridgeClient.Call("v1/notes/delete", letter, new OZ_NotesReply(uid, "delete", false));
+        book.Notes.RemoveOrdered(at);
 
-        error = OZ_Const.DEFER;
+        if (!Flush(pda, book, error))
+            return "";
+
+        ok = true;
+        error = "";
         return "";
     }
 }

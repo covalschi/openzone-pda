@@ -51,6 +51,13 @@ class OZ_PdaDeviceStatus
     bool   CarrierWritable = false;
     string CarrierDisplay  = "";
     bool   CarrierWritten = false;
+    // Капсула часу: вміст знімка і його дата -- лише коли пристрій офлайн.
+    // Ім'я власника сесії -- завжди, коли сесія є (пристрій розімкнено).
+    string Snapshot  = "";
+    string OwnerName = "";
+    // Чи Є в пристрою власник узагалі: без нього сторінка пропонує
+    // ІНІЦІАЦІЮ, з чужим -- скидання.
+    bool   Owned = false;
     // Секції нарізно: -1 -- секції немає. Стелі класу поруч, 0 -- безліміт.
     int    CarrierMarks = -1;
     int    CarrierNotes = -1;
@@ -229,11 +236,50 @@ class OZ_ContactList
     // Обчислювалось із першого дня й не питалось ніде.
     bool Stale = false;
 
+    // Читальня капсули: імена з дайджеста замороженого пристрою. Людей
+    // ПАМ'ЯТАЮТЬ, а не бачать: ні присутності, ні дій.
+    bool Frozen = false;
+
     ref array<ref OZ_ContactEntry> Entries;
 
     void OZ_ContactList()
     {
         Entries = new array<ref OZ_ContactEntry>();
+    }
+}
+
+// --- сторінка «Фракція» ---
+
+class OZ_FactionMember
+{
+    string Name = "";
+    string Rank = "";
+    bool Leader = false;
+    bool Online = false;
+    bool Me     = false;
+}
+
+class OZ_FactionState
+{
+    // Порожній slug -- одинак: сторінка чесно каже, що фракції немає.
+    string Faction     = "";
+    string FactionName = "";
+    int    Color       = 0;
+    string MyRank      = "";
+    bool   MeLeader    = false;
+
+    // Запрошення, що чекає САМЕ на мене.
+    string InviteFaction = "";
+    string InviteFrom    = "";
+
+    ref array<ref OZ_FactionMember> Members;
+    // Кого лідер може покликати: друзі поза фракцією, іменами.
+    ref array<string> Candidates;
+
+    void OZ_FactionState()
+    {
+        Members    = new array<ref OZ_FactionMember>();
+        Candidates = new array<string>();
     }
 }
 
@@ -286,10 +332,15 @@ class OZ_MapState
     ref array<ref OZ_MapMarker> Markers;
     int MarkerLimit = 0;
 
+    // Маршрут пристрою: впорядковані копії міток. Активація -- справа
+    // клієнта; тут лише дані.
+    ref array<ref OZ_MapMarker> Route;
+
     void OZ_MapState()
     {
         Beacons = new array<ref OZ_MapBeacon>();
         Markers = new array<ref OZ_MapMarker>();
+        Route   = new array<ref OZ_MapMarker>();
     }
 }
 
@@ -381,19 +432,37 @@ class OZ_ChatHead
     string LastText = "";
 }
 
+// Запрошення до групи, яке чекає на мене. Прийняти чи відхилити --
+// МІЙ клік, а не чужий: у групу ніхто не потрапляє мовчки.
+class OZ_ChatInvite
+{
+    string Id    = "";
+    string Title = "";
+    string From  = "";
+}
+
 class OZ_ChatList
 {
+    // Читальня капсули: список приїхав зрізом, нового не завести.
+    bool Frozen = false;
     ref array<ref OZ_ChatHead> Items;
+    ref array<ref OZ_ChatInvite> Invites;
 
     void OZ_ChatList()
     {
-        Items = new array<ref OZ_ChatHead>();
+        Items   = new array<ref OZ_ChatHead>();
+        Invites = new array<ref OZ_ChatInvite>();
     }
 }
 
 class OZ_ChatLine
 {
     string At   = "";
+    // Слід автора для СЕРВЕРА: міст кладе сюди Steam64, сервер міняє
+    // його на колір фракції і СТИРАЄ -- клієнтові чужі id не дістаються.
+    string AUid = "";
+    // ARGB фракції автора; 0 -- без фарби.
+    int WhoColor = 0;
     string Who  = "";
     string Text = "";
     bool   Mine = false;
@@ -409,6 +478,11 @@ class OZ_ChatView
     // Якір непрозорий: клієнт лише повертає його в "older" як є.
     bool   More = false;
     string Before = "";
+    // Читальня капсули: рядки зрізані по заморозці, поле вводу мертве.
+    bool   Frozen = false;
+    // Чи Я створив цю групу: ключ групи назавжди носить ім'я засновника,
+    // і лише він її видаляє; решта -- виходять.
+    bool   Owner = false;
     ref array<ref OZ_ChatLine> Lines;
     ref array<string> Members;
 
@@ -474,4 +548,18 @@ class OZ_ChatOlderReq
 {
     string Id     = "";
     string Before = "";
+}
+
+// Знімок для капсули часу: що замерзне на пристрої, коли власник заведе
+// новий. Пише сервер із живої сесії, читає сторінка пристрою офлайн-капсули.
+class OZ_PdaSnapshot
+{
+    string Owner   = "";
+    string Faction = "";
+    ref array<string> Contacts;
+
+    void OZ_PdaSnapshot()
+    {
+        Contacts = new array<string>();
+    }
 }

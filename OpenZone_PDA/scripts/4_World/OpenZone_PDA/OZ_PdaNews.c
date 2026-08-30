@@ -90,6 +90,41 @@ class OZ_NewsReply : OZ_BridgeReply
     }
 }
 
+// Лист списку: {Uid}. Раніше тут їздив лист записок -- записки відв'язано
+// від моста, тож у новин тепер свій конверт.
+class OZ_NewsAskList
+{
+    string Uid;
+}
+
+// Свіжий пост із моста. Розголос: бачать УСІ, хто в Зоні, -- сторінка
+// перечитає перелік, а тост подзвонить і тим, у кого меню закрите.
+class OZ_NewsPush
+{
+    string Id;
+    string Title;
+    string Who;
+    string At;
+}
+
+class OZ_NewsSink : OZ_BridgeSink
+{
+    override void Deliver(string json)
+    {
+        array<Man> players = new array<Man>();
+        GetGame().GetPlayers(players);
+
+        for (int i = 0; i < players.Count(); i++)
+        {
+            if (!players[i])
+                continue;
+            PlayerIdentity id = players[i].GetIdentity();
+            if (id)
+                OZ_Rpc.Respond(id, OZ_PdaConst.PAGE_NEWS, "push", true, json, "");
+        }
+    }
+}
+
 class OZ_PdaHandlerNews : OZ_PageHandler
 {
     override string Handle(string op, string json, PlayerIdentity sender, out bool ok, out string error)
@@ -109,10 +144,10 @@ class OZ_PdaHandlerNews : OZ_PageHandler
 
         if (op == "list")
         {
-            OZ_NotesAskList a = new OZ_NotesAskList();
+            OZ_NewsAskList a = new OZ_NewsAskList();
             a.Uid = uid;
 
-            if (!JsonFileLoader<OZ_NotesAskList>.MakeData(a, letter, err, false))
+            if (!JsonFileLoader<OZ_NewsAskList>.MakeData(a, letter, err, false))
             {
                 error = "STR_OZ_ERR_INTERNAL";
                 return "";

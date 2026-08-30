@@ -14,6 +14,18 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         if (op == "unlock")
             return Unlock(json, sender, ok, error);
 
+        if (op == "logout_others")
+            return LogoutOthers(sender, ok, error);
+
+        if (op == "initiate")
+            return Initiate(sender, ok, error);
+
+        if (op == "lock")
+            return Lock(sender, ok, error);
+
+        if (op == "factory_reset")
+            return FactoryReset(sender, ok, error);
+
         if (op == "autolock")
             return AutoLock(json, sender, ok, error);
 
@@ -34,6 +46,19 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
 
         if (op == "carrier_read")
             return CarrierRead(sender, ok, error);
+
+        if (op == "carrier_import" || op == "carrier_take")
+        {
+            // КАПСУЛА не приймає нічого нового -- ні в пам'ять пристрою,
+            // ні в акаунт власника: імпорт із чипа зачинено в обидва боки.
+            // Сам чип лишається живим носієм: запис, читання і чистка чипа
+            // працюють -- це фізика гнізда, не пам'ять пристрою.
+            if (OZ_PdaCapsule.IsFrozen(OZ_PdaLookup.HeldBy(sender)))
+            {
+                error = "STR_OZ_ERR_FROZEN";
+                return "";
+            }
+        }
 
         if (op == "carrier_import")
             return CarrierImport(sender, ok, error);
@@ -152,30 +177,48 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
 
         if (opw.Kind == "notes")
         {
-            // Записки живуть у Discord -- їх спершу треба ПРИНЕСТИ. Відповідь
-            // відкладена, як усе, що ходить через міст. Alive, не IsRunning:
-            // друге означає лише «опит увімкнено в налаштуваннях», і мертвий
-            // міст висів би мовчки замість чесної відмови.
-            if (!OZ_BridgeClient.Alive())
+            // Записки живуть У ПРИСТРОЇ (рішення власника 2026-08-28):
+            // книжка вже в руках, міст не потрібен, відповідь синхронна.
+            // Місткість класу чипа: на малий носій лягають ПЕРШІ записки,
+            // і відповідь чесно каже скільки з скількох.
+            OZ_PDA_Base pdaW = OZ_PdaLookup.HeldBy(sender);
+
+            OZ_NoteBook bookW = new OZ_NoteBook();
+            if (pdaW.OZ_NotesJson() != "")
             {
-                error = "STR_OZ_ERR_NO_BRIDGE";
-                return "";
+                OZ_NoteBook parsedW;
+                if (JsonFileLoader<OZ_NoteBook>.LoadData(pdaW.OZ_NotesJson(), parsedW, err) && parsedW && parsedW.Notes)
+                    bookW = parsedW;
             }
 
-            string uid = sender.GetPlainId();
-            OZ_NotesAskList a = new OZ_NotesAskList();
-            a.Uid = uid;
+            int totalW = bookW.Notes.Count();
+            int wroteW = totalW;
+            if (spec.MaxNotes > 0 && totalW > spec.MaxNotes)
+            {
+                bookW.Notes.Resize(spec.MaxNotes);
+                wroteW = spec.MaxNotes;
+            }
 
-            string letter;
-            if (!JsonFileLoader<OZ_NotesAskList>.MakeData(a, letter, err, false))
+            string payloadW;
+            if (!JsonFileLoader<OZ_NoteBook>.MakeData(bookW, payloadW, err, false))
             {
                 error = "STR_OZ_ERR_INTERNAL";
                 return "";
             }
 
-            OZ_BridgeClient.Call("v1/notes/list", letter, new OZ_CarrierNotesReply(uid, c));
-            error = OZ_Const.DEFER;
-            return "";
+            c.OZ_WriteNotes(payloadW, wroteW);
+
+            OZ_CarrierTaken wtN = new OZ_CarrierTaken();
+            wtN.Taken = wroteW;
+            wtN.Total = totalW;
+
+            string wtjN;
+            if (!JsonFileLoader<OZ_CarrierTaken>.MakeData(wtN, wtjN, err, false))
+                wtjN = "";
+
+            ok = true;
+            error = "";
+            return wtjN;
         }
 
         error = "STR_OZ_ERR_INTERNAL";
@@ -357,57 +400,106 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
 
         if (c.OZ_Notes() != "")
         {
-            // Мітки вже ЛЯГЛИ. Відмова нотаткової ноги звідси й далі не має
-            // права стерти цей факт: без моста чи з битою книжкою чесно
-            // віддаємо підсумок міток, а записки лишаються на чипі на потім.
-            if (!OZ_BridgeClient.Alive())
-            {
-                if (marksTotal >= 0)
-                    return MarksOnlyTaken(marksTaken, marksTotal, ok, error);
-                error = "STR_OZ_ERR_NO_BRIDGE";
-                return "";
-            }
-
             OZ_NoteBook book;
             string err2;
             if (!JsonFileLoader<OZ_NoteBook>.LoadData(c.OZ_Notes(), book, err2) || !book || !book.Notes)
             {
+                // Мітки вже ЛЯГЛИ. Бита книжка чипа не має права стерти цей
+                // факт: чесно віддаємо підсумок міток, записки лишаються на
+                // чипі на потім.
                 if (marksTotal >= 0)
                     return MarksOnlyTaken(marksTaken, marksTotal, ok, error);
                 error = "STR_OZ_ERR_INTERNAL";
                 return "";
             }
 
-            // Скільки з книжки чипа ВЛІЗЕ -- знає лише міст: стеля живе в
-            // нього, і лічити місце можна тільки спитавши. Тому імпорт
-            // двофазний і відкладений: спершу v1/notes/list, а листи шле
-            // вже відповідь, коли бачить і стелю, і зайняте.
-            string uid = sender.GetPlainId();
+            // Записки -- пам'ять ПРИСТРОЮ: книжка чипа зливається в книжку
+            // приладу тут же, синхронно. Межі й дедап ті самі, що в міток,
+            // а підсумок один на обидві ноги -- одна op, одна цифра.
+            OZ_PDA_Base pdaN = OZ_PdaLookup.HeldBy(sender);
+            OZ_PdaProfile profN = OZ_PdaProfiles.ForClass(pdaN.GetType());
 
-            OZ_NotesAskList al = new OZ_NotesAskList();
-            al.Uid = uid;
-
-            string letter2;
-            if (!JsonFileLoader<OZ_NotesAskList>.MakeData(al, letter2, err2, false))
+            OZ_NoteBook mineN = new OZ_NoteBook();
+            if (pdaN.OZ_NotesJson() != "")
             {
+                OZ_NoteBook parsedN;
+                if (JsonFileLoader<OZ_NoteBook>.LoadData(pdaN.OZ_NotesJson(), parsedN, err2) && parsedN && parsedN.Notes)
+                    mineN = parsedN;
+            }
+
+            int limitN = 0;
+            if (profN && profN.Limits)
+                limitN = profN.Limits.Notes;
+            if (limitN <= 0)
+                limitN = OZ_PdaConst.NOTES_MAX;
+
+            int totalN = book.Notes.Count();
+            int takenN = 0;
+            for (int ni = 0; ni < totalN; ni++)
+            {
+                if (mineN.Notes.Count() >= limitN)
+                    break;
+
+                OZ_Note nn = book.Notes[ni];
+                // Чужий чип -- чужий JSON: масив може нести null-елементи.
+                if (!nn)
+                    continue;
+
+                string tN = OZ_Text.Clip(nn.Title, OZ_PdaConst.NOTE_TITLE_MAX);
+                string bN = OZ_Text.Clip(nn.Body, OZ_PdaConst.NOTE_BODY_MAX);
+
+                // Дедуп за ВМІСТОМ: цикл експорт->імпорт не плодить копій.
+                bool dupN = false;
+                for (int nd = 0; nd < mineN.Notes.Count(); nd++)
+                {
+                    if (mineN.Notes[nd].Title == tN && mineN.Notes[nd].Body == bN)
+                    {
+                        dupN = true;
+                        break;
+                    }
+                }
+                if (dupN)
+                    continue;
+
+                OZ_Note freshI = new OZ_Note();
+                s_CarrierSeq++;
+                freshI.Id        = OZ_Time.NowUtc() + "#n" + s_CarrierSeq.ToString();
+                freshI.Title     = tN;
+                freshI.Body      = bN;
+                freshI.CreatedAt = OZ_Time.NowUtc();
+                freshI.EditedAt  = freshI.CreatedAt;
+                mineN.Notes.Insert(freshI);
+                takenN++;
+            }
+
+            string outN;
+            if (!JsonFileLoader<OZ_NoteBook>.MakeData(mineN, outN, err2, false))
+            {
+                if (marksTotal >= 0)
+                    return MarksOnlyTaken(marksTaken, marksTotal, ok, error);
                 error = "STR_OZ_ERR_INTERNAL";
                 return "";
             }
 
-            // Поки перша двофазка в дорозі, другу не пускаємо: обидві
-            // порахували б місце від того самого знімка і продублювали б
-            // книжку. Латч знімає відповідь моста, будь-яка.
-            if (!OZ_CarrierImportReply.Begin(uid))
+            pdaN.OZ_SetNotesJson(outN);
+            OZ_Log.Info("carrier: imported " + takenN.ToString() + "/" + totalN.ToString() + " note(s) for " + sender.GetPlainId());
+
+            OZ_CarrierTaken tAll = new OZ_CarrierTaken();
+            tAll.Taken = takenN;
+            tAll.Total = totalN;
+            if (marksTotal > 0)
             {
-                error = "STR_OZ_ERR_BUSY";
-                return "";
+                tAll.Taken += marksTaken;
+                tAll.Total += marksTotal;
             }
 
-            // Мітки, якщо були, вже лягли: їхній підсумок повезе відповідь
-            // записок -- одна op, одна фінальна цифра для гравця.
-            OZ_BridgeClient.Call("v1/notes/list", letter2, new OZ_CarrierImportReply(uid, c.OZ_Notes(), marksTaken, marksTotal));
-            error = OZ_Const.DEFER;
-            return "";
+            string tjAll;
+            if (!JsonFileLoader<OZ_CarrierTaken>.MakeData(tAll, tjAll, err2, false))
+                tjAll = "";
+
+            ok = true;
+            error = "";
+            return tjAll;
         }
 
         // Лише мітки: відповідь синхронна.
@@ -450,7 +542,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
     }
 
     // Забрати ОДИН запис із чипа: гравець дивиться превʼю і бере лише те,
-    // що йому треба. Мітка лягає одразу, записка їде через міст.
+    // що йому треба. І мітка, і записка лягають одразу в пам'ять пристрою.
     private string CarrierTake(string json, PlayerIdentity sender, out bool ok, out string error)
     {
         ok = false;
@@ -537,12 +629,6 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
 
         if (r.Kind == "note")
         {
-            if (!OZ_BridgeClient.Alive())
-            {
-                error = "STR_OZ_ERR_NO_BRIDGE";
-                return "";
-            }
-
             OZ_NoteBook book;
             if (!JsonFileLoader<OZ_NoteBook>.LoadData(c.OZ_Notes(), book, err) || !book || !book.Notes || r.Index >= book.Notes.Count())
             {
@@ -550,33 +636,69 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 return "";
             }
 
-            string uid = sender.GetPlainId();
-
-            // Порожній Id -- «створи таку саму», межі ті самі, що в прямого
-            // збереження. Повну книжку міст відкине сам -- notes_full чесно
-            // долетить до гравця.
             if (!book.Notes[r.Index])
             {
                 error = "STR_OZ_ERR_INTERNAL";
                 return "";
             }
 
-            OZ_NotesAskSave a = new OZ_NotesAskSave();
-            a.Uid   = uid;
-            a.Id    = "";
-            a.Title = OZ_Text.Clip(book.Notes[r.Index].Title, OZ_PdaConst.NOTE_TITLE_MAX);
-            a.Body  = OZ_Text.Clip(book.Notes[r.Index].Body, OZ_PdaConst.NOTE_BODY_MAX);
-            a.Name  = sender.GetName();
+            // Записки -- пам'ять ПРИСТРОЮ: забрати з чипа означає
+            // дописати в книжку приладу, без моста. Межі й дедап ті
+            // самі, що в міток: цикл експорт->імпорт не плодить копій.
+            OZ_PDA_Base pdaN = OZ_PdaLookup.HeldBy(sender);
+            OZ_PdaProfile profN = OZ_PdaProfiles.ForClass(pdaN.GetType());
 
-            string letter;
-            if (!JsonFileLoader<OZ_NotesAskSave>.MakeData(a, letter, err, false))
+            OZ_NoteBook mineN = new OZ_NoteBook();
+            if (pdaN.OZ_NotesJson() != "")
+            {
+                OZ_NoteBook parsedN;
+                if (JsonFileLoader<OZ_NoteBook>.LoadData(pdaN.OZ_NotesJson(), parsedN, err) && parsedN && parsedN.Notes)
+                    mineN = parsedN;
+            }
+
+            int limitN = 0;
+            if (profN && profN.Limits)
+                limitN = profN.Limits.Notes;
+            if (limitN <= 0)
+                limitN = OZ_PdaConst.NOTES_MAX;
+
+            if (mineN.Notes.Count() >= limitN)
+            {
+                error = "STR_OZ_ERR_NOTES_FULL";
+                return "";
+            }
+
+            string tN = OZ_Text.Clip(book.Notes[r.Index].Title, OZ_PdaConst.NOTE_TITLE_MAX);
+            string bN = OZ_Text.Clip(book.Notes[r.Index].Body, OZ_PdaConst.NOTE_BODY_MAX);
+
+            for (int dn = 0; dn < mineN.Notes.Count(); dn++)
+            {
+                if (mineN.Notes[dn].Title == tN && mineN.Notes[dn].Body == bN)
+                {
+                    error = "STR_OZ_ERR_CARRIER_DUP";
+                    return "";
+                }
+            }
+
+            OZ_Note freshN = new OZ_Note();
+            s_CarrierSeq++;
+            freshN.Id        = OZ_Time.NowUtc() + "#n" + s_CarrierSeq.ToString();
+            freshN.Title     = tN;
+            freshN.Body      = bN;
+            freshN.CreatedAt = OZ_Time.NowUtc();
+            freshN.EditedAt  = freshN.CreatedAt;
+            mineN.Notes.Insert(freshN);
+
+            string outN;
+            if (!JsonFileLoader<OZ_NoteBook>.MakeData(mineN, outN, err, false))
             {
                 error = "STR_OZ_ERR_INTERNAL";
                 return "";
             }
 
-            OZ_BridgeClient.Call("v1/notes/save", letter, new OZ_CarrierTakeReply(uid));
-            error = OZ_Const.DEFER;
+            pdaN.OZ_SetNotesJson(outN);
+            ok = true;
+            error = "";
             return "";
         }
 
@@ -726,15 +848,8 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         // пристрій дивляться.
         pda.OZ_EvaluateCrack();
 
-        // ЧИСТИЙ пристрій прив'язується до того, хто перший його відкрив.
-        // Без цього КПК без піна назавжди лишався б офлайном: сесію відкривав
-        // тільки успішний ввід коду, а вводити на ньому нічого.
-        //
-        // Умова саме «сесії НЕМАЄ ЖОДНОЇ», а не «сесія не моя»: інакше чужий
-        // відімкнений КПК ставав би твоїм від одного погляду, і «капсула
-        // часу» перетворилась би на просту передачу власності.
-        if (pda.OZ_IsUnlocked() && !pda.OZ_HasAnySession())
-            pda.OZ_OpenSession(sender.GetPlainId(), pd.SessionEpoch);
+        // Прив'язки «поглядом» більше немає: власність дає лише явна
+        // ІНІЦІАЦІЯ (op initiate). Пристрій без сесії -- чесно нічий.
 
         OZ_PdaDeviceStatus st = new OZ_PdaDeviceStatus();
 
@@ -753,13 +868,32 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         st.NetHigh = netHigh;
         st.InHands = (player != null && player.GetItemInHands() == pda);
 
+        // Чужому чи неініційованому пристрою -- лише ЙОГО власні вкладки:
+        // пристрій і карта. Акаунтні сторінки все одно відіб'є гейт, а
+        // мертві вкладки в стрічці лише брехали б.
+        bool ownedAtAll = pda.OZ_HasAnySession();
+        bool devFrozen  = OZ_PdaCapsule.IsFrozen(pda);
+
         for (int i = 0; i < prof.Pages.Count(); i++)
         {
             // На клієнт їдуть лише ті сторінки, які СПРАВДІ зареєстровані:
             // намалювати вкладку, за якою нікого немає, гірше, ніж не
             // намалювати її зовсім.
-            if (OZ_PageRegistry.Has(prof.Pages[i]))
-                st.Pages.Insert(prof.Pages[i]);
+            if (!OZ_PageRegistry.Has(prof.Pages[i]))
+                continue;
+
+            if (prof.Pages[i] != OZ_PdaConst.PAGE_DEVICE)
+            {
+                // Нічийному -- лише пристрій. КАПСУЛІ -- читальня: карта,
+                // розмови, записки (зрізом до заморозки). ЖИВИЙ говорить
+                // за власника сесії повним набором, хто б його не тримав.
+                if (!ownedAtAll)
+                    continue;
+                if (devFrozen && prof.Pages[i] != OZ_PdaConst.PAGE_MAP && prof.Pages[i] != OZ_PdaConst.PAGE_CHAT && prof.Pages[i] != OZ_PdaConst.PAGE_NOTES && prof.Pages[i] != OZ_PdaConst.PAGE_CONTACTS)
+                    continue;
+            }
+
+            st.Pages.Insert(prof.Pages[i]);
         }
 
         // І сторінки, які приносить ЗАЛІЗО.
@@ -856,10 +990,52 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         // не те, що видно ззовні з мертвого приладу.
         if (st.Powered)
         {
-            st.Online      = pda.OZ_IsOnline(pd.SessionEpoch);
+            // Онлайн міряється епохою ВЛАСНИКА сесії, не глядача: вкрадений
+            // КПК живого власника має чесно казати «онлайн у нього», а
+            // капсула -- лишатись капсулою в будь-чиїх руках.
+            string ownUid = pda.OZ_SessionUid();
+            int ownEpoch = 0;
+            OZ_PlayerData ownPd = null;
+            if (ownUid != "")
+            {
+                ownPd = OZ_PlayerStore.Load(ownUid);
+                ownEpoch = ownPd.SessionEpoch;
+                st.OwnerName = ownPd.Name;
+            }
+
+            st.Owned       = pda.OZ_HasAnySession();
+            st.Online      = pda.OZ_IsOnline(ownEpoch);
             st.SessionMine = pda.OZ_HasSession(sender.GetPlainId(), pd.SessionEpoch);
+
+            if (st.Online && ownPd)
+            {
+                // Живий пристрій наповнює свою майбутню капсулу даними
+                // ВЛАСНИКА СЕСІЇ -- пристрій говорить за нього, хто б не
+                // тримав. Штамп цього запису -- заразом МИТЬ ЗАМОРОЗКИ:
+                // коли епоха власника піде вперед, зріз історії ріжеться
+                // саме по ньому. Пишеться на кожен статус -- це пам'ять до
+                // першого сейву, дешевше за будь-який дросель.
+                OZ_PdaSnapshot snap = new OZ_PdaSnapshot();
+                snap.Owner   = ownPd.Name;
+                snap.Faction = OZ_Factions.NameOf(OZ_Factions.OfUid(ownUid));
+                for (int sf = 0; sf < ownPd.Friends.Count(); sf++)
+                {
+                    OZ_PlayerData fr = OZ_PlayerStore.Load(ownPd.Friends[sf]);
+                    if (fr && fr.Name != "")
+                        snap.Contacts.Insert(fr.Name);
+                }
+
+                string snapJson;
+                string snapErr;
+                if (JsonFileLoader<OZ_PdaSnapshot>.MakeData(snap, snapJson, snapErr, false))
+                    pda.OZ_RefreshSnapshot(ownEpoch, snapJson);
+            }
+
             if (!st.Online)
+            {
                 st.SnapshotAt = pda.OZ_SnapshotAt();
+                st.Snapshot   = pda.OZ_Snapshot();
+            }
 
             st.DiscordLinked = (pd.DiscordId != "");
             st.FirstSeen     = pd.FirstSeen;
@@ -921,9 +1097,12 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             return "";
         }
 
-        // Відімкнув -- значить сесія на цьому пристрої тепер його.
+        // Знати пін -- НЕ означає володіти: прив'язка лишається за
+        // ініціатором (рішення власника 2026-08-28). Сесію відкриває лише
+        // бесхазяйний пристрій -- та сама умова, що й у setpin.
         OZ_PlayerData pd = OZ_PlayerStore.Load(sender.GetPlainId());
-        pda.OZ_OpenSession(sender.GetPlainId(), pd.SessionEpoch);
+        if (!pda.OZ_HasAnySession())
+            pda.OZ_OpenSession(sender.GetPlainId(), pd.SessionEpoch);
 
         ok = true;
         error = "";
@@ -1027,11 +1206,127 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             return "";
         }
 
-        // Задав код -- значить сесія на цьому пристрої тепер його.
-        OZ_PlayerData pd = OZ_PlayerStore.Load(sender.GetPlainId());
-        if (!pda.OZ_HasAnySession())
-            pda.OZ_OpenSession(sender.GetPlainId(), pd.SessionEpoch);
+        // Пін -- це ЗАМОК, не власність: сесію дає лише явна ініціація.
 
+        ok = true;
+        error = "";
+        return "";
+    }
+
+    // ІНІЦІАЦІЯ: явна церемонія власності. Пристрій прив'язується до
+    // ПОТОЧНОЇ епохи гравця і стає ще одним його живим терміналом --
+    // попередні НЕ гаснуть (рішення власника 2026-08-28). Гасить їх лише
+    // явний LOG OUT OTHER DEVICES.
+    private string Initiate(PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        if (!pda)
+        {
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return "";
+        }
+
+        if (pda.OZ_HasAnySession())
+        {
+            error = "STR_OZ_ERR_OWNED";
+            return "";
+        }
+
+        string uid = sender.GetPlainId();
+        OZ_PlayerData pd = OZ_PlayerStore.Load(uid);
+
+        pda.OZ_OpenSession(uid, pd.SessionEpoch);
+
+        OZ_Log.Info("pda: " + uid + " initiated " + pda.GetType() + ", epoch " + pd.SessionEpoch.ToString());
+
+        ok = true;
+        error = "";
+        return "";
+    }
+
+    // «Розлогінитись на інших»: епоха +1 і перевідкриття СВОЄЇ сесії тут
+    // же -- всі інші пристрої власника замерзають, цей лишається єдиним
+    // живим. Вимагає живої сесії саме на цьому пристрої.
+    private string LogoutOthers(PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        if (!pda)
+        {
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return "";
+        }
+
+        string uid = sender.GetPlainId();
+        OZ_PlayerData pd = OZ_PlayerStore.Load(uid);
+
+        if (!pda.OZ_HasSession(uid, pd.SessionEpoch))
+        {
+            error = "STR_OZ_ERR_NOT_YOURS";
+            return "";
+        }
+
+        pd.SessionEpoch = pd.SessionEpoch + 1;
+        OZ_PlayerStore.Flush(uid);
+        pda.OZ_OpenSession(uid, pd.SessionEpoch);
+
+        OZ_Log.Info("pda: " + uid + " logged out other devices, epoch " + pd.SessionEpoch.ToString());
+
+        ok = true;
+        error = "";
+        return "";
+    }
+
+    // Ручний замок: власник іде від пристрою -- пристрій мовчить одразу,
+    // а не за таймером автолока.
+    private string Lock(PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        if (!pda)
+        {
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return "";
+        }
+
+        if (!pda.OZ_HasPin())
+        {
+            error = "STR_OZ_ERR_NO_PIN";
+            return "";
+        }
+
+        pda.OZ_Lock();
+        ok = true;
+        error = "";
+        return "";
+    }
+
+    // «До заводських» без пінa -- переініціалізація знайденого пристрою.
+    // Дані попереднього власника згорають чесно й повністю; Sealed
+    // відмовляє всередині предмета.
+    private string FactoryReset(PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        if (!pda)
+        {
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return "";
+        }
+
+        string why = pda.OZ_FactoryReset();
+        if (why != "")
+        {
+            error = why;
+            return "";
+        }
+
+        OZ_Log.Info("pda: factory reset by " + sender.GetPlainId());
         ok = true;
         error = "";
         return "";
@@ -1195,6 +1490,11 @@ class OZ_PdaModule : CF_ModuleWorld
                                  "set:oz_pda image:chat",
                                  new OZ_PdaHandlerChat());
 
+        OZ_PageRegistry.Register(OZ_PdaConst.PAGE_FACTION,
+                                 "#STR_OZ_PAGE_FACTION",
+                                 "set:oz_pda image:faction",
+                                 new OZ_PdaHandlerFaction());
+
         OZ_PageRegistry.Register(OZ_PdaConst.PAGE_NEWS,
                                  "#STR_OZ_PAGE_NEWS",
                                  "set:oz_pda image:news",
@@ -1205,6 +1505,10 @@ class OZ_PdaModule : CF_ModuleWorld
         // чи вже стартував міст: порядок модулів CF не гарантований, а мапа
         // приймачів однаково питається на кожну пачку.
         OZ_BridgeClient.Subscribe("chat", new OZ_ChatSink());
+        OZ_BridgeClient.Subscribe("news", new OZ_NewsSink());
+        OZ_RoleNotify.On().Insert(OZ_PdaRolePush.Changed);
+        OZ_PdaModules.Register(new OZ_SpyAntennaBehaviour());
+        OZ_BridgeClient.RegisterUidProvider(new OZ_PdaUidProvider());
 
         OZ_PdaProfiles.ServerLoad();
         OZ_PdaHardware.ServerLoad();

@@ -7,7 +7,7 @@
 FrameWidgetClass OZ_PageMap {
  visible 1
  position 0 0
- size 1045 414
+ size 1306 518
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -23,7 +23,7 @@ FrameWidgetClass OZ_PageMap {
    clipchildren 1
    inheritalpha 0
    position 0 0
-   size 1045 344
+   size 1306 430
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -39,20 +39,20 @@ FrameWidgetClass OZ_PageMap {
   PanelWidgetClass MarkerPanel {
    visible 0
    color 0.047 0.047 0.055 1
-   position 785 0
-   size 260 344
+   position 981 0
+   size 325 518
    hexactpos 1
    vexactpos 1
    hexactsize 1
    vexactsize 1
-   priority 2
+   priority 8
    style rover_sim_colorable
    {
     TextWidgetClass MarkerHead {
      visible 1
      ignorepointer 1
-     position 8 6
-     size 244 16
+     position 10 8
+     size 305 20
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -69,8 +69,8 @@ FrameWidgetClass OZ_PageMap {
 
     ScrollWidgetClass MarkerScroll {
      visible 1
-     position 4 26
-     size 252 140
+     position 5 32
+     size 315 175
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -78,10 +78,10 @@ FrameWidgetClass OZ_PageMap {
      "Scrollbar V" 1
      priority 2
      {
-      WrapSpacerWidgetClass MarkerRows {
+      PanelWidgetClass MarkerRows {
        visible 1
        position 0 0
-       size 252 140
+       size 315 175
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -96,8 +96,8 @@ FrameWidgetClass OZ_PageMap {
      visible 1
      ignorepointer 1
      color 0.31 0.31 0.35 1
-     position 7 171
-     size 246 24
+     position 9 214
+     size 308 30
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -109,8 +109,8 @@ FrameWidgetClass OZ_PageMap {
      visible 1
      ignorepointer 1
      color 0.078 0.078 0.09 1
-     position 8 172
-     size 244 22
+     position 10 215
+     size 305 28
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -120,8 +120,8 @@ FrameWidgetClass OZ_PageMap {
     }
     EditBoxWidgetClass MarkerName {
      visible 1
-     position 8 172
-     size 244 22
+     position 10 215
+     size 305 28
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -137,8 +137,8 @@ FrameWidgetClass OZ_PageMap {
  visible 1
  ignorepointer 1
  color 0.31 0.31 0.35 1
- position 7 197
- size 246 42
+ position 9 246
+ size 308 52
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -150,8 +150,8 @@ PanelWidgetClass MarkerDescFill {
  visible 1
  ignorepointer 1
  color 0.078 0.078 0.09 1
- position 8 198
- size 244 40
+ position 10 248
+ size 305 50
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -161,8 +161,8 @@ PanelWidgetClass MarkerDescFill {
 }
 MultilineEditBoxWidgetClass MarkerDesc {
      visible 1
-     position 8 198
-     size 244 40
+     position 10 248
+     size 305 50
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -176,8 +176,8 @@ MultilineEditBoxWidgetClass MarkerDesc {
 
     ButtonWidgetClass BtnMarkSave {
      visible 1
-     position 8 244
-     size 118 24
+     position 10 305
+     size 148 30
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -190,7 +190,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
       ignorepointer 1
       color 0.31 0.31 0.35 1
       position -1 -1
-      size 120 26
+      size 150 32
       hexactpos 1
       vexactpos 1
       hexactsize 1
@@ -204,7 +204,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
        ignorepointer 1
        color 0.145 0.145 0.161 1
        position 0 0
-       size 118 24
+       size 148 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -216,7 +216,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
        visible 1
        ignorepointer 1
        position 0 0
-       size 118 24
+       size 148 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -234,8 +234,8 @@ MultilineEditBoxWidgetClass MarkerDesc {
 
     ButtonWidgetClass BtnMarkDel {
      visible 1
-     position 134 244
-     size 118 24
+     position 168 305
+     size 148 30
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -248,7 +248,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
       ignorepointer 1
       color 0.31 0.31 0.35 1
       position -1 -1
-      size 120 26
+      size 150 32
       hexactpos 1
       vexactpos 1
       hexactsize 1
@@ -262,7 +262,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
        ignorepointer 1
        color 0.145 0.145 0.161 1
        position 0 0
-       size 118 24
+       size 148 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -274,7 +274,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
        visible 1
        ignorepointer 1
        position 0 0
-       size 118 24
+       size 148 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -293,8 +293,8 @@ MultilineEditBoxWidgetClass MarkerDesc {
     // і мітка стає його.
     ButtonWidgetClass BtnMarkShare {
      visible 1
-     position 8 272
-     size 244 24
+     position 10 340
+     size 305 30
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -307,7 +307,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
       ignorepointer 1
       color 0.31 0.31 0.35 1
       position -1 -1
-      size 246 26
+      size 308 32
       hexactpos 1
       vexactpos 1
       hexactsize 1
@@ -321,7 +321,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
        ignorepointer 1
        color 0.145 0.145 0.161 1
        position 0 0
-       size 244 24
+       size 305 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -333,7 +333,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
        visible 1
        ignorepointer 1
        position 0 0
-       size 244 24
+       size 305 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -354,8 +354,8 @@ MultilineEditBoxWidgetClass MarkerDesc {
     // кнопки віддають мітку, різниця лише в адресаті.
     ButtonWidgetClass BtnMarkToCar {
      visible 1
-     position 8 300
-     size 244 24
+     position 10 375
+     size 305 30
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -368,7 +368,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
       ignorepointer 1
       color 0.31 0.31 0.35 1
       position -1 -1
-      size 246 26
+      size 308 32
       hexactpos 1
       vexactpos 1
       hexactsize 1
@@ -382,7 +382,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
        ignorepointer 1
        color 0.145 0.145 0.161 1
        position 0 0
-       size 244 24
+       size 305 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -394,7 +394,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
        visible 1
        ignorepointer 1
        position 0 0
-       size 244 24
+       size 305 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -410,6 +410,257 @@ MultilineEditBoxWidgetClass MarkerDesc {
       }
      }
     }
+    ButtonWidgetClass BtnMarkTrack {
+     visible 1
+     position 10 410
+     size 305 30
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 2
+     {
+     PanelWidgetClass BtnMarkTrackEdge {
+      visible 1
+      ignorepointer 1
+      color 0.31 0.31 0.35 1
+      position -1 -1
+      size 308 32
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+
+      PanelWidgetClass BtnMarkTrackBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 305 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnMarkTrackText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 305 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+    TextWidgetClass RouteHead {
+     visible 1
+     ignorepointer 1
+     position 10 444
+     size 305 16
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     "text halign" left
+     "text valign" center
+     priority 2
+    }
+    ButtonWidgetClass BtnRouteAdd {
+     visible 1
+     position 10 462
+     size 148 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnRouteAddBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 148 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      TextWidgetClass BtnRouteAddText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 148 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/MetronBook14"
+       "exact text" 1
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+    ButtonWidgetClass BtnRouteClear {
+     visible 1
+     position 167 462
+     size 148 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnRouteClearBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 148 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      TextWidgetClass BtnRouteClearText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 148 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 0.9 0.45 0.35 1
+       text ""
+       font "gui/fonts/MetronBook14"
+       "exact text" 1
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+    ButtonWidgetClass BtnRouteGo {
+     visible 1
+     position 10 490
+     size 148 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnRouteGoBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 148 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      TextWidgetClass BtnRouteGoText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 148 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 0.494 0.784 0.627 1
+       text ""
+       font "gui/fonts/MetronBook14"
+       "exact text" 1
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+    ButtonWidgetClass BtnRouteToCar {
+     visible 1
+     position 167 490
+     size 148 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnRouteToCarBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 148 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      TextWidgetClass BtnRouteToCarText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 148 24
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/MetronBook14"
+       "exact text" 1
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
 
 
    }
@@ -418,8 +669,8 @@ MultilineEditBoxWidgetClass MarkerDesc {
 
   ButtonWidgetClass BtnList {
    visible 1
-   position 335 378
-   size 110 26
+   position 419 472
+   size 138 32
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -432,7 +683,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
     ignorepointer 1
     color 0.31 0.31 0.35 1
     position -1 -1
-    size 112 28
+    size 140 35
     hexactpos 1
     vexactpos 1
     hexactsize 1
@@ -446,7 +697,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
      ignorepointer 1
      color 0.145 0.145 0.161 1
      position 0 0
-     size 110 26
+     size 138 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -458,7 +709,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
      visible 1
      ignorepointer 1
      position 0 0
-     size 110 26
+     size 138 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -482,7 +733,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
    visible 0
    ignorepointer 1
    position 0 0
-   size 10 10
+   size 12 12
    color 1 1 1 1
    text ""
    font "gui/fonts/MetronBook14"
@@ -492,8 +743,8 @@ MultilineEditBoxWidgetClass MarkerDesc {
   // віджетів, і напис усередині зникає.
   ButtonWidgetClass BtnMode {
    visible 1
-   position 16 378
-   size 175 26
+   position 20 472
+   size 219 32
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -506,7 +757,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
     ignorepointer 1
     color 0.31 0.31 0.35 1
     position -1 -1
-    size 177 28
+    size 221 35
     hexactpos 1
     vexactpos 1
     hexactsize 1
@@ -520,7 +771,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
      ignorepointer 1
      color 0.145 0.145 0.161 1
      position 0 0
-     size 175 26
+     size 219 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -532,7 +783,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
      visible 1
      ignorepointer 1
      position 0 0
-     size 175 26
+     size 219 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -551,8 +802,8 @@ MultilineEditBoxWidgetClass MarkerDesc {
 
   ButtonWidgetClass BtnCenter {
    visible 1
-   position 203 378
-   size 120 26
+   position 254 472
+   size 150 32
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -565,7 +816,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
     ignorepointer 1
     color 0.31 0.31 0.35 1
     position -1 -1
-    size 122 28
+    size 152 35
     hexactpos 1
     vexactpos 1
     hexactsize 1
@@ -579,7 +830,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
      ignorepointer 1
      color 0.145 0.145 0.161 1
      position 0 0
-     size 120 26
+     size 150 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -591,7 +842,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
      visible 1
      ignorepointer 1
      position 0 0
-     size 120 26
+     size 150 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -614,8 +865,8 @@ MultilineEditBoxWidgetClass MarkerDesc {
    visible 1
    ignorepointer 1
    color 0.31 0.31 0.35 1
-   position 456 377
-   size 202 28
+   position 570 471
+   size 252 35
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -627,8 +878,8 @@ MultilineEditBoxWidgetClass MarkerDesc {
    visible 1
    ignorepointer 1
    color 0.078 0.078 0.09 1
-   position 457 378
-   size 200 26
+   position 571 472
+   size 250 32
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -638,8 +889,8 @@ MultilineEditBoxWidgetClass MarkerDesc {
   }
   EditBoxWidgetClass MarkName {
    visible 1
-   position 457 378
-   size 200 26
+   position 571 472
+   size 250 32
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -653,8 +904,8 @@ MultilineEditBoxWidgetClass MarkerDesc {
 
   ButtonWidgetClass BtnMark {
    visible 1
-   position 669 378
-   size 120 26
+   position 836 472
+   size 150 32
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -667,7 +918,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
     ignorepointer 1
     color 0.31 0.31 0.35 1
     position -1 -1
-    size 122 28
+    size 152 35
     hexactpos 1
     vexactpos 1
     hexactsize 1
@@ -681,7 +932,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
      ignorepointer 1
      color 0.145 0.145 0.161 1
      position 0 0
-     size 120 26
+     size 150 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -693,7 +944,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
      visible 1
      ignorepointer 1
      position 0 0
-     size 120 26
+     size 150 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -711,8 +962,8 @@ MultilineEditBoxWidgetClass MarkerDesc {
   }
   ButtonWidgetClass BtnSpawn {
    visible 1
-   position 801 378
-   size 110 26
+   position 1001 472
+   size 138 32
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -725,7 +976,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
     ignorepointer 1
     color 0.31 0.31 0.35 1
     position -1 -1
-    size 112 28
+    size 140 35
     hexactpos 1
     vexactpos 1
     hexactsize 1
@@ -739,7 +990,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
      ignorepointer 1
      color 0.145 0.145 0.161 1
      position 0 0
-     size 110 26
+     size 138 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -751,7 +1002,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
      visible 1
      ignorepointer 1
      position 0 0
-     size 110 26
+     size 138 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -773,8 +1024,8 @@ MultilineEditBoxWidgetClass MarkerDesc {
   // послала. Помилково поставлена зона лишалась назавжди.
   ButtonWidgetClass BtnSpawnOff {
    visible 1
-   position 923 378
-   size 110 26
+   position 1154 472
+   size 138 32
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -787,7 +1038,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
     ignorepointer 1
     color 0.31 0.31 0.35 1
     position -1 -1
-    size 112 28
+    size 140 35
     hexactpos 1
     vexactpos 1
     hexactsize 1
@@ -801,7 +1052,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
      ignorepointer 1
      color 0.145 0.145 0.161 1
      position 0 0
-     size 110 26
+     size 138 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -813,7 +1064,7 @@ MultilineEditBoxWidgetClass MarkerDesc {
      visible 1
      ignorepointer 1
      position 0 0
-     size 110 26
+     size 138 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -836,8 +1087,8 @@ MultilineEditBoxWidgetClass MarkerDesc {
    visible 1
    ignorepointer 1
    color 0.078 0.078 0.086 1
-   position 0 344
-   size 1045 28
+   position 0 430
+   size 1306 35
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -850,8 +1101,8 @@ MultilineEditBoxWidgetClass MarkerDesc {
    visible 1
    ignorepointer 1
    halign right_ref
-   position 16 346
-   size 1013 24
+   position 20 432
+   size 1266 30
    hexactpos 1
    vexactpos 1
    hexactsize 1

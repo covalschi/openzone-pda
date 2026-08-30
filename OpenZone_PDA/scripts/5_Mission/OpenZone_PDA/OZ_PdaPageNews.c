@@ -62,6 +62,13 @@ class OZ_PdaPageNews : OZ_PdaPage
 
         string err;
 
+        if (op == "push")
+        {
+            // Свіжий пост -- перечитуємо перелік, поки сторінка відкрита.
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_NEWS, "list", "{}");
+            return;
+        }
+
         if (op == "list")
         {
             OZ_NewsList l;

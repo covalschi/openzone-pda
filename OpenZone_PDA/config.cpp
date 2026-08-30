@@ -89,6 +89,7 @@ class CfgPatches
             "OZ_Module_Radiometer",
             "OZ_Module_Dosimeter",
             "OZ_Module_Antenna",
+            "OZ_Module_SpyAntenna",
             "OZ_Module_Decryptor"
         };
         weapons[] = {};
@@ -130,7 +131,7 @@ class CfgMods
         // 3: the "already seeded" flag for sealed devices, appended after the
         // markers. Preset content must be written exactly once, and the flag
         // is what remembers that it was.
-        storageVersion = 3;
+        storageVersion = 5;
         dependencies[] = {"Game", "World", "Mission"};
         defines[] = {"OPENZONE_PDA"};
 
@@ -323,6 +324,15 @@ class CfgVehicles
         scope = 2;
         displayName = "$STR_OZ_MOD_ANTENNA";
         descriptionShort = "$STR_OZ_MOD_ANTENNA_DESC";
+    };
+
+    // The spy variant: sees every transponder that is switched on at all,
+    // privacy be damned -- for a fistful of minutes, then the plate burns.
+    class OZ_Module_SpyAntenna : OZ_Module_Base
+    {
+        scope = 2;
+        displayName = "$STR_OZ_MOD_SPY";
+        descriptionShort = "$STR_OZ_MOD_SPY_DESC";
     };
 
     // Opens sealed devices, and only those. On an ordinary PDA it just takes

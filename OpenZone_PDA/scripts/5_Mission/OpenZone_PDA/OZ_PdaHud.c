@@ -13,6 +13,94 @@
 // пастка була НЕ тут, а в місці озброєння: підписка жила в Ensure(), який
 // не біжить, поки гравець стоїть у паузі, -- і пуші летіли повз. Екземпляр
 // лишаємо: так робить ваніль, і час життя підписки видно по полю.
+// Активна («ведена») мітка -- вибір КЛІЄНТА і лише його: сервер про неї
+// не знає, перезайшов -- вибір скинувся. Одна на весь клієнт: вести дві
+// цілі одночасно однаково нема чим.
+class OZ_PdaTrack
+{
+    static string Id    = "";
+    static string Name  = "";
+    // НЕ «Pos»: рушій вважає Pos ім'ям типу, і Enforce відмовляє
+    // змінній з таким ім'ям у статиці.
+    static string Point = "";
+
+    static string FmtDist(float d)
+    {
+        if (d < 1000)
+            return Math.Round(d).ToString() + " m";
+
+        float km = Math.Round(d / 100) / 10.0;
+        return km.ToString() + " km";
+    }
+
+    static string DistanceTo(vector from)
+    {
+        if (Id == "")
+            return "";
+
+        vector to = Point.ToVector();
+        return FmtDist(vector.Distance(Vector(from[0], 0, from[2]), Vector(to[0], 0, to[2])));
+    }
+}
+
+// Активний маршрут: нитка з копій міток, яку клієнт веде точку за
+// точкою. Дані маршруту живуть у пристрої (сервер); АКТИВАЦІЯ -- стан
+// клієнта, як і ведення одиночної мітки: перезайшов -- веди заново.
+class OZ_PdaRoute
+{
+    // БЕЗ ініціалізації на місці: статичний new у декларації НЕ
+    // виконується (зміряно живим клієнтом 2026-08-30 -- null валив
+    // PaintMini посеред кадру). Лінива побудова і null-guard всюди.
+    static ref array<ref OZ_MapMarker> Points;
+    static int  At = 0;
+    static bool Active = false;
+
+    static void Start(array<ref OZ_MapMarker> pts)
+    {
+        if (!Points)
+            Points = new array<ref OZ_MapMarker>();
+
+        Points.Clear();
+        if (pts)
+        {
+            for (int i = 0; i < pts.Count(); i++)
+                Points.Insert(pts[i]);
+        }
+        At = 0;
+        Active = Points.Count() > 0;
+    }
+
+    static void Stop()
+    {
+        if (Points)
+            Points.Clear();
+        At = 0;
+        Active = false;
+    }
+
+    // Точку пройдено -- вручну кнопкою чи ногами (близькість міряє HUD).
+    static void Advance()
+    {
+        At++;
+        if (!Points || At >= Points.Count())
+            Stop();
+    }
+
+    static OZ_MapMarker Current()
+    {
+        if (!Active || !Points || At >= Points.Count())
+            return null;
+        return Points[At];
+    }
+
+    static int CountSafe()
+    {
+        if (!Points)
+            return 0;
+        return Points.Count();
+    }
+}
+
 class OZ_PdaHudEars
 {
     void OnPush(string pageId, string op, bool ok, string json, string error)
@@ -36,6 +124,12 @@ class OZ_PdaHud
     private static Widget s_Root;
     private static Widget s_Strip;
     private static Widget s_Toast;
+    private static TextWidget s_MiniTrack;
+    // Кеш маячків для мінікарти: HUD питає стан карти сам, раз на кілька
+    // секунд, поки меню закрите -- сторінка карти цим же відповідатиме,
+    // коли відкрита.
+    private static ref array<ref OZ_MapBeacon> s_Beacons;
+    private static float s_MapAcc = 0;
     private static Widget s_Mini;
     private static TextWidget s_Power;
     private static TextWidget s_ToastWho;
@@ -48,7 +142,8 @@ class OZ_PdaHud
 
     // Тост тримається стільки, скільки людина читає один рядок.
     private static float s_ToastUntil = 0;
-    private static const float TOAST_HOLD_MS = 6000;
+    private static bool s_ToastShown = false;
+    private static const float TOAST_HOLD_MS = 8000;
 
     // Раз на півсекунди. Заряд падає повільно, а от «дістав/сховав» гравець
     // помічає одразу, і чекати цілу секунду тут відчутно.
@@ -59,6 +154,8 @@ class OZ_PdaHud
     private static const float MINI_SCALE = 0.08;
 
     private static const string ICON_SELF = "\\DZ\\gear\\navigation\\data\\map_tshelter_ca.paa";
+    private static const string ICON_TRACK = "\\DZ\\gear\\navigation\\data\\map_tsign_ca.paa";
+    private static const string ICON_BEACON = "\\DZ\\gear\\navigation\\data\\map_transmitter_ca.paa";
 
     static void Update(float timeslice)
     {
@@ -98,15 +195,35 @@ class OZ_PdaHud
             return;
         }
 
+        // Замкнений пристрій для носія НІМИЙ: ні смужки, ні тостів, ні
+        // мінікарти. Хто не ввів код -- той нічого й не бачить; обидва біти
+        // синхронні, RPC не потрібен.
+        if (pda.OZ_LockedForViewer())
+        {
+            if (s_Root)
+                s_Root.Show(false);
+            return;
+        }
+
         Ensure();
         if (!s_Root)
             return;
 
+
         s_Root.Show(true);
 
-        PaintStrip(pda);
         PaintToast(pda);
         PaintMini(pda);
+
+        // Маячки: свій запит стану карти, раз на ~4 секунди. Відповідь
+        // ловить OnPush -- той самий шлях, яким сторінка карти чує свою.
+        s_MapAcc += TICK;
+        if (s_MapAcc >= 4)
+        {
+            s_MapAcc = 0;
+            if (pda.OZ_IsOn())
+                OZ_Rpc.Request(OZ_PdaConst.PAGE_MAP, "state", "{}");
+        }
     }
 
     private static void PaintStrip(OZ_PDA_Base pda)
@@ -137,6 +254,11 @@ class OZ_PdaHud
 
         // Вимкнений пристрій не «пікає»: дзвінок -- робота пристрою.
         bool show = pda.OZ_IsOn() && GetGame().GetTime() < s_ToastUntil;
+        if (show != s_ToastShown)
+        {
+            s_ToastShown = show;
+            OZ_Log.Dbg("hud: toast show=" + show.ToString() + " now=" + GetGame().GetTime().ToString() + " until=" + s_ToastUntil.ToString());
+        }
         s_Toast.Show(show);
     }
 
@@ -165,6 +287,66 @@ class OZ_PdaHud
         s_MiniMap.SetMapPos(at);
         s_MiniMap.ClearUserMarks();
         s_MiniMap.AddUserMark(at, "", ARGB(255, 255, 122, 26), ICON_SELF);
+
+        // Чужі маячки -- ті самі, що на великій карті: антена вже все
+        // відфільтрувала на сервері.
+        if (s_Beacons)
+        {
+            for (int bb = 0; bb < s_Beacons.Count(); bb++)
+                s_MiniMap.AddUserMark(s_Beacons[bb].Pos.ToVector(), "", ARGB(255, 126, 200, 160), ICON_BEACON);
+        }
+
+        // МАРШРУТ б'є одиночне ведення: точка нитки на мінікарті, рядок
+        // «назва (k/n) відстань» під нею, і авто-прохід -- підійшов на
+        // 30 метрів, нитка сама перейшла до наступної точки.
+        OZ_MapMarker rc = OZ_PdaRoute.Current();
+        if (rc)
+        {
+            vector rp = rc.Pos.ToVector();
+            float rd = vector.Distance(Vector(at[0], 0, at[2]), Vector(rp[0], 0, rp[2]));
+            if (rd < 30)
+            {
+                OZ_PdaRoute.Advance();
+                rc = OZ_PdaRoute.Current();
+                if (rc)
+                {
+                    rp = rc.Pos.ToVector();
+                    rd = vector.Distance(Vector(at[0], 0, at[2]), Vector(rp[0], 0, rp[2]));
+                }
+            }
+
+            if (rc)
+            {
+                s_MiniMap.AddUserMark(rp, "", ARGB(255, 255, 122, 26), ICON_TRACK);
+                if (s_MiniTrack)
+                {
+                    s_MiniTrack.Show(true);
+                    s_MiniTrack.SetText(rc.Name + " (" + (OZ_PdaRoute.At + 1).ToString() + "/" + OZ_PdaRoute.CountSafe().ToString() + ")  " + OZ_PdaTrack.FmtDist(rd));
+                }
+                return;
+            }
+        }
+
+        // Ведена мітка: точка на мінікарті й рядок «назва + відстань» під
+        // нею. Відстань жива -- рахується щокадру з позиції гравця, це
+        // одне віднімання і воно нічого не коштує.
+        if (OZ_PdaTrack.Id != "")
+            s_MiniMap.AddUserMark(OZ_PdaTrack.Point.ToVector(), "", ARGB(255, 126, 200, 160), ICON_TRACK);
+
+        if (s_MiniTrack)
+        {
+            if (OZ_PdaTrack.Id != "")
+            {
+                s_MiniTrack.Show(true);
+                string tn = OZ_PdaTrack.Name;
+                if (tn == "")
+                    tn = Widget.TranslateString("#STR_OZ_MAP_UNNAMED");
+                s_MiniTrack.SetText(tn + "  " + OZ_PdaTrack.DistanceTo(at));
+            }
+            else
+                s_MiniTrack.Show(false);
+        }
+
     }
 
     // Пуш із сервера: рядок чату приїхав, байдуже, відкрите меню чи ні.
@@ -172,6 +354,47 @@ class OZ_PdaHud
     // Visible() і так гасить увесь HUD, поки будь-яке меню відкрите.
     static void OnPush(string pageId, string op, bool ok, string json, string error)
     {
+        // Свіжий пост новин дзвонить усім: заголовок у тост, текст -- на
+        // сторінці, коли відкриють.
+        if (pageId == OZ_PdaConst.PAGE_NEWS && op == "push" && ok)
+        {
+            OZ_NewsPush np;
+            string nerr;
+            if (!JsonFileLoader<OZ_NewsPush>.LoadData(json, np, nerr) || !np)
+                return;
+
+            Ensure();
+            if (s_ToastWho)
+            {
+                s_ToastWho.SetText(Widget.TranslateString("#STR_OZ_TOAST_NEWS") + "  " + np.Who);
+                s_ToastWho.SetColor(ARGB(255, 255, 122, 26));
+            }
+            if (s_ToastText)
+                s_ToastText.SetText(np.Title);
+            s_ToastUntil = GetGame().GetTime() + TOAST_HOLD_MS;
+            return;
+        }
+
+        // Стан карти: забираємо маячки для мінікарти. Байдуже, хто
+        // спитав -- HUD чи відкрита сторінка: відповідь одна.
+        if (pageId == OZ_PdaConst.PAGE_MAP && op == "state" && ok)
+        {
+            OZ_MapState ms;
+            string merr;
+            if (JsonFileLoader<OZ_MapState>.LoadData(json, ms, merr) && ms)
+            {
+                if (!s_Beacons)
+                    s_Beacons = new array<ref OZ_MapBeacon>();
+                s_Beacons.Clear();
+                if (ms.Beacons)
+                {
+                    for (int bi = 0; bi < ms.Beacons.Count(); bi++)
+                        s_Beacons.Insert(ms.Beacons[bi]);
+                }
+            }
+            return;
+        }
+
         if (pageId != OZ_PdaConst.PAGE_CHAT || op != "line" || !ok)
             return;
 
@@ -187,10 +410,27 @@ class OZ_PdaHud
 
         Ensure();
         if (s_ToastWho)
-            s_ToastWho.SetText(p.Who);
+        {
+            // ЗВІДКИ прийшло -- прямо в заголовку: група на ім'я, пейджер,
+            // Зона чи особисте. Хто пише -- фарбується фракцією.
+            string chan = "#STR_OZ_TOAST_DM";
+            if (p.Kind == "group")
+                chan = p.Title;
+            else if (p.Kind == "npc")
+                chan = "#STR_OZ_CHAT_PAGER";
+            else if (p.Kind == "zone")
+                chan = "#STR_OZ_CHAT_ZONE";
+
+            s_ToastWho.SetText(p.Who + "   [" + Widget.TranslateString(chan) + "]");
+            if (p.WhoColor != 0)
+                s_ToastWho.SetColor(p.WhoColor);
+            else
+                s_ToastWho.SetColor(ARGB(255, 255, 122, 26));
+        }
         if (s_ToastText)
             s_ToastText.SetText(p.Text);
         s_ToastUntil = GetGame().GetTime() + TOAST_HOLD_MS;
+        OZ_Log.Dbg("hud: toast armed until=" + s_ToastUntil.ToString() + " who=" + p.Who);
     }
 
     // Той самий пристрій, про який говорить сервер: руки, потім слот
@@ -202,19 +442,23 @@ class OZ_PdaHud
         if (!p)
             return null;
 
-        OZ_PDA_Base inHands = OZ_PDA_Base.Cast(p.GetItemInHands());
-        if (inHands)
-            return inHands;
-
+        // НАДЕТИЙ виграє: він -- робочий термінал на грудях, а в руках може
+        // бути чужий трофей, який лише роздивляються. Худ не має права
+        // перескочити на нього (рішення власника 2026-08-28). Руки --
+        // запасний варіант, коли слот носіння порожній.
         GameInventory inv = p.GetInventory();
-        if (!inv)
-            return null;
+        if (inv)
+        {
+            int slotId = InventorySlots.GetSlotIdFromString(OZ_PdaConst.SLOT_WEAR);
+            if (slotId != -1)
+            {
+                OZ_PDA_Base worn = OZ_PDA_Base.Cast(inv.FindAttachment(slotId));
+                if (worn)
+                    return worn;
+            }
+        }
 
-        int slotId = InventorySlots.GetSlotIdFromString(OZ_PdaConst.SLOT_WEAR);
-        if (slotId == -1)
-            return null;
-
-        return OZ_PDA_Base.Cast(inv.FindAttachment(slotId));
+        return OZ_PDA_Base.Cast(p.GetItemInHands());
     }
 
     private static void Ensure()
@@ -236,10 +480,15 @@ class OZ_PdaHud
         s_ToastText = TextWidget.Cast(s_Root.FindAnyWidget("ToastText"));
         s_Mini      = s_Root.FindAnyWidget("MiniPane");
         s_MiniMap   = MapWidget.Cast(s_Root.FindAnyWidget("MiniMap"));
+        s_MiniTrack = TextWidget.Cast(s_Root.FindAnyWidget("MiniTrack"));
 
         // Свої панелі йдуть через той самий реєстр, що й чужі: власна їжа.
-        Adopt("strip", s_Strip, 0.845, 0.845, "#STR_OZ_HUD_PANE_STRIP");
-        Adopt("toast", s_Toast, 0.69, 0.845, "#STR_OZ_HUD_PANE_TOAST");
+        // Смужка живлення знята з реєстру: відсоток і так завжди стоїть у
+        // рядку стану меню, окреме вікно було другим ротом тієї ж правди
+        // (рішення власника 2026-08-29).
+        if (s_Strip)
+            s_Strip.Show(false);
+        Adopt("toast", s_Toast, 0.655, 0.825, "#STR_OZ_HUD_PANE_TOAST");
         Adopt("mini",  s_Mini,  0.845, 0.6,  "#STR_OZ_HUD_PANE_MINI");
     }
 
@@ -400,6 +649,7 @@ class OZ_PdaHud
         s_ToastText = null;
         s_Mini      = null;
         s_MiniMap   = null;
+        s_MiniTrack = null;
         s_Ears      = null;
         s_Panes.Clear();
         s_Acc       = 0;

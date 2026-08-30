@@ -26,6 +26,11 @@ class OZ_PdaPageMap : OZ_PdaPage
     private ButtonWidget           m_BtnToCar;
     private ButtonWidget           m_BtnDel;
     private ref array<Widget>      m_RowWgts;
+    private ButtonWidget m_BtnTrack;
+    private ButtonWidget m_BtnRouteAdd;
+    private ButtonWidget m_BtnRouteClear;
+    private ButtonWidget m_BtnRouteGo;
+    private ButtonWidget m_BtnRouteToCar;
     private bool                   m_ListOpen = false;
 
     // Підпис списку з минулого разу. Стан приходить ЩОСЕКУНДИ (маячки
@@ -106,6 +111,14 @@ class OZ_PdaPageMap : OZ_PdaPage
         m_BtnToCar = ButtonWidget.Cast(Wgt("BtnMarkToCar"));
         SetText("BtnMarkToCarText", "#STR_OZ_TO_CARRIER");
         m_BtnDel   = ButtonWidget.Cast(Wgt("BtnMarkDel"));
+        m_BtnTrack = ButtonWidget.Cast(Wgt("BtnMarkTrack"));
+        m_BtnRouteAdd   = ButtonWidget.Cast(Wgt("BtnRouteAdd"));
+        SetText("BtnRouteAddText", "#STR_OZ_ROUTE_ADD");
+        m_BtnRouteClear = ButtonWidget.Cast(Wgt("BtnRouteClear"));
+        SetText("BtnRouteClearText", "#STR_OZ_ROUTE_CLEAR");
+        m_BtnRouteGo    = ButtonWidget.Cast(Wgt("BtnRouteGo"));
+        m_BtnRouteToCar = ButtonWidget.Cast(Wgt("BtnRouteToCar"));
+        SetText("BtnRouteToCarText", "#STR_OZ_ROUTE_TO_CAR");
         m_RowWgts  = new array<Widget>();
 
         SetText("BtnListText", "#STR_OZ_MAP_LIST");
@@ -285,14 +298,99 @@ class OZ_PdaPageMap : OZ_PdaPage
             int sz = Math.Round(mp[2]);
 
             string line = "[MARK] " + mk.Name + " @ " + sx.ToString() + " " + sz.ToString();
+            // Розділювач ASCII навмисно: типографське тире губилось десь
+            // між EditBox і відправкою, і опис не доїжджав (живий тест
+            // 2026-08-29). Парсер розуміє обидва написання.
             if (mk.Desc != "")
-                line += " — " + mk.Desc;
+                line += " -- " + mk.Desc;
 
             OZ_PdaCompose.Put(line);
 
             OZ_PdaMenu menu = OZ_PdaMenu.Cast(GetGame().GetUIManager().FindMenu(OZ_PdaConst.MENU_PDA));
             if (menu)
                 menu.Select(OZ_PdaConst.PAGE_CHAT);
+            return true;
+        }
+
+        if (w == m_BtnRouteAdd)
+        {
+            if (m_PickedId == "")
+            {
+                SetHintSticky("MapHint", "#STR_OZ_MAP_PICK_FIRST");
+                return true;
+            }
+
+            OZ_MarkerRef ra = new OZ_MarkerRef();
+            ra.Id = m_PickedId;
+
+            string raj;
+            string rerr;
+            if (JsonFileLoader<OZ_MarkerRef>.MakeData(ra, raj, rerr, false))
+                OZ_Rpc.Request(OZ_PdaConst.PAGE_MAP, "route_add", raj);
+            return true;
+        }
+
+        if (w == m_BtnRouteClear)
+        {
+            OZ_PdaRoute.Stop();
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_MAP, "route_clear", "{}");
+            return true;
+        }
+
+        if (w == m_BtnRouteGo)
+        {
+            // Неактивний -- АКТИВУВАТИ; активний -- ПРОЙДЕНО (ручна
+            // позначка поточної точки). Кінець нитки гасить її сам.
+            if (OZ_PdaRoute.Active)
+            {
+                OZ_PdaRoute.Advance();
+            }
+            else
+            {
+                if (!m_State || !m_State.Route || m_State.Route.Count() == 0)
+                {
+                    SetHintSticky("MapHint", "#STR_OZ_ERR_ROUTE_EMPTY");
+                    return true;
+                }
+                OZ_PdaRoute.Start(m_State.Route);
+            }
+            RebuildRows(true);
+            return true;
+        }
+
+        if (w == m_BtnRouteToCar)
+        {
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_MAP, "route_write", "{}");
+            return true;
+        }
+
+        if (w == m_BtnTrack)
+        {
+            if (m_PickedId == "")
+            {
+                SetHintSticky("MapHint", "#STR_OZ_MAP_PICK_FIRST");
+                return true;
+            }
+
+            // Той самий клік знімає ведення з уже веденої мітки.
+            if (OZ_PdaTrack.Id == m_PickedId)
+            {
+                OZ_PdaTrack.Id   = "";
+                OZ_PdaTrack.Name = "";
+                OZ_PdaTrack.Point  = "";
+            }
+            else
+            {
+                OZ_MapMarker tmk = FindMarker(m_PickedId);
+                if (tmk)
+                {
+                    OZ_PdaTrack.Id   = tmk.Id;
+                    OZ_PdaTrack.Name = tmk.Name;
+                    OZ_PdaTrack.Point  = tmk.Pos;
+                }
+            }
+
+            RebuildRows(true);
             return true;
         }
 
@@ -486,7 +584,10 @@ class OZ_PdaPageMap : OZ_PdaPage
                 sig += mk.Id + "|" + mk.Name + "|" + mk.Desc + ";";
             }
         }
-        sig += "@" + m_PickedId;
+        sig += "@" + m_PickedId + "#" + OZ_PdaTrack.Id;
+        if (m_State && m_State.Route)
+            sig += "$" + m_State.Route.Count().ToString();
+        sig += "&" + OZ_PdaRoute.At.ToString() + OZ_PdaRoute.Active.ToString();
 
         if (!force && sig == m_RowsSig)
             return;
@@ -509,6 +610,15 @@ class OZ_PdaPageMap : OZ_PdaPage
         }
         SetText("MarkerHead", Widget.TranslateString("#STR_OZ_MAP_LIST") + "  " + n.ToString() + "/" + limit.ToString());
 
+        // Гравець, від якого міряються відстані. Дистанція в списку --
+        // знімок на мить перемальовування; ЖИВА цифра веденої мітки живе
+        // під мінікартою.
+        vector meAt = vector.Zero;
+        PlayerBase mePl = PlayerBase.Cast(GetGame().GetPlayer());
+        if (mePl)
+            meAt = mePl.GetPosition();
+
+        int rowY = 0;
         for (int k = 0; k < n; k++)
         {
             OZ_MapMarker mrk = m_State.Markers[k];
@@ -516,6 +626,12 @@ class OZ_PdaPageMap : OZ_PdaPage
             Widget row = GetGame().GetWorkspace().CreateWidgets("OpenZone_PDA/gui/layouts/oz_pda_marker_row.layout", m_Rows);
             if (!row)
                 break;
+
+            // Стек РУКАМИ: WrapSpacer намотує власний розмір (зміряно
+            // 105 613 юнітів на розмовах) і ламає скрол -- тому контейнер
+            // дурна панель, а рядки лягають за лічильником.
+            row.SetPos(0, rowY);
+            rowY += 42;
 
             // Ім'я віджета -- Id мітки: саме його читає OnClick.
             row.SetName(mrk.Id);
@@ -537,7 +653,16 @@ class OZ_PdaPageMap : OZ_PdaPage
                 vector p = mrk.Pos.ToVector();
                 int px = Math.Round(p[0]);
                 int pz = Math.Round(p[2]);
-                where.SetText(px.ToString() + " " + pz.ToString());
+
+                string wtxt = px.ToString() + " " + pz.ToString();
+                if (mePl)
+                {
+                    int dm = Math.Round(vector.Distance(Vector(meAt[0], 0, meAt[2]), Vector(p[0], 0, p[2])));
+                    wtxt += "  " + dm.ToString() + " m";
+                }
+                if (mrk.Id == OZ_PdaTrack.Id)
+                    wtxt = ">> " + wtxt;
+                where.SetText(wtxt);
             }
 
             TextWidget desc = TextWidget.Cast(row.FindAnyWidget("RowDesc"));
@@ -547,6 +672,34 @@ class OZ_PdaPageMap : OZ_PdaPage
             Widget pick = row.FindAnyWidget("RowPick");
             if (pick)
                 pick.Show(mrk.Id == m_PickedId);
+        }
+
+        // Полотно рівно під вміст -- скрол чесний, без намотаної порожнечі.
+        m_Rows.SetSize(315, rowY);
+
+        if (m_BtnTrack)
+        {
+            if (m_PickedId != "" && m_PickedId == OZ_PdaTrack.Id)
+                SetText("BtnMarkTrackText", "#STR_OZ_MAP_UNTRACK");
+            else
+                SetText("BtnMarkTrackText", "#STR_OZ_MAP_TRACK");
+        }
+
+        int rpts = 0;
+        if (m_State && m_State.Route)
+            rpts = m_State.Route.Count();
+
+        string rhead = Widget.TranslateString("#STR_OZ_ROUTE") + "  " + rpts.ToString();
+        if (OZ_PdaRoute.Active)
+            rhead += "  [" + (OZ_PdaRoute.At + 1).ToString() + "/" + OZ_PdaRoute.CountSafe().ToString() + "]";
+        SetText("RouteHead", rhead);
+
+        if (m_BtnRouteGo)
+        {
+            if (OZ_PdaRoute.Active)
+                SetText("BtnRouteGoText", "#STR_OZ_ROUTE_PASS");
+            else
+                SetText("BtnRouteGoText", "#STR_OZ_ROUTE_GO");
         }
     }
 
@@ -624,6 +777,16 @@ class OZ_PdaPageMap : OZ_PdaPage
 
     override void OnResponse(string op, bool ok, string json, string error)
     {
+        if (op == "route_add" || op == "route_clear" || op == "route_write" || op == "route_take")
+        {
+            if (!ok)
+                SetHintSticky("MapHint", "#" + error);
+            else if (op == "route_write")
+                SetHintSticky("MapHint", "#STR_OZ_CARRIER_SAVED");
+            Request();
+            return;
+        }
+
         if (op == "carrier_add")
         {
             if (ok)
@@ -712,6 +875,13 @@ class OZ_PdaPageMap : OZ_PdaPage
                     colour = ARGB(255, 255, 122, 26);
 
                 m_Map.AddUserMark(m.Pos.ToVector(), m.Name, colour, ICON_MARK);
+            }
+
+            for (int rr = 0; m_State.Route && rr < m_State.Route.Count(); rr++)
+            {
+                OZ_MapMarker rm = m_State.Route[rr];
+                // Нитка нумерована прямо в підписі: порядок і є маршрут.
+                m_Map.AddUserMark(rm.Pos.ToVector(), (rr + 1).ToString() + ". " + rm.Name, ARGB(255, 255, 170, 80), ICON_MARK);
             }
 
             // Перше відкриття -- показуємо гравцеві, де він. Далі карта

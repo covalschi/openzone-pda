@@ -11,6 +11,10 @@
 class OZ_PdaLimits
 {
     int Markers    = 10;
+    // Записки -- пам'ять пристрою, як мітки (рішення власника 2026-08-28),
+    // тож і стеля їхня -- справа моделі. 0 і менше -- запасна
+    // OZ_PdaConst.NOTES_MAX, щоб старий конфіг без поля не давав нуль.
+    int Notes      = 10;
     int Friends    = 20;
     int GroupChats = 2;
 }
@@ -95,6 +99,8 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
         p.Pages.Insert(OZ_PdaConst.PAGE_DEVICE);
         p.Pages.Insert(OZ_PdaConst.PAGE_QUESTS);
         p.Pages.Insert(OZ_PdaConst.PAGE_CONTACTS);
+        // Фракція -- одразу після людей: спершу хто навколо, потім чиї вони.
+        p.Pages.Insert(OZ_PdaConst.PAGE_FACTION);
         p.Pages.Insert(OZ_PdaConst.PAGE_NOTES);
         p.Pages.Insert(OZ_PdaConst.PAGE_MAP);
         p.Pages.Insert(OZ_PdaConst.PAGE_CHAT);

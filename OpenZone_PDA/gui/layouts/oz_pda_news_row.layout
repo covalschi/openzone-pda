@@ -4,7 +4,7 @@
 ButtonWidgetClass OZ_NewsRow {
  visible 1
  position 0 0
- size 320 40
+ size 400 50
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -16,7 +16,7 @@ ButtonWidgetClass OZ_NewsRow {
    ignorepointer 1
    color 0.043 0.043 0.051 1
    position 0 0
-   size 320 40
+   size 400 50
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -30,7 +30,7 @@ ButtonWidgetClass OZ_NewsRow {
    ignorepointer 1
    color 1 0.478 0.102 0.12
    position 0 0
-   size 320 40
+   size 400 50
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -42,8 +42,8 @@ ButtonWidgetClass OZ_NewsRow {
   TextWidgetClass RowTitle {
    visible 1
    ignorepointer 1
-   position 10 3
-   size 300 18
+   position 12 4
+   size 375 22
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -61,8 +61,8 @@ ButtonWidgetClass OZ_NewsRow {
   TextWidgetClass RowMeta {
    visible 1
    ignorepointer 1
-   position 10 22
-   size 300 14
+   position 12 28
+   size 375 18
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -81,8 +81,8 @@ ButtonWidgetClass OZ_NewsRow {
    visible 1
    ignorepointer 1
    color 1 1 1 0.07
-   position 10 39
-   size 300 1
+   position 12 49
+   size 375 1
    hexactpos 1
    vexactpos 1
    hexactsize 1

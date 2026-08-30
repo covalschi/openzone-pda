@@ -5,7 +5,7 @@
 FrameWidgetClass OZ_PageNews {
  visible 1
  position 0 0
- size 1045 414
+ size 1306 518
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -13,8 +13,8 @@ FrameWidgetClass OZ_PageNews {
  {
   ScrollWidgetClass NewsScroll {
    visible 1
-   position 16 12
-   size 320 356
+   position 20 15
+   size 400 445
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -25,7 +25,7 @@ FrameWidgetClass OZ_PageNews {
     WrapSpacerWidgetClass NewsRows {
      visible 1
      position 0 0
-     size 320 356
+     size 400 445
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -39,8 +39,8 @@ FrameWidgetClass OZ_PageNews {
    visible 1
    ignorepointer 1
    color 1 1 1 0.07
-   position 348 12
-   size 1 356
+   position 435 15
+   size 1 445
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -52,8 +52,8 @@ FrameWidgetClass OZ_PageNews {
   TextWidgetClass PostTitle {
    visible 1
    ignorepointer 1
-   position 364 12
-   size 665 24
+   position 455 15
+   size 831 30
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -71,8 +71,8 @@ FrameWidgetClass OZ_PageNews {
   TextWidgetClass PostMeta {
    visible 1
    ignorepointer 1
-   position 364 38
-   size 665 16
+   position 455 48
+   size 831 20
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -89,8 +89,8 @@ FrameWidgetClass OZ_PageNews {
 
   ScrollWidgetClass PostScroll {
    visible 1
-   position 364 62
-   size 665 306
+   position 455 78
+   size 831 382
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -102,7 +102,7 @@ FrameWidgetClass OZ_PageNews {
      visible 1
      ignorepointer 1
      position 0 0
-     size 645 306
+     size 806 382
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -123,8 +123,8 @@ FrameWidgetClass OZ_PageNews {
   TextWidgetClass NewsHint {
    visible 1
    ignorepointer 1
-   position 16 380
-   size 1013 22
+   position 20 475
+   size 1266 28
    hexactpos 1
    vexactpos 1
    hexactsize 1

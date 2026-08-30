@@ -13,6 +13,7 @@ class OZ_PdaMenu : UIScriptedMenu
     private Widget m_TabRail;
     private Widget m_PageHost;
     private Widget m_LockPanel;
+    private Widget m_InitPanel;
     private ButtonWidget m_BtnClose;
 
     private ref map<string, ref OZ_PdaPage> m_Pages;
@@ -62,7 +63,22 @@ class OZ_PdaMenu : UIScriptedMenu
         m_TabRail   = layoutRoot.FindAnyWidget("TabRail");
         m_PageHost  = layoutRoot.FindAnyWidget("PageHost");
         m_LockPanel = layoutRoot.FindAnyWidget("LockPanel");
+        m_InitPanel = layoutRoot.FindAnyWidget("InitPanel");
+
+        TextWidget itx = TextWidget.Cast(layoutRoot.FindAnyWidget("InitTitle"));
+        if (itx)
+            itx.SetText("#STR_OZ_INIT_TITLE");
+        TextWidget ihx = TextWidget.Cast(layoutRoot.FindAnyWidget("InitHint"));
+        if (ihx)
+            ihx.SetText("#STR_OZ_INIT_HINT");
+        TextWidget ibx = TextWidget.Cast(layoutRoot.FindAnyWidget("BtnInitBigText"));
+        if (ibx)
+            ibx.SetText("#STR_OZ_DEV_INIT");
         m_BtnClose  = ButtonWidget.Cast(layoutRoot.FindAnyWidget("BtnClose"));
+
+        TextWidget ftx = TextWidget.Cast(layoutRoot.FindAnyWidget("BtnFactoryText"));
+        if (ftx)
+            ftx.SetText("#STR_OZ_FACTORY_RESET");
 
         return layoutRoot;
     }
@@ -222,6 +238,33 @@ class OZ_PdaMenu : UIScriptedMenu
             return;
         }
 
+        if (pageId == OZ_PdaConst.PAGE_DEVICE && op == "initiate")
+        {
+            if (ok)
+            {
+                // Стрічка вкладок разова, а в новій сесії їх більше:
+                // закриваємось, наступне відкриття збере повний набір.
+                Close();
+            }
+            return;
+        }
+
+        if (pageId == OZ_PdaConst.PAGE_DEVICE && op == "factory_reset")
+        {
+            if (ok)
+            {
+                // Пристрій щойно став чистим і відімкненим: екран коду геть,
+                // стан перепитуємо -- стрічка збудується з нього.
+                EndPin();
+                OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "status", "{}");
+            }
+            else
+            {
+                PaintPinPrompt("#" + error);
+            }
+            return;
+        }
+
         if (pageId == OZ_PdaConst.PAGE_DEVICE && op == "setpin")
         {
             if (ok)
@@ -378,6 +421,22 @@ class OZ_PdaMenu : UIScriptedMenu
 
         m_HasPin = st.HasPin;
 
+        // Нічийний пристрій -- ЕКРАН ІНІЦІАЦІЇ замість сторінок: після
+        // factory reset (чи зі свіжим приладом) єдина доступна дія --
+        // зробити його своїм.
+        ShowInit(!st.Owned && st.Powered && st.Unlocked);
+
+        // Вимкнений прилад не має екрана коду -- і НАБОРУ теж: буфер і
+        // крок пережили б вимикання, і наступні цифри доклеювались би до
+        // мертвого стану (зміряно живим тестом 2026-08-29: «зміна коду»
+        // з двох сеансів набору). Вимкнули -- набір скінчився.
+        if (!st.Powered)
+        {
+            if (m_PinMode != "")
+                EndPin();
+            return;
+        }
+
         bool needPin = st.HasPin && !st.Unlocked;
 
         if (needPin)
@@ -409,6 +468,16 @@ class OZ_PdaMenu : UIScriptedMenu
     // Просить сторінка «Пристрій» -- через FindMenu, а не через посилання:
     // меню одне, живе в UIManager, і тримати на нього другу нитку означало б
     // мати два джерела правди про те, чи воно взагалі відкрите.
+    private void ShowInit(bool show)
+    {
+        if (m_InitPanel)
+            m_InitPanel.Show(show);
+        if (m_PageHost)
+            m_PageHost.Show(!show && m_PinMode == "");
+        if (m_TabRail)
+            m_TabRail.Show(!show);
+    }
+
     void BeginPin(string mode)
     {
         if (!m_LockPanel)
@@ -437,6 +506,12 @@ class OZ_PdaMenu : UIScriptedMenu
 
         PaintPinPrompt("");
         PaintPinDots();
+
+        // Скидання до заводських -- лише на ПРИМУСОВОМУ екрані коду: там
+        // стоїть той, хто коду не знає. Добровільні set/clear -- власник.
+        ButtonWidget fac = ButtonWidget.Cast(layoutRoot.FindAnyWidget("BtnFactory"));
+        if (fac)
+            fac.Show(mode == "unlock");
     }
 
     // Запечатаний пристрій не віддає навіть status, тож про його стан
@@ -467,11 +542,37 @@ class OZ_PdaMenu : UIScriptedMenu
 
         if (!st.Sealed)
         {
-            // Звичайний замкнений КПК -- усе як було: код і панель.
-            if (crack)
-                crack.Show(false);
+            // Звичайний замкнений КПК: код і панель як були, але з
+            // дешифратором у гнізді замок ламається й тут (рішення власника
+            // 2026-08-28) -- DECRYPT стоїть під падом, поруч зі скиданням.
             if (pad)
                 pad.Show(true);
+
+            TextWidget hintP = TextWidget.Cast(layoutRoot.FindAnyWidget("LockHint"));
+
+            if (st.Cracking)
+            {
+                if (crack)
+                    crack.Show(false);
+                if (hintP)
+                {
+                    string leftP = "#STR_OZ_CRACKING";
+                    leftP += "   " + st.CrackLeftSec.ToString() + " s";
+                    hintP.SetText(leftP);
+                }
+                return;
+            }
+
+            if (crack)
+            {
+                crack.Show(st.HasDecryptor);
+                if (st.HasDecryptor)
+                {
+                    TextWidget ctP = TextWidget.Cast(layoutRoot.FindAnyWidget("BtnCrackText"));
+                    if (ctP)
+                        ctP.SetText("#STR_OZ_CRACK");
+                }
+            }
             return;
         }
 
@@ -537,6 +638,10 @@ class OZ_PdaMenu : UIScriptedMenu
         ButtonWidget crack = ButtonWidget.Cast(layoutRoot.FindAnyWidget("BtnCrack"));
         if (crack)
             crack.Show(false);
+
+        ButtonWidget fac2 = ButtonWidget.Cast(layoutRoot.FindAnyWidget("BtnFactory"));
+        if (fac2)
+            fac2.Show(false);
 
         Widget pad = layoutRoot.FindAnyWidget("LockPad");
         if (pad)
@@ -854,6 +959,18 @@ class OZ_PdaMenu : UIScriptedMenu
         if (m_PinMode != "" && w && w.GetName() == "BtnCrack")
         {
             OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "crack", "{}");
+            return true;
+        }
+
+        if (w && w.GetName() == "BtnInitBig")
+        {
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "initiate", "{}");
+            return true;
+        }
+
+        if (m_PinMode != "" && w && w.GetName() == "BtnFactory")
+        {
+            OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "factory_reset", "{}");
             return true;
         }
 

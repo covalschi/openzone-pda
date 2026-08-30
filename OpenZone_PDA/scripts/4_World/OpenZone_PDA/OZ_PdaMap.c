@@ -23,6 +23,18 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         ok = false;
         error = "STR_OZ_ERR_UNKNOWN_OP";
 
+        // КАПСУЛА -- лише читання: власна пам'ять пристрою (мітки)
+        // показується, а мінятись їй більше нема куди. Живого чужого це
+        // не стосується: він працює як пристрій власника.
+        if (op == "transponder" || op == "marker_add" || op == "marker_del" || op == "marker_edit" || op == "route_add" || op == "route_clear" || op == "route_take")
+        {
+            if (OZ_PdaCapsule.IsFrozen(OZ_PdaLookup.HeldBy(sender)))
+            {
+                error = "STR_OZ_ERR_FROZEN";
+                return "";
+            }
+        }
+
         if (op == "state")
             return State(sender, ok, error);
 
@@ -41,6 +53,18 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         if (op == "carrier_add")
             return CarrierAdd(json, sender, ok, error);
 
+        if (op == "route_add")
+            return RouteAdd(json, sender, ok, error);
+
+        if (op == "route_clear")
+            return RouteClear(sender, ok, error);
+
+        if (op == "route_write")
+            return RouteWrite(sender, ok, error);
+
+        if (op == "route_take")
+            return RouteTake(sender, ok, error);
+
         return "";
     }
 
@@ -48,6 +72,219 @@ class OZ_PdaHandlerMap : OZ_PageHandler
     //
     // Читаються й пишуться на самому ПРИСТРОЇ. Через це межа в профілі щось
     // означає, а вкрадений КПК віддає чужі схованки -- обидва навмисно.
+
+    // ------------------------------------------------------------ маршрут
+    //
+    // Маршрут -- впорядковані КОПІЇ міток пристрою. Копії навмисно: мітку
+    // можна правити чи видаляти, а нитка маршруту лишається такою, якою її
+    // склали. Стеля -- та сама, що в міток.
+
+    private OZ_MarkerList LoadRouteOf(OZ_PDA_Base pda)
+    {
+        OZ_MarkerList r = new OZ_MarkerList();
+        if (pda.OZ_RouteJson() == "")
+            return r;
+
+        string err;
+        OZ_MarkerList parsed;
+        if (JsonFileLoader<OZ_MarkerList>.LoadData(pda.OZ_RouteJson(), parsed, err) && parsed && parsed.Items)
+            return parsed;
+        return r;
+    }
+
+    private bool FlushRoute(OZ_PDA_Base pda, OZ_MarkerList r, out string error)
+    {
+        string outJson;
+        string err;
+        if (!JsonFileLoader<OZ_MarkerList>.MakeData(r, outJson, err, false))
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return false;
+        }
+        pda.OZ_SetRouteJson(outJson);
+        return true;
+    }
+
+    private string RouteAdd(string json, PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        if (!pda)
+        {
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return "";
+        }
+
+        OZ_MarkerRef r;
+        string err;
+        if (!JsonFileLoader<OZ_MarkerRef>.LoadData(json, r, err) || !r || r.Id == "")
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        OZ_MarkerList mine = LoadMarkers(pda);
+        OZ_MapMarker src = null;
+        for (int i = 0; i < mine.Items.Count(); i++)
+        {
+            if (mine.Items[i].Id == r.Id)
+            {
+                src = mine.Items[i];
+                break;
+            }
+        }
+        if (!src)
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        OZ_MarkerList route = LoadRouteOf(pda);
+
+        for (int d = 0; d < route.Items.Count(); d++)
+        {
+            if (route.Items[d].Id == src.Id)
+            {
+                error = "STR_OZ_ERR_CARRIER_DUP";
+                return "";
+            }
+        }
+
+        int limit = 0;
+        OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(pda.GetType());
+        if (prof)
+            limit = MarkerLimit(prof);
+        if (limit <= 0 || route.Items.Count() >= limit)
+        {
+            error = "STR_OZ_ERR_MARKERS_FULL";
+            return "";
+        }
+
+        OZ_MapMarker cp = new OZ_MapMarker();
+        cp.Id   = src.Id;
+        cp.Name = src.Name;
+        cp.Desc = src.Desc;
+        cp.Pos  = src.Pos;
+        route.Items.Insert(cp);
+
+        if (!FlushRoute(pda, route, error))
+            return "";
+
+        ok = true;
+        error = "";
+        return "";
+    }
+
+    private string RouteClear(PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        if (!pda)
+        {
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return "";
+        }
+
+        pda.OZ_SetRouteJson("");
+        ok = true;
+        error = "";
+        return "";
+    }
+
+    // Маршрут на чип: НИТКА цілком, стеля -- ліміт міток класу чипа
+    // (рішення власника 2026-08-29). Запис дозволений і капсулі: чип --
+    // фізичний носій, не пам'ять пристрою.
+    private string RouteWrite(PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        if (!pda)
+        {
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return "";
+        }
+
+        OZ_MarkerList route = LoadRouteOf(pda);
+        if (route.Items.Count() == 0)
+        {
+            error = "STR_OZ_ERR_ROUTE_EMPTY";
+            return "";
+        }
+
+        OZ_DataCarrier_Base c = OZ_CarrierOps.ResolveWritable(sender, error);
+        if (!c)
+            return "";
+
+        OZ_CarrierSpec spec = OZ_PdaHardware.CarrierFor(c.GetType());
+        if (spec && spec.MaxMarks > 0 && route.Items.Count() > spec.MaxMarks)
+        {
+            error = "STR_OZ_ERR_MARKERS_FULL";
+            return "";
+        }
+
+        string outJson;
+        string err;
+        if (!JsonFileLoader<OZ_MarkerList>.MakeData(route, outJson, err, false))
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        c.OZ_WriteRoute(outJson, route.Items.Count());
+        ok = true;
+        error = "";
+        return "";
+    }
+
+    // З чипа в пристрій: маршрут ЗАМІНЮЄТЬСЯ, а не зливається -- нитка
+    // або твоя, або чужа, половинка від кожної не веде нікуди.
+    private string RouteTake(PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        if (!pda)
+        {
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return "";
+        }
+
+        OZ_DataCarrier_Base c = OZ_CarrierOps.Resolve(sender, error);
+        if (!c)
+            return "";
+
+        if (c.OZ_Route() == "")
+        {
+            error = "STR_OZ_ERR_ROUTE_EMPTY";
+            return "";
+        }
+
+        OZ_MarkerList incoming;
+        string err;
+        if (!JsonFileLoader<OZ_MarkerList>.LoadData(c.OZ_Route(), incoming, err) || !incoming || !incoming.Items)
+        {
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        int limit = 0;
+        OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(pda.GetType());
+        if (prof)
+            limit = MarkerLimit(prof);
+        if (limit <= 0 || incoming.Items.Count() > limit)
+        {
+            error = "STR_OZ_ERR_MARKERS_FULL";
+            return "";
+        }
+
+        pda.OZ_SetRouteJson(c.OZ_Route());
+        ok = true;
+        error = "";
+        return "";
+    }
 
     // Експорт ОДНІЄЇ мітки на носій -- вибір гравця, а не «все гуртом».
     // Повторний експорт тієї самої мітки ОНОВЛЮЄ її на чипі за Id, а не
@@ -414,6 +651,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             st.AntennaRangeM = range;
 
             st.Markers = LoadMarkers(pda).Items;
+            st.Route   = LoadRouteOf(pda).Items;
 
             OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(pda.GetType());
             if (prof)
@@ -430,6 +668,11 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         array<Man> near = new array<Man>();
         OZ_Spatial.PlayersInRadius(me.GetPosition(), range, near);
 
+        // ШПИГУНСЬКА плата ламає приватність: бачить усіх, у кого
+        // транспондер узагалі не "off". Ціна -- лічені хвилини ресурсу,
+        // який плата списує сама (OZ_SpyAntennaBehaviour).
+        bool spyEye = SpyActive(pda);
+
         for (int i = 0; i < near.Count(); i++)
         {
             PlayerBase other = PlayerBase.Cast(near[i]);
@@ -444,7 +687,10 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             OZ_PlayerData od = OZ_PlayerStore.Load(otherUid);
 
             if (!Broadcasts(od, myUid))
-                continue;
+            {
+                if (!spyEye || od.TransponderMode == "off" || od.TransponderMode == "")
+                    continue;
+            }
 
             // Вести маячок теж потрібна АНТЕНА, і саме в того, хто веде.
             // Інакше вийшло б, що чужий пристрій світить позицію тим, чим
@@ -460,6 +706,29 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         }
 
         return Serialise(st, ok, error);
+    }
+
+    // Чи в КПК стоїть жива шпигунська плата.
+    private bool SpyActive(OZ_PDA_Base pda)
+    {
+        if (!pda)
+            return false;
+
+        for (int i = 0; i < OZ_PdaConst.MODULE_SLOTS_MAX; i++)
+        {
+            string cls = pda.OZ_ModuleClass(i);
+            if (cls == "")
+                continue;
+
+            OZ_ModuleSpec spec = OZ_PdaHardware.ModuleFor(cls);
+            if (!spec || spec.SpyMinutes <= 0)
+                continue;
+
+            OZ_Module_SpyAntenna plate = OZ_Module_SpyAntenna.Cast(pda.OZ_Attached(OZ_PdaConst.ModuleSlot(i)));
+            if (plate && plate.OZ_SpyAlive())
+                return true;
+        }
+        return false;
     }
 
     // Кому цей гравець показує свою позицію.

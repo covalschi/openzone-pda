@@ -51,7 +51,7 @@ FrameWidgetClass OZ_PdaRoot {
    halign center_ref
    valign center_ref
    position 0 0
-   size 1280 640
+   size 1403 590
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -65,8 +65,8 @@ FrameWidgetClass OZ_PdaRoot {
      ignorepointer 1
      clipchildren 1
      color 0.055 0.055 0.062 1
-     position 87 67
-     size 1106 442
+     position 18 18
+     size 1367 546
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -79,7 +79,7 @@ FrameWidgetClass OZ_PdaRoot {
       WrapSpacerWidgetClass TabRail {
        visible 1
        position 0 0
-       size 60 442
+       size 60 546
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -91,7 +91,7 @@ FrameWidgetClass OZ_PdaRoot {
        ignorepointer 1
        color 0.125 0.125 0.137 1
        position 0 0
-       size 60 442
+       size 60 546
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -104,7 +104,7 @@ FrameWidgetClass OZ_PdaRoot {
        ignorepointer 1
        color 0.149 0.149 0.165 1
        position 60 0
-       size 1 442
+       size 1 546
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -117,7 +117,7 @@ FrameWidgetClass OZ_PdaRoot {
       FrameWidgetClass PageHost {
        visible 1
        position 61 0
-       size 1045 414
+       size 1306 518
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -130,8 +130,8 @@ FrameWidgetClass OZ_PdaRoot {
        visible 1
        ignorepointer 1
        color 0.078 0.078 0.086 1
-       position 61 414
-       size 1045 28
+       position 61 518
+       size 1306 28
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -197,11 +197,126 @@ FrameWidgetClass OZ_PdaRoot {
 
       // Екран блокування. Лежить ПОВЕРХ усього вмісту й перекриває його
       // цілком: замкнений пристрій не має показувати навіть назви вкладок.
+      PanelWidgetClass InitPanel {
+       visible 0
+       position 0 0
+       size 1306 518
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 0.043 0.043 0.051 1
+       priority 7
+       style rover_sim_colorable
+       {
+        TextWidgetClass InitTitle {
+         visible 1
+         ignorepointer 1
+         halign center_ref
+         valign center_ref
+         position 0 -60
+         size 600 24
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         color 1 0.478 0.102 1
+         text ""
+         font "gui/fonts/MetronBook21"
+         "exact text" 1
+         "text halign" center
+         "text valign" center
+         priority 2
+        }
+
+        TextWidgetClass InitHint {
+         visible 1
+         ignorepointer 1
+         halign center_ref
+         valign center_ref
+         position 0 -25
+         size 700 36
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         color 0.65 0.65 0.68 1
+         text ""
+         font "gui/fonts/MetronBook14"
+         "exact text" 1
+         "text halign" center
+         "text valign" center
+         priority 2
+        }
+
+        ButtonWidgetClass BtnInitBig {
+         visible 1
+         halign center_ref
+         valign center_ref
+         position 0 30
+         size 260 32
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         text ""
+         priority 3
+         {
+          PanelWidgetClass BtnInitBigEdge {
+           visible 1
+           ignorepointer 1
+           color 1 0.478 0.102 1
+           position -1 -1
+           size 262 34
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           priority 0
+           style rover_sim_colorable
+          }
+
+          PanelWidgetClass BtnInitBigBg {
+           visible 1
+           ignorepointer 1
+           color 0.145 0.145 0.161 1
+           position 0 0
+           size 260 32
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           priority 0
+           style rover_sim_colorable
+          }
+
+          TextWidgetClass BtnInitBigText {
+           visible 1
+           ignorepointer 1
+           position 0 0
+           size 260 32
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           color 1 0.478 0.102 1
+           text ""
+           font "gui/fonts/MetronBook14"
+           "exact text" 1
+           "text halign" center
+           "text valign" center
+           priority 2
+          }
+         }
+        }
+       }
+      }
+
       PanelWidgetClass LockPanel {
        visible 0
        color 0.043 0.043 0.051 1
        position 0 0
-       size 1106 442
+       size 1367 546
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -989,11 +1104,72 @@ FrameWidgetClass OZ_PdaRoot {
         }
         // Кнопка зламу. Показується ЛИШЕ на запечатаному пристрої з
         // дешифратором -- на будь-якому іншому їй нема чого робити.
+        ButtonWidgetClass BtnFactory {
+         visible 0
+         halign center_ref
+         valign center_ref
+         position 0 145
+         size 240 26
+         hexactpos 1
+         vexactpos 1
+         hexactsize 1
+         vexactsize 1
+         text ""
+         priority 3
+         {
+          PanelWidgetClass BtnFactoryEdge {
+           visible 1
+           ignorepointer 1
+           color 0.45 0.2 0.2 1
+           position -1 -1
+           size 242 28
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           priority 0
+           style rover_sim_colorable
+          }
+
+          PanelWidgetClass BtnFactoryBg {
+           visible 1
+           ignorepointer 1
+           color 0.145 0.145 0.161 1
+           position 0 0
+           size 240 26
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           priority 0
+           style rover_sim_colorable
+          }
+
+          TextWidgetClass BtnFactoryText {
+           visible 1
+           ignorepointer 1
+           position 0 0
+           size 240 26
+           hexactpos 1
+           vexactpos 1
+           hexactsize 1
+           vexactsize 1
+           color 0.9 0.45 0.35 1
+           text ""
+           font "gui/fonts/MetronBook14"
+           "exact text" 1
+           "text halign" center
+           "text valign" center
+           priority 2
+          }
+         }
+        }
+
         ButtonWidgetClass BtnCrack {
          visible 0
          halign center_ref
          valign center_ref
-         position 0 40
+         position 0 -160
          size 240 30
          hexactpos 1
          vexactpos 1
@@ -1080,7 +1256,7 @@ FrameWidgetClass OZ_PdaRoot {
      visible 1
      ignorepointer 1
      position 0 0
-     size 1280 640
+     size 1403 590
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -1121,7 +1297,6 @@ FrameWidgetClass OZ_PdaRoot {
      vexactsize 1
      priority 6
      text ""
-     style "DayZButton"
      {
      PanelWidgetClass BtnCloseEdge {
        visible 1
@@ -1135,6 +1310,37 @@ FrameWidgetClass OZ_PdaRoot {
        vexactsize 1
        priority 0
        style rover_sim_colorable
+      }
+      PanelWidgetClass BtnCloseBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 34 34
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnCloseText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 34 34
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 0.788 0.788 0.816 1
+       text "X"
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 15
+       "text halign" center
+       "text valign" center
+       priority 2
       }
      }
     }
