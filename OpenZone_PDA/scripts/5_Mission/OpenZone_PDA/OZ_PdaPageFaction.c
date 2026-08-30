@@ -21,13 +21,15 @@ class OZ_PdaPageFaction : OZ_PdaPage
     private ref array<Widget> m_RowWgts;
     private int m_RowsY = 0;
     private string m_Picked = "";     // ім'я обраного члена
-    private string m_PickedCand = ""; // ім'я обраного кандидата
 
     private ButtonWidget m_BtnKick;
     private ButtonWidget m_BtnLead;
     private ButtonWidget m_BtnInvite;
     private ButtonWidget m_BtnJoin;
     private ButtonWidget m_BtnRefuse;
+    private ButtonWidget m_BtnPromote;
+    private ButtonWidget m_BtnDemote;
+    private ButtonWidget m_BtnLeave;
 
     override string LayoutPath()
     {
@@ -49,6 +51,13 @@ class OZ_PdaPageFaction : OZ_PdaPage
         SetText("BtnFJoinText", "#STR_OZ_FACTION_JOIN");
         m_BtnRefuse = ButtonWidget.Cast(Wgt("BtnFRefuse"));
         SetText("BtnFRefuseText", "#STR_OZ_FACTION_REFUSE");
+
+        m_BtnPromote = ButtonWidget.Cast(Wgt("BtnFPromote"));
+        SetText("BtnFPromoteText", "#STR_OZ_FACTION_PROMOTE");
+        m_BtnDemote  = ButtonWidget.Cast(Wgt("BtnFDemote"));
+        SetText("BtnFDemoteText", "#STR_OZ_FACTION_DEMOTE");
+        m_BtnLeave   = ButtonWidget.Cast(Wgt("BtnFLeave"));
+        SetText("BtnFLeaveText", "#STR_OZ_FACTION_LEAVE");
     }
 
     override void OnSelected()
@@ -156,8 +165,6 @@ class OZ_PdaPageFaction : OZ_PdaPage
             m_Rows.SetSize(616, m_RowsY);
         }
 
-        // Кандидати -- текстом під діями (вибір циклічний кнопкою).
-        PaintCandidate();
         PaintButtons();
     }
 
@@ -186,9 +193,17 @@ class OZ_PdaPageFaction : OZ_PdaPage
                 n.SetColor(ARGB(255, 126, 200, 160));
         }
 
+        // У списку СВОЇХ головне звання -- фракційне: воно й вирішує, хто
+        // кому старший усередині. Сталкерське показуємо, коли фракційного
+        // немає, -- порожній стовпчик не сказав би нічого.
         TextWidget rk = TextWidget.Cast(w.FindAnyWidget("FRowRank"));
         if (rk)
-            rk.SetText(m.Rank);
+        {
+            if (m.FRank != "")
+                rk.SetText(m.FRank);
+            else
+                rk.SetText(m.Rank);
+        }
 
         // Зебра: парні рядки трохи світліші, оку легше вести рядок.
         Widget bg = w.FindAnyWidget("FRowBg");
@@ -200,32 +215,86 @@ class OZ_PdaPageFaction : OZ_PdaPage
             pick.Show(m.Name == m_Picked);
     }
 
-    private void PaintCandidate()
+    // Кого вибрано в СУСІДНІЙ половині вкладки. Саме його кличуть у
+    // фракцію: у списку своїх його ще немає й бути не може.
+    private string ContactPick()
     {
-        string label = "";
-        if (m_St && m_St.MeLeader && m_St.Candidates && m_St.Candidates.Count() > 0)
-        {
-            if (m_PickedCand == "" || m_St.Candidates.Find(m_PickedCand) == -1)
-                m_PickedCand = m_St.Candidates[0];
-            label = Widget.TranslateString("#STR_OZ_FACTION_CAND") + "  " + m_PickedCand + "  (" + m_St.Candidates.Count().ToString() + ")";
-        }
-        else
-            m_PickedCand = "";
+        OZ_PdaMenu menu = OZ_PdaMenu.Cast(GetGame().GetUIManager().FindMenu(OZ_PdaConst.MENU_PDA));
+        if (!menu)
+            return "";
 
-        SetText("CandText", label);
+        OZ_PdaPageContacts c = OZ_PdaPageContacts.Cast(menu.PageOf(OZ_PdaConst.PAGE_CONTACTS));
+        if (!c)
+            return "";
+        return c.PickedName();
     }
 
     private void PaintButtons()
     {
         bool lead = m_St && m_St.MeLeader;
+        bool mine = m_St && m_St.Faction != "";
         bool pickedOther = m_Picked != "" && m_St && !PickedIsMe();
 
+        // Лідерські дії над обраним СВОЇМ.
         if (m_BtnKick)
             m_BtnKick.Show(lead && pickedOther);
         if (m_BtnLead)
             m_BtnLead.Show(lead && pickedOther);
+
+        // Підвищення й зниження -- лише коли у фракції взагалі є драбина:
+        // кнопка, якій нема куди рухати, гірша за її відсутність.
+        bool ladder = m_St && m_St.RankIds && m_St.RankIds.Count() > 0;
+        if (m_BtnPromote)
+            m_BtnPromote.Show(lead && pickedOther && ladder);
+        if (m_BtnDemote)
+            m_BtnDemote.Show(lead && pickedOther && ladder);
+
+        // Покликати -- того, кого видно ЛІВОРУЧ, у списку людей.
         if (m_BtnInvite)
-            m_BtnInvite.Show(lead && m_PickedCand != "");
+            m_BtnInvite.Show(lead && ContactPick() != "");
+
+        // Піти можна завжди, поки є звідки. Лідер теж: посада перейде
+        // наступному сама.
+        if (m_BtnLeave)
+            m_BtnLeave.Show(mine);
+    }
+
+    // Сусідня сходинка драбини для обраного. `up` -- вгору, інакше вниз.
+    // Порожній рядок означає «зняти звання зовсім», і це законна
+    // відповідь: зниження з найнижчої сходинки саме цим і є.
+    private string NextRank(bool up)
+    {
+        if (!m_St || !m_St.RankIds || m_St.RankIds.Count() == 0)
+            return "";
+
+        OZ_FactionMember m = PickedMember();
+        if (!m)
+            return "";
+
+        int at = m_St.RankIds.Find(m.FRankId);   // -1, коли звання немає
+
+        if (up)
+        {
+            if (at + 1 >= m_St.RankIds.Count())
+                return m.FRankId;   // вище нікуди -- лишаємо як є
+            return m_St.RankIds[at + 1];
+        }
+
+        if (at <= 0)
+            return "";   // нижче найнижчої -- без звання
+        return m_St.RankIds[at - 1];
+    }
+
+    private OZ_FactionMember PickedMember()
+    {
+        if (!m_St || !m_St.Members)
+            return null;
+        for (int i = 0; i < m_St.Members.Count(); i++)
+        {
+            if (m_St.Members[i].Name == m_Picked)
+                return m_St.Members[i];
+        }
+        return null;
     }
 
     private bool PickedIsMe()
@@ -280,31 +349,35 @@ class OZ_PdaPageFaction : OZ_PdaPage
 
         if (w == m_BtnInvite)
         {
-            // Клік по тексту кандидата циклить список; кнопка кличе обраного.
-            if (m_PickedCand != "")
-                OZ_Rpc.RoleRequest("invite", m_PickedCand, "");
+            // Кличемо того, кого вибрано в лівій половині вкладки.
+            string who = ContactPick();
+            if (who == "")
+            {
+                SetHintSticky("FactionHint", "#STR_OZ_FRIEND_PICK");
+                return true;
+            }
+            OZ_Rpc.RoleRequest("invite", who, "");
             return true;
         }
 
-        // Клік по рядку кандидатів циклить вибір.
-        if (w.GetName() == "CandText" || w.GetName() == "BtnCandNext")
+        if (w == m_BtnPromote || w == m_BtnDemote)
         {
-            CycleCandidate();
+            if (m_Picked == "")
+                return true;
+
+            // Сходинку рахує клієнт -- він має драбину, -- але право на
+            // саму зміну перевіряють сервер і міст, як і завжди.
+            OZ_Rpc.RoleRequest(OZ_RoleOp.FRANK_SET, m_Picked, NextRank(w == m_BtnPromote));
+            return true;
+        }
+
+        if (w == m_BtnLeave)
+        {
+            // Ціль не називаємо: піти можна тільки самому.
+            OZ_Rpc.RoleRequest("leave", "", "");
             return true;
         }
 
         return false;
-    }
-
-    private void CycleCandidate()
-    {
-        if (!m_St || !m_St.Candidates || m_St.Candidates.Count() == 0)
-            return;
-
-        int at = m_St.Candidates.Find(m_PickedCand);
-        at = (at + 1) % m_St.Candidates.Count();
-        m_PickedCand = m_St.Candidates[at];
-        PaintCandidate();
-        PaintButtons();
     }
 }

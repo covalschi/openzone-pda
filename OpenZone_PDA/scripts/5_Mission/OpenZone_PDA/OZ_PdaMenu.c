@@ -451,6 +451,15 @@ class OZ_PdaMenu : UIScriptedMenu
         PaintTabs();
     }
 
+    // Сторінка на ім'я, або null. Потрібна сусідці по вкладці: фракція
+    // питає контакти, кого там вибрано, і саме тому вони разом.
+    OZ_PdaPage PageOf(string pageId)
+    {
+        if (!m_Pages || !m_Pages.Contains(pageId))
+            return null;
+        return m_Pages.Get(pageId);
+    }
+
     // Сторінка-супутник поточної, або порожньо. Одна відповідь на питання
     // «кого ще стосується те, що зараз на екрані»: оновлення, кліки, миша.
     private OZ_PdaPage Companion()

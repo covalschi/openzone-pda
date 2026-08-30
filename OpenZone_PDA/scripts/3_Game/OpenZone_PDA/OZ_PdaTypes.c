@@ -254,7 +254,12 @@ class OZ_ContactList
 class OZ_FactionMember
 {
     string Name = "";
+    // Сталкерське звання -- особисте, поза фракцією.
     string Rank = "";
+    // Внутрішньофракційне: підпис для екрана і слаг для арифметики
+    // «наступне вище». Порожньо -- звання немає.
+    string FRank   = "";
+    string FRankId = "";
     bool Leader = false;
     bool Online = false;
     bool Me     = false;
@@ -277,10 +282,17 @@ class OZ_FactionState
     // Кого лідер може покликати: друзі поза фракцією, іменами.
     ref array<string> Candidates;
 
+    // Драбина ЦІЄЇ фракції, знизу вгору: слаги й підписи поруч. Порожня --
+    // звань у фракції не заводили, і кнопки підвищення нема сенсу малювати.
+    ref array<string> RankIds;
+    ref array<string> RankNames;
+
     void OZ_FactionState()
     {
         Members    = new array<ref OZ_FactionMember>();
         Candidates = new array<string>();
+        RankIds    = new array<string>();
+        RankNames  = new array<string>();
     }
 }
 

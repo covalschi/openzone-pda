@@ -114,7 +114,7 @@ FrameWidgetClass OZ_PageFaction {
   ScrollWidgetClass FactionScroll {
    visible 1
    position 660 110
-   size 626 250
+   size 626 220
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -125,7 +125,7 @@ FrameWidgetClass OZ_PageFaction {
     PanelWidgetClass FactionRows {
      visible 1
      position 0 0
-     size 616 250
+     size 616 220
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -138,7 +138,7 @@ FrameWidgetClass OZ_PageFaction {
   PanelWidgetClass InvitePane {
    visible 0
    color 0.09 0.07 0.045 1
-   position 660 366
+   position 660 336
    size 626 60
    hexactpos 1
    vexactpos 1
@@ -303,7 +303,7 @@ FrameWidgetClass OZ_PageFaction {
      visible 1
      ignorepointer 1
      color 1 0.478 0.102 1
-     position 660 432
+     position 660 402
      size 3 16
      hexactpos 1
      vexactpos 1
@@ -315,7 +315,7 @@ FrameWidgetClass OZ_PageFaction {
     TextWidgetClass SecActLbl {
      visible 1
      ignorepointer 1
-     position 672 431
+     position 672 401
      size 614 18
      hexactpos 1
      vexactpos 1
@@ -334,7 +334,7 @@ FrameWidgetClass OZ_PageFaction {
      visible 1
      ignorepointer 1
      color 0.22 0.24 0.28 1
-     position 660 456
+     position 660 426
      size 626 1
      hexactpos 1
      vexactpos 1
@@ -344,9 +344,183 @@ FrameWidgetClass OZ_PageFaction {
      style rover_sim_colorable
     }
 
+    ButtonWidgetClass BtnFPromote {
+     visible 0
+     position 660 430
+     size 200 30
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnFPromoteEdge {
+       visible 1
+       ignorepointer 1
+       color 0.2 0.35 0.24 1
+       position -1 -1
+       size 202 32
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+      PanelWidgetClass BtnFPromoteBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.2 0.145 1
+       position 0 0
+       size 200 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnFPromoteText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 200 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 0.494 0.784 0.627 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
+    ButtonWidgetClass BtnFDemote {
+     visible 0
+     position 872 430
+     size 200 30
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnFDemoteEdge {
+       visible 1
+       ignorepointer 1
+       color 0.31 0.31 0.35 1
+       position -1 -1
+       size 202 32
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+      PanelWidgetClass BtnFDemoteBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 200 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnFDemoteText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 200 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
+    ButtonWidgetClass BtnFLeave {
+     visible 0
+     position 1084 464
+     size 200 30
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnFLeaveEdge {
+       visible 1
+       ignorepointer 1
+       color 0.45 0.2 0.2 1
+       position -1 -1
+       size 202 32
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+      PanelWidgetClass BtnFLeaveBg {
+       visible 1
+       ignorepointer 1
+       color 0.2 0.145 0.145 1
+       position 0 0
+       size 200 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnFLeaveText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 200 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 0.9 0.45 0.35 1
+       text ""
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
     ButtonWidgetClass BtnFKick {
      visible 0
-     position 660 482
+     position 872 464
      size 200 30
      hexactpos 1
      vexactpos 1
@@ -404,7 +578,7 @@ FrameWidgetClass OZ_PageFaction {
 
     ButtonWidgetClass BtnFLead {
      visible 0
-     position 872 482
+     position 1084 430
      size 200 30
      hexactpos 1
      vexactpos 1
@@ -460,45 +634,9 @@ FrameWidgetClass OZ_PageFaction {
      }
     }
 
-  // Рядок кандидата ділить смугу з заголовком ACTIONS: сам заголовок --
-  // прозорий напис, його літери кінчаються біля x 745, тож кандидат стає
-  // праворуч. Окремої смуги для нього в колонці вже немає.
-  ButtonWidgetClass BtnCandNext {
-   visible 1
-   position 806 430
-   size 480 26
-   hexactpos 1
-   vexactpos 1
-   hexactsize 1
-   vexactsize 1
-   text ""
-   priority 3
-   {
-
-    TextWidgetClass CandText {
-     visible 1
-     ignorepointer 1
-     position 0 0
-     size 480 26
-     hexactpos 1
-     vexactpos 1
-     hexactsize 1
-     vexactsize 1
-     color 0.541 0.541 0.565 1
-     text ""
-     font "gui/fonts/sdf_MetronBook24"
-     "exact text" 1
-     "exact text size" 13
-     "text halign" left
-     "text valign" center
-     priority 2
-    }
-   }
-  }
-
     ButtonWidgetClass BtnFInvite {
      visible 0
-     position 1084 482
+     position 660 464
      size 200 30
      hexactpos 1
      vexactpos 1
@@ -558,7 +696,7 @@ FrameWidgetClass OZ_PageFaction {
     TextWidgetClass FactionHint {
      visible 1
      ignorepointer 1
-     position 660 458
+     position 660 496
      size 626 22
      hexactpos 1
      vexactpos 1

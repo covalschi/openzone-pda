@@ -56,6 +56,10 @@ class OZ_PdaHandlerFaction : OZ_PageHandler
         st.MyRank      = OZ_RoleNames.Of(OZ_Roles.RankOf(uid));
         st.MeLeader    = OZ_Roles.IsLeader(uid);
 
+        // Драбина фракції -- щоб лідер міг підвищувати й знижувати, не
+        // набираючи слагів: клієнт бере сусідню сходинку сам.
+        OZ_Roles.FRankLadder(slug, st.RankIds, st.RankNames);
+
         // Члени: кеш проекцій за цей запуск плюс усі онлайн із цією
         // фракцією -- і я сам. Повного вічного списку сервер не має, і
         // чесніше показати відоме, ніж вигадувати.
@@ -85,7 +89,10 @@ class OZ_PdaHandlerFaction : OZ_PageHandler
             m.Name   = md.Name;
             if (m.Name == "")
                 continue;   // безіменний кеш нікому нічого не скаже
-            m.Rank   = OZ_RoleNames.Of(OZ_Roles.RankOf(uids[i]));
+            m.Rank    = OZ_RoleNames.Of(OZ_Roles.RankOf(uids[i]));
+            m.FRankId = OZ_Roles.FRankOf(uids[i]);
+            if (m.FRankId != "")
+                m.FRank = OZ_RoleNames.Of(slug + ":" + m.FRankId);
             m.Leader = OZ_Roles.IsLeader(uids[i]);
             m.Online = OZ_ChatWho.Online(uids[i]) != null;
             m.Me     = uids[i] == uid;
