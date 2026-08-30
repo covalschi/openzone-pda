@@ -4,7 +4,7 @@
 ButtonWidgetClass OZ_FactionRow {
  visible 1
  position 0 0
- size 560 32
+ size 616 32
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -16,7 +16,7 @@ ButtonWidgetClass OZ_FactionRow {
    ignorepointer 1
    color 0.055 0.055 0.062 1
    position 0 0
-   size 560 30
+   size 616 30
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -43,7 +43,7 @@ ButtonWidgetClass OZ_FactionRow {
    visible 1
    ignorepointer 1
    position 12 0
-   size 330 30
+   size 380 30
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -60,7 +60,7 @@ ButtonWidgetClass OZ_FactionRow {
   TextWidgetClass FRowRank {
    visible 1
    ignorepointer 1
-   position 350 0
+   position 400 0
    size 200 30
    hexactpos 1
    vexactpos 1

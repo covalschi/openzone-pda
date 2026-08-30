@@ -81,7 +81,9 @@ modded class OZ_VppAdminMenu
                 RebuildHwList();
             }
             else
+            {
                 Hint("Hardware.json does not parse: " + herr);
+            }
             return;
         }
 

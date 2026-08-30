@@ -29,7 +29,12 @@ class OZ_PdaHandlerFaction : OZ_PageHandler
 
         OZ_FactionState st = new OZ_FactionState();
 
-        string slug = OZ_Factions.OfUid(uid);
+        // БАЗОВА фракцiя тут не рахується за фракцiю. «Сталкери» -- це всi
+        // в Зонi, а не органiзацiя: складу в неї немає, лiдера немає, i
+        // поiменний перелiк усiх сталкерiв сервера на цьому екранi був би
+        // не лише безглуздий, а й видав би людей, яких нiхто не питав.
+        // Екран каже чесне «фракцiї немає» -- те саме, що одинаковi.
+        string slug = OZ_Factions.OrgOfUid(uid);
         st.Faction = slug;
 
         OZ_FactionInvite inv = OZ_FactionInvites.Pending(uid);

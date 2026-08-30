@@ -99,7 +99,10 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
         p.Pages.Insert(OZ_PdaConst.PAGE_DEVICE);
         p.Pages.Insert(OZ_PdaConst.PAGE_QUESTS);
         p.Pages.Insert(OZ_PdaConst.PAGE_CONTACTS);
-        // Фракція -- одразу після людей: спершу хто навколо, потім чиї вони.
+        // Фракція -- одразу після людей, і це не лише порядок: коли в наборі
+        // є обидві, вони діляться ОДНІЄЮ вкладкою (ліворуч люди, праворуч
+        // свої). Прибери звідси контакти -- фракція знову отримає власну
+        // кнопку, приліпитись їй буде нема до чого.
         p.Pages.Insert(OZ_PdaConst.PAGE_FACTION);
         p.Pages.Insert(OZ_PdaConst.PAGE_NOTES);
         p.Pages.Insert(OZ_PdaConst.PAGE_MAP);

@@ -227,6 +227,10 @@ class OZ_PdaMenu : UIScriptedMenu
 
         if (m_Current != "" && m_Pages.Contains(m_Current))
             m_Pages.Get(m_Current).OnRefresh();
+
+        OZ_PdaPage mate = Companion();
+        if (mate)
+            mate.OnRefresh();
     }
 
     // ----------------------------------------------------------- відповіді
@@ -332,6 +336,21 @@ class OZ_PdaMenu : UIScriptedMenu
 
         m_Built = true;
 
+        // ФРАКЦІЯ ЖИВЕ В ОДНІЙ ВКЛАДЦІ З КОНТАКТАМИ (рішення власника
+        // 2026-08-30): ліворуч люди, праворуч свої. Це те саме питання --
+        // «хто навколо і чиї вони», -- і розводити його на дві вкладки
+        // означало клацати між ними на кожну думку.
+        //
+        // Сторінки лишаються ДВІ: два серверні обробники, два конверти, два
+        // незалежні оновлення. Спільна в них тільки вкладка -- і рівно це
+        // тут і зроблено, без злиття коду сторінок в одну купу.
+        //
+        // Якщо профіль дав фракцію БЕЗ контактів, вона отримує власну
+        // вкладку, як і раніше: приліпити її нема до чого.
+        m_Companion = "";
+        if (st.Pages.Find(OZ_PdaConst.PAGE_CONTACTS) != -1 && st.Pages.Find(OZ_PdaConst.PAGE_FACTION) != -1)
+            m_Companion = OZ_PdaConst.PAGE_FACTION;
+
         // Порядок задає ПРОФІЛЬ, не реєстр: адмін вирішує, що йде першим.
         for (int i = 0; i < st.Pages.Count(); i++)
             AddTab(st.Pages[i]);
@@ -340,24 +359,40 @@ class OZ_PdaMenu : UIScriptedMenu
             Select(st.Pages[0]);
     }
 
+    // Сторінка, що ділить вкладку з контактами. Порожньо -- ділити нема чому.
+    private string m_Companion = "";
+
+    // Чия це вкладка. Для сторінки-супутника -- вкладка контактів.
+    private string TabOf(string pageId)
+    {
+        if (m_Companion != "" && pageId == m_Companion)
+            return OZ_PdaConst.PAGE_CONTACTS;
+        return pageId;
+    }
+
     private void AddTab(string pageId)
     {
         OZ_PdaPage page = OZ_PdaPageFactory.Make(pageId);
         if (!page)
             return;   // клієнт не вміє малювати -- вкладки не буде, причина в лозі
 
-        Widget tab = GetGame().GetWorkspace().CreateWidgets("OpenZone_PDA/gui/layouts/oz_pda_tab.layout", m_TabRail);
-        if (!tab)
-            return;
+        // Супутник отримує сторінку, але НЕ вкладку: його показує та сама
+        // кнопка, що й контакти.
+        if (pageId != m_Companion)
+        {
+            Widget tab = GetGame().GetWorkspace().CreateWidgets("OpenZone_PDA/gui/layouts/oz_pda_tab.layout", m_TabRail);
+            if (!tab)
+                return;
 
-        tab.SetName(pageId);
-        tab.SetUserID(1);         // так OnClick відрізняє вкладку від решти
+            tab.SetName(pageId);
+            tab.SetUserID(1);         // так OnClick відрізняє вкладку від решти
 
-        TextWidget glyph = TextWidget.Cast(tab.FindAnyWidget("TabGlyph"));
-        if (glyph)
-            glyph.SetText(OZ_PdaPageFactory.Glyph(pageId));
+            TextWidget glyph = TextWidget.Cast(tab.FindAnyWidget("TabGlyph"));
+            if (glyph)
+                glyph.SetText(OZ_PdaPageFactory.Glyph(pageId));
 
-        m_Tabs.Insert(tab);
+            m_Tabs.Insert(tab);
+        }
 
         page.Init(pageId, m_PageHost);
         page.Show(false);
@@ -366,6 +401,12 @@ class OZ_PdaMenu : UIScriptedMenu
 
     void Select(string pageId)
     {
+        // Обрати супутник -- це обрати вкладку, у якій він живе. Інакше
+        // «перейди на фракцію» лишило б половину екрана порожньою: вкладки
+        // з таким іменем немає, а пара, яку вона показує, сховалась би.
+        if (m_Companion != "" && pageId == m_Companion)
+            pageId = TabOf(pageId);
+
         if (m_Current == pageId)
             return;
 
@@ -380,6 +421,16 @@ class OZ_PdaMenu : UIScriptedMenu
             m_Pages.Get(m_Current).OnDeselected();
         }
 
+        // Супутник ховається разом зі своєю парою -- і показується разом.
+        if (m_Companion != "" && m_Pages.Contains(m_Companion))
+        {
+            if (TabOf(m_Companion) == TabOf(m_Current))
+            {
+                m_Pages.Get(m_Companion).Show(false);
+                m_Pages.Get(m_Companion).OnDeselected();
+            }
+        }
+
         m_Current = pageId;
 
         if (m_Pages.Contains(pageId))
@@ -388,7 +439,31 @@ class OZ_PdaMenu : UIScriptedMenu
             m_Pages.Get(pageId).OnSelected();
         }
 
+        if (m_Companion != "" && m_Pages.Contains(m_Companion))
+        {
+            if (TabOf(m_Companion) == TabOf(pageId) && m_Companion != pageId)
+            {
+                m_Pages.Get(m_Companion).Show(true);
+                m_Pages.Get(m_Companion).OnSelected();
+            }
+        }
+
         PaintTabs();
+    }
+
+    // Сторінка-супутник поточної, або порожньо. Одна відповідь на питання
+    // «кого ще стосується те, що зараз на екрані»: оновлення, кліки, миша.
+    private OZ_PdaPage Companion()
+    {
+        if (m_Companion == "" || m_Current == "")
+            return null;
+        if (m_Companion == m_Current)
+            return null;
+        if (TabOf(m_Companion) != TabOf(m_Current))
+            return null;
+        if (!m_Pages.Contains(m_Companion))
+            return null;
+        return m_Pages.Get(m_Companion);
     }
 
     private void PaintTabs()
@@ -1059,13 +1134,18 @@ class OZ_PdaMenu : UIScriptedMenu
         if (m_PinMode != "" && w && PinPadClick(w.GetName()))
             return true;
 
-        // Далі -- активна сторінка. Питаємо тільки її: сторінки, яку не видно,
-        // клікнути неможливо, і давати їй голос означало б ловити чужі кнопки.
+        // Далі -- активна сторінка й та, що ділить із нею вкладку. Решту не
+        // питаємо: сторінки, якої не видно, клікнути неможливо, і давати їй
+        // голос означало б ловити чужі кнопки.
         if (m_Current != "" && m_Pages.Contains(m_Current))
         {
             if (m_Pages.Get(m_Current).OnPageClick(w, x, y))
                 return true;
         }
+
+        OZ_PdaPage mate = Companion();
+        if (mate && mate.OnPageClick(w, x, y))
+            return true;
 
         return super.OnClick(w, x, y, button);
     }
@@ -1078,6 +1158,10 @@ class OZ_PdaMenu : UIScriptedMenu
                 return true;
         }
 
+        OZ_PdaPage mate = Companion();
+        if (mate && mate.OnPageMouseDown(w, x, y))
+            return true;
+
         return super.OnMouseButtonDown(w, x, y, button);
     }
 
@@ -1088,6 +1172,10 @@ class OZ_PdaMenu : UIScriptedMenu
         if (button == MouseState.LEFT && m_Current != "" && m_Pages.Contains(m_Current))
         {
             if (m_Pages.Get(m_Current).OnPageMouseUp(w, x, y))
+                return true;
+
+            OZ_PdaPage mate = Companion();
+            if (mate && mate.OnPageMouseUp(w, x, y))
                 return true;
         }
 
@@ -1101,6 +1189,10 @@ class OZ_PdaMenu : UIScriptedMenu
             if (m_Pages.Get(m_Current).OnPageItemSelected(w, row))
                 return true;
         }
+
+        OZ_PdaPage mate = Companion();
+        if (mate && mate.OnPageItemSelected(w, row))
+            return true;
 
         return super.OnItemSelected(w, x, y, row, column, oldRow, oldColumn);
     }
