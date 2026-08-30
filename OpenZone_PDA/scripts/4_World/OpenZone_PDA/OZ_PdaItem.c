@@ -92,8 +92,10 @@ class OZ_PDA_Base : ItemBase
     // --- лічильник невдалих спроб ---
     private ref array<string> m_FailUid;
     private ref array<int>    m_FailCount;
+    // Мить ОСТАННЬОЇ невдачі: від неї рахується вікно блокування.
+    private ref array<int>    m_FailAt;
 
-    static const int PIN_MAX_FAILS = 5;
+    // Межі -- з Tuning.json (OZ_PdaTune.PinMaxFails / PinLockoutMs).
 
     void OZ_PDA_Base()
     {
@@ -106,6 +108,7 @@ class OZ_PDA_Base : ItemBase
 
         m_FailUid   = new array<string>();
         m_FailCount = new array<int>();
+        m_FailAt    = new array<int>();
 
         m_ModuleAcc = new array<float>();
         for (int i = 0; i < OZ_PdaConst.MODULE_SLOTS_MAX; i++)
@@ -331,7 +334,46 @@ class OZ_PDA_Base : ItemBase
 
     bool OZ_IsLockedOut(string uid)
     {
-        return OZ_FailsFor(uid) >= PIN_MAX_FAILS;
+        if (OZ_FailsFor(uid) < OZ_PdaTune.PinMaxFails())
+            return false;
+
+        // Вікно блокування: сплило -- лічильник прощається сам. Нуль у
+        // конфізі означає стару поведінку «до рестарту сервера».
+        int windowMs = OZ_PdaTune.PinLockoutMs();
+        if (windowMs <= 0)
+            return true;
+
+        int i = m_FailUid.Find(uid);
+        if (i == -1)
+            return false;
+
+        if (GetGame().GetTime() - m_FailAt[i] >= windowMs)
+        {
+            ResetFails(uid);
+            return false;
+        }
+        return true;
+    }
+
+    // Скільки секунд лишилось до кінця блокування. 0 -- не заблоковано або
+    // блок до рестарту (тоді чесно нема чого рахувати).
+    int OZ_LockWaitSec(string uid)
+    {
+        if (!OZ_IsLockedOut(uid))
+            return 0;
+
+        int windowMs = OZ_PdaTune.PinLockoutMs();
+        if (windowMs <= 0)
+            return 0;
+
+        int i = m_FailUid.Find(uid);
+        if (i == -1)
+            return 0;
+
+        int left = m_FailAt[i] + windowMs - GetGame().GetTime();
+        if (left < 0)
+            left = 0;
+        return left / 1000;
     }
 
     int OZ_FailsFor(string uid)
@@ -742,9 +784,11 @@ class OZ_PDA_Base : ItemBase
         {
             m_FailUid.Insert(uid);
             m_FailCount.Insert(1);
+            m_FailAt.Insert(GetGame().GetTime());
             return;
         }
         m_FailCount[i] = m_FailCount[i] + 1;
+        m_FailAt[i]    = GetGame().GetTime();
     }
 
     private void ResetFails(string uid)

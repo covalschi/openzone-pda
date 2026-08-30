@@ -15,9 +15,8 @@
 
 class OZ_PdaContactSwap
 {
-    // Скільки чекати зустрічного тику. Хвилина -- це «поки ви стоїте поруч»,
-    // а не «поки ви обидва на сервері».
-    private static const int TTL_MS = 60000;
+    // Скільки чекати зустрічного тику -- з Tuning.json: «поки ви стоїте
+    // поруч», а не «поки ви обидва на сервері».
 
     // ПАРА «хто -> кому» -> коли пропозиція протухне.
     //
@@ -123,7 +122,7 @@ class OZ_PdaContactSwap
     {
         if (!s_Until)
             s_Until = new map<string, int>();
-        s_Until.Set(Pair(fromUid, toUid), GetGame().GetTime() + TTL_MS);
+        s_Until.Set(Pair(fromUid, toUid), GetGame().GetTime() + OZ_PdaTune.SwapOfferTtlMs());
     }
 
     private static void Forget(string fromUid, string toUid)

@@ -125,11 +125,12 @@ class OZ_PdaHud
     private static Widget s_Strip;
     private static Widget s_Toast;
     private static TextWidget s_MiniTrack;
-    // Кеш маячків для мінікарти: HUD питає стан карти сам, раз на кілька
-    // секунд, поки меню закрите -- сторінка карти цим же відповідатиме,
-    // коли відкрита.
+    // Кеш маячків для мінікарти: сервер ПУШИТЬ їх сам власникам працюючих
+    // антен -- HUD лише слухає (нуль запитів з клієнта).
     private static ref array<ref OZ_MapBeacon> s_Beacons;
-    private static float s_MapAcc = 0;
+    // Клієнтські ручки з Tuning.json приїздять у пуші маячків.
+    private static int s_AdvanceM = 30;
+    private static float s_ToastHoldMs = 8000;
     private static Widget s_Mini;
     private static TextWidget s_Power;
     private static TextWidget s_ToastWho;
@@ -143,7 +144,6 @@ class OZ_PdaHud
     // Тост тримається стільки, скільки людина читає один рядок.
     private static float s_ToastUntil = 0;
     private static bool s_ToastShown = false;
-    private static const float TOAST_HOLD_MS = 8000;
 
     // Раз на півсекунди. Заряд падає повільно, а от «дістав/сховав» гравець
     // помічає одразу, і чекати цілу секунду тут відчутно.
@@ -215,15 +215,9 @@ class OZ_PdaHud
         PaintToast(pda);
         PaintMini(pda);
 
-        // Маячки: свій запит стану карти, раз на ~4 секунди. Відповідь
-        // ловить OnPush -- той самий шлях, яким сторінка карти чує свою.
-        s_MapAcc += TICK;
-        if (s_MapAcc >= 4)
-        {
-            s_MapAcc = 0;
-            if (pda.OZ_IsOn())
-                OZ_Rpc.Request(OZ_PdaConst.PAGE_MAP, "state", "{}");
-        }
+        // Маячки HUD більше не просить: сервер сам пушить їх власникам
+        // працюючих антен (OZ_PdaHandlerMap.PushBeacons) -- нуль запитів
+        // із боку клієнта.
     }
 
     private static void PaintStrip(OZ_PDA_Base pda)
@@ -304,7 +298,7 @@ class OZ_PdaHud
         {
             vector rp = rc.Pos.ToVector();
             float rd = vector.Distance(Vector(at[0], 0, at[2]), Vector(rp[0], 0, rp[2]));
-            if (rd < 30)
+            if (rd < s_AdvanceM)
             {
                 OZ_PdaRoute.Advance();
                 rc = OZ_PdaRoute.Current();
@@ -371,12 +365,35 @@ class OZ_PdaHud
             }
             if (s_ToastText)
                 s_ToastText.SetText(np.Title);
-            s_ToastUntil = GetGame().GetTime() + TOAST_HOLD_MS;
+            s_ToastUntil = GetGame().GetTime() + s_ToastHoldMs;
             return;
         }
 
-        // Стан карти: забираємо маячки для мінікарти. Байдуже, хто
-        // спитав -- HUD чи відкрита сторінка: відповідь одна.
+        // Пуш маячків від сервера: список і дві клієнтські ручки тюнінгу.
+        if (pageId == OZ_PdaConst.PAGE_MAP && op == "beacons" && ok)
+        {
+            OZ_BeaconPush bp;
+            string berr;
+            if (JsonFileLoader<OZ_BeaconPush>.LoadData(json, bp, berr) && bp)
+            {
+                if (!s_Beacons)
+                    s_Beacons = new array<ref OZ_MapBeacon>();
+                s_Beacons.Clear();
+                if (bp.Beacons)
+                {
+                    for (int pb = 0; pb < bp.Beacons.Count(); pb++)
+                        s_Beacons.Insert(bp.Beacons[pb]);
+                }
+                if (bp.AdvanceM > 0)
+                    s_AdvanceM = bp.AdvanceM;
+                if (bp.ToastS > 0)
+                    s_ToastHoldMs = bp.ToastS * 1000;
+            }
+            return;
+        }
+
+        // Стан карти: забираємо маячки для мінікарти, коли сторінка карти
+        // відкрита і сама спитала. Відповідь одна на всіх.
         if (pageId == OZ_PdaConst.PAGE_MAP && op == "state" && ok)
         {
             OZ_MapState ms;
@@ -429,14 +446,16 @@ class OZ_PdaHud
         }
         if (s_ToastText)
             s_ToastText.SetText(p.Text);
-        s_ToastUntil = GetGame().GetTime() + TOAST_HOLD_MS;
+        s_ToastUntil = GetGame().GetTime() + s_ToastHoldMs;
         OZ_Log.Dbg("hud: toast armed until=" + s_ToastUntil.ToString() + " who=" + p.Who);
     }
 
     // Той самий пристрій, про який говорить сервер: руки, потім слот
     // носіння. Правило одне на весь мод -- інакше смужка й сервер говорили
     // б про різні речі.
-    private static OZ_PDA_Base Device()
+    // Публічний: меню теж малює заряд і замок з локальної сутності,
+    // без жодного запиту -- пристрій той самий.
+    static OZ_PDA_Base Device()
     {
         PlayerBase p = PlayerBase.Cast(GetGame().GetPlayer());
         if (!p)

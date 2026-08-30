@@ -102,7 +102,7 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
         OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(pda.GetType());
         if (prof && prof.Limits && prof.Limits.Notes > 0)
             return prof.Limits.Notes;
-        return OZ_PdaConst.NOTES_MAX;
+        return OZ_PdaTune.NotesMax();
     }
 
     private bool Flush(OZ_PDA_Base pda, OZ_NoteBook book, out string error)
@@ -141,8 +141,8 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
         // ModStorage і їде назад кожному, хто натисне VIEW. Id -- це наш
         // "дата#seq", ~24 байти; 64 з запасом.
         n.Id    = OZ_Text.Clip(n.Id, 64);
-        n.Title = OZ_Text.Clip(n.Title, OZ_PdaConst.NOTE_TITLE_MAX);
-        n.Body  = OZ_Text.Clip(n.Body, OZ_PdaConst.NOTE_BODY_MAX);
+        n.Title = OZ_Text.Clip(n.Title, OZ_PdaTune.NoteTitleMax());
+        n.Body  = OZ_Text.Clip(n.Body, OZ_PdaTune.NoteBodyMax());
 
         OZ_DataCarrier_Base c = OZ_CarrierOps.ResolveWritable(sender, error);
         if (!c)
@@ -233,8 +233,8 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
         // БАЙТАХ (miscgameplayfunctions.c:863), тобто і стелю NOTE_BODY_MAX
         // ламає, і кирилицю ріже навпіл. Наш Clip ріже по межі символу й по
         // НАШІЙ стелі; JSON сам екранує те, що йому треба.
-        incoming.Title = OZ_Text.Clip(incoming.Title, OZ_PdaConst.NOTE_TITLE_MAX);
-        incoming.Body  = OZ_Text.Clip(incoming.Body, OZ_PdaConst.NOTE_BODY_MAX);
+        incoming.Title = OZ_Text.Clip(incoming.Title, OZ_PdaTune.NoteTitleMax());
+        incoming.Body  = OZ_Text.Clip(incoming.Body, OZ_PdaTune.NoteBodyMax());
 
         OZ_NoteBook book = BookOf(pda);
 

@@ -83,6 +83,7 @@ class OZ_PdaDeviceStatus
     bool  Cracking     = false;
     int   CrackLeftSec = 0;
     bool LockedOut = false;           // спроби вичерпані
+    int  LockWaitS = 0;               // секунд до кінця блокування; 0 -- без вікна
     float LockAfterMinutes = 0;
 
     // --- сесія ---

@@ -4,6 +4,7 @@
 
 class OZ_PdaPageFaction : OZ_PdaPage
 {
+    private int m_Beat = 0;
     private ref OZ_FactionState m_St;
     private Widget m_Rows;
     private ref array<Widget> m_RowWgts;
@@ -47,7 +48,11 @@ class OZ_PdaPageFaction : OZ_PdaPage
     override void OnRefresh()
     {
         // Ролі їдуть через Discord і повертаються не миттєво: рідкий
-        // самооновлювач страхує пуш, а не замінює його.
+        // самооновлювач страхує пуш, а не замінює його. Раз на 5 секунд
+        // -- зміни й так приходять пушем одразу.
+        m_Beat++;
+        if (m_Beat % 5 != 0)
+            return;
         Request();
     }
 

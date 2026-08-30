@@ -136,6 +136,19 @@ class OZ_PdaPageChat : OZ_PdaPage
         // тим, що ми питаємо.
     }
 
+    // Чи вже є ця розмова в лівій колонці.
+    private bool HeadKnown(string id)
+    {
+        if (!m_Heads || !m_Heads.Items)
+            return false;
+        for (int hk = 0; hk < m_Heads.Items.Count(); hk++)
+        {
+            if (m_Heads.Items[hk].Id == id)
+                return true;
+        }
+        return false;
+    }
+
     private void RequestList()
     {
         OZ_Rpc.Request(OZ_PdaConst.PAGE_CHAT, "list", "{}");
@@ -529,11 +542,15 @@ class OZ_PdaPageChat : OZ_PdaPage
                 return;
             }
 
-            // Не в ту розмову, що відкрита: у переліку зміниться останній
-            // рядок, тож перечитуємо саме перелік, а не розмову.
+            // Не в ту розмову, що відкрита. Перелік перечитуємо ЛИШЕ коли
+            // цієї розмови в ньому ще немає: відомій пуш нічого видимого
+            // не міняє (підзаголовок -- рід розмови, не останній рядок),
+            // а повний перепит на кожне повідомлення Зони масштабується
+            // числом повідомлень, не кліків.
             if (p.Id != m_OpenId)
             {
-                RequestList();
+                if (!HeadKnown(p.Id))
+                    RequestList();
                 return;
             }
 
@@ -552,7 +569,8 @@ class OZ_PdaPageChat : OZ_PdaPage
             m_View.Lines.Insert(line);
 
             PaintView();
-            RequestList();
+            if (!HeadKnown(p.Id))
+                RequestList();
             return;
         }
 

@@ -150,6 +150,9 @@ class OZ_PairFreeze
 
 class OZ_ChatAskInvite
 {
+    // Стеля складу групи з Tuning.json; склад знає лише міст, тому межа
+    // їде разом із запрошенням. 0 -- без межі.
+    int Max = 0;
     string Uid;
     string Id;
     string OtherUid;
@@ -175,6 +178,8 @@ class OZ_ChatFail
             return "STR_OZ_ERR_READ_ONLY";
         if (code == "not_owner")
             return "STR_OZ_ERR_NOT_OWNER";
+        if (code == "group_full")
+            return "STR_OZ_ERR_GROUP_FULL";
         return "STR_OZ_ERR_INTERNAL";
     }
 }
@@ -520,7 +525,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         OZ_ChatAskOpen a = new OZ_ChatAskOpen();
         a.Uid   = uid;
         a.Id    = r.Id;
-        a.Limit = OZ_PdaConst.CHAT_KEEP;
+        a.Limit = OZ_PdaTune.ChatHistoryOpen();
         a.Until = m_Until;
 
         string letter;
@@ -553,7 +558,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         a.Uid    = uid;
         a.Id     = r.Id;
         a.Before = r.Before;
-        a.Limit  = 50;
+        a.Limit = OZ_PdaTune.ChatHistoryPage();
         a.Until  = m_Until;
 
         string letter;
@@ -589,7 +594,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
             return "";
         }
 
-        text = OZ_Text.Clip(text, OZ_PdaConst.CHAT_MSG_MAX);
+        text = OZ_Text.Clip(text, OZ_PdaTune.ChatMsgMax());
 
         string uid = m_Acc;
 
@@ -678,14 +683,14 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         string title = MiscGameplayFunctions.SanitizeString(r.Name);
         if (title == "")
             title = "group";
-        title = OZ_Text.Clip(title, OZ_PdaConst.CHAT_TITLE_MAX);
+        title = OZ_Text.Clip(title, OZ_PdaTune.ChatTitleMax());
 
         string uid = m_Acc;
 
         OZ_ChatAskGroup a = new OZ_ChatAskGroup();
         a.Uid   = uid;
         a.Title = title;
-        a.Desc  = OZ_Text.Clip(MiscGameplayFunctions.SanitizeString(r.Desc), OZ_PdaConst.CHAT_DESC_MAX);
+        a.Desc  = OZ_Text.Clip(MiscGameplayFunctions.SanitizeString(r.Desc), OZ_PdaTune.ChatDescMax());
 
         string letter;
         if (!JsonFileLoader<OZ_ChatAskGroup>.MakeData(a, letter, err, false))
@@ -716,8 +721,8 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         OZ_ChatAskGroupEdit a = new OZ_ChatAskGroupEdit();
         a.Uid   = uid;
         a.Id    = r.Id;
-        a.Title = OZ_Text.Clip(MiscGameplayFunctions.SanitizeString(r.Name), OZ_PdaConst.CHAT_TITLE_MAX);
-        a.Desc  = OZ_Text.Clip(MiscGameplayFunctions.SanitizeString(r.Desc), OZ_PdaConst.CHAT_DESC_MAX);
+        a.Title = OZ_Text.Clip(MiscGameplayFunctions.SanitizeString(r.Name), OZ_PdaTune.ChatTitleMax());
+        a.Desc  = OZ_Text.Clip(MiscGameplayFunctions.SanitizeString(r.Desc), OZ_PdaTune.ChatDescMax());
 
         string letter;
         if (!JsonFileLoader<OZ_ChatAskGroupEdit>.MakeData(a, letter, err, false))
@@ -850,6 +855,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         a.Uid      = uid;
         a.Id       = add.Id;
         a.OtherUid = theirUid;
+        a.Max      = OZ_PdaTune.ChatGroupMax();
 
         string letter;
         if (!JsonFileLoader<OZ_ChatAskInvite>.MakeData(a, letter, err, false))

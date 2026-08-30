@@ -157,8 +157,20 @@ class OZ_PdaMenu : UIScriptedMenu
         GetGame().GetMission().GetHud().Show(true);
     }
 
+    // Кеш для тикових рішень: коли востаннє питали і що бачили netsync.
+    private int  m_LastStatusAskMs = 0;
+    private int  m_LastSealedAskMs = 0;
+    private bool m_SawOn = false;
+    private bool m_SawUnlocked = false;
+    private bool m_CrackLive = false;
+
     void RefreshTick()
     {
+        // Годинник і заряд -- ЛОКАЛЬНІ: час світу і netsync-поле предмета.
+        // Це й прибирає трафік, і чинить заморозку статус-бара на вкладках,
+        // які статус не питають.
+        LocalStatusTick();
+
         // Поки стрічки немає, оновлювати нема кому: замкнений пристрій не
         // віддав жодної сторінки. Питаємо стан самі -- інакше відімкнення
         // іншим шляхом (скинули пін, минув час) лишилось би непоміченим, і
@@ -177,13 +189,39 @@ class OZ_PdaMenu : UIScriptedMenu
             // status і будує стрічку, щойно код приймуть. Щойно відповідь
             // `sealed` скаже «так», питання припиняються -- і поновлюються
             // самі, коли злам добіжить і та сама відповідь скаже «ні».
-            if (!m_Sealed)
-                OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "status", "{}");
+            // Замок і живлення -- netsync на предметі: флip видно локально
+            // й миттєво, а страховочний запит лишається раз на 5 секунд
+            // (пристрій могли відімкнути шляхом, якого netsync не покриє).
+            bool askNow = false;
+            OZ_PDA_Base dev = OZ_PdaHud.Device();
+            if (dev)
+            {
+                bool on  = dev.OZ_IsOn();
+                bool unl = dev.OZ_IsUnlocked();
+                if (on != m_SawOn || unl != m_SawUnlocked)
+                    askNow = true;
+                m_SawOn = on;
+                m_SawUnlocked = unl;
+            }
 
-            // Поки йде злам, зворотний відлік мусить рухатись сам: гравець
-            // дивиться на нього, а не натискає щосекунди.
+            int nowMs = GetGame().GetTime();
+            if (!m_Sealed && (askNow || nowMs - m_LastStatusAskMs >= 5000))
+            {
+                m_LastStatusAskMs = nowMs;
+                OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "status", "{}");
+            }
+
+            // Поки йде злам, відлік мусить рухатись щосекунди -- гравець
+            // дивиться на нього. Без зламу екран коду статичний, і сталого
+            // опиту не заслуговує.
             if (m_PinMode == "unlock")
-                AskSealed();
+            {
+                if (m_CrackLive || nowMs - m_LastSealedAskMs >= 5000)
+                {
+                    m_LastSealedAskMs = nowMs;
+                    AskSealed();
+                }
+            }
             return;
         }
 
@@ -450,7 +488,12 @@ class OZ_PdaMenu : UIScriptedMenu
             if (hint)
             {
                 if (st.LockedOut)
-                    hint.SetText("#STR_OZ_LOCK_TOO_MANY");
+                {
+                    string wait = Widget.TranslateString("#STR_OZ_LOCK_TOO_MANY");
+                    if (st.LockWaitS > 0)
+                        wait += "  (" + st.LockWaitS.ToString() + " s)";
+                    hint.SetText(wait);
+                }
                 else
                     hint.SetText("#STR_OZ_PIN_HINT");
             }
@@ -536,6 +579,10 @@ class OZ_PdaMenu : UIScriptedMenu
         // спитає status і збудує стрічку. Окремого сигналу «зламано» не
         // треба саме тому.
         m_Sealed = st.Sealed;
+
+        // Поки йде злам, RefreshTick питає sealed щосекунди (живий відлік);
+        // без зламу -- раз на 5 секунд, екран коду статичний.
+        m_CrackLive = st.Cracking;
 
         ButtonWidget crack = ButtonWidget.Cast(layoutRoot.FindAnyWidget("BtnCrack"));
         Widget pad = layoutRoot.FindAnyWidget("LockPad");
@@ -759,6 +806,39 @@ class OZ_PdaMenu : UIScriptedMenu
     // Смуга стану -- те, що гравець мусить бачити, не заходячи на сторінку:
     // живлення, стан зв'язку й час. Ті самі дані, що вже прийшли; окремого
     // запиту не робимо.
+    // Локальна половина статус-бара: заряд із netsync-поля предмета й
+    // годинник світу. Сервер тут ні до чого.
+    private void LocalStatusTick()
+    {
+        TextWidget left  = TextWidget.Cast(layoutRoot.FindAnyWidget("StatusLeft"));
+        TextWidget right = TextWidget.Cast(layoutRoot.FindAnyWidget("StatusRight"));
+
+        OZ_PDA_Base dev = OZ_PdaHud.Device();
+        if (left && dev)
+        {
+            if (!dev.OZ_IsOn())
+            {
+                left.SetText("#STR_OZ_DEV_OFF");
+            }
+            else
+            {
+                int pct = Math.Round(dev.OZ_Charge01() * 100);
+                string l = "#STR_OZ_DEV_POWER";
+                l += "  " + pct.ToString() + "%";
+                left.SetText(l);
+            }
+        }
+
+        if (right)
+        {
+            int y, mo, d, h, m;
+            GetGame().GetWorld().GetDate(y, mo, d, h, m);
+            string tm = Pad2(h);
+            tm += ":" + Pad2(m);
+            right.SetText(tm);
+        }
+    }
+
     private void PaintStatusBar(bool ok, string json)
     {
         TextWidget left  = TextWidget.Cast(layoutRoot.FindAnyWidget("StatusLeft"));

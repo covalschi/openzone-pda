@@ -11,6 +11,7 @@
 
 class OZ_PdaPageContacts : OZ_PdaPage
 {
+    private int m_Beat = 0;
     private Widget m_List;
 
     // Створені рядки. Тримаємо самі, бо їх треба знімати перед кожною
@@ -93,6 +94,11 @@ class OZ_PdaPageContacts : OZ_PdaPage
     // показувати без натискань.
     override void OnRefresh()
     {
+        // Страховка раз на 5 секунд: живі зміни приходять пушами одразу,
+        // щосекундний перепит лише дублював їх (аудит 2026-08-30).
+        m_Beat++;
+        if (m_Beat % 5 != 0)
+            return;
         Request();
     }
 

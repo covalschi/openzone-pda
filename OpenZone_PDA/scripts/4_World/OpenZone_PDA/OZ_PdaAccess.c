@@ -40,6 +40,11 @@ class OZ_PdaAccess : OZ_PageAccess
         if (!who)
             return false;
 
+        // Адмінська консоль ядра -- не сторінка пристрою: їй не потрібен КПК
+        // у руках, і ворота в неї власні (OZ_Perm.IsAdmin у самому обробнику).
+        if (pageId == OZ_Const.PAGE_ADMIN)
+            return true;
+
         OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(who);
         if (!pda)
         {

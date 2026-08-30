@@ -10,7 +10,9 @@
 name = "openzone-pda"
 
 [build]
-mods = ["OpenZone_PDA"]
+# КПК плюс необов'язкова вкладка «PDA» для адмінського вікна VPP -- окремим
+# pbo: у вкладки жорстка залежність від VPP і від вкладки ядра.
+mods = ["OpenZone_PDA", "OpenZone_PDA_VPP"]
 
 [expect]
 ready_line   = "pda loaded"
@@ -31,7 +33,7 @@ noise        = ["Bridge.Url is not https"]
 # більше, і це НЕ помилка -- це договір, що працює.
 [expect.counters]
 profiles = 3
-pages    = 8
+pages    = 9
 modules  = 5
 factions = 8
 carriers = 3

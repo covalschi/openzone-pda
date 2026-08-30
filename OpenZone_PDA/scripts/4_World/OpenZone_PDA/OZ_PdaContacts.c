@@ -325,7 +325,7 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
     {
         if (!me || !other)
             return false;
-        return vector.Distance(me.GetPosition(), other.GetPosition()) <= OZ_PdaConst.FRIEND_REACH_M;
+        return vector.Distance(me.GetPosition(), other.GetPosition()) <= OZ_PdaTune.FriendReachM();
     }
 
     private bool Has(array<string> a, string v)

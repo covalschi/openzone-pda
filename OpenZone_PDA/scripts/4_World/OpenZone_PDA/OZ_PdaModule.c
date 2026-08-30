@@ -356,8 +356,8 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
 
                 // Той самий санітар, що й у marker_add: чуже походження --
                 // не привілей, а межі в чипа ніхто не питав.
-                m.Name = OZ_Text.Clip(m.Name, OZ_PdaConst.MARKER_NAME_MAX);
-                m.Desc = OZ_Text.Clip(m.Desc, OZ_PdaConst.MARKER_DESC_MAX);
+                m.Name = OZ_Text.Clip(m.Name, OZ_PdaTune.MarkerNameMax());
+                m.Desc = OZ_Text.Clip(m.Desc, OZ_PdaTune.MarkerDescMax());
 
                 // Дедуп за ВМІСТОМ: та сама назва в тій самій точці вже на
                 // пристрої -- не дублюємо. Без цього резервна копія (записав
@@ -431,7 +431,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             if (profN && profN.Limits)
                 limitN = profN.Limits.Notes;
             if (limitN <= 0)
-                limitN = OZ_PdaConst.NOTES_MAX;
+                limitN = OZ_PdaTune.NotesMax();
 
             int totalN = book.Notes.Count();
             int takenN = 0;
@@ -445,8 +445,8 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 if (!nn)
                     continue;
 
-                string tN = OZ_Text.Clip(nn.Title, OZ_PdaConst.NOTE_TITLE_MAX);
-                string bN = OZ_Text.Clip(nn.Body, OZ_PdaConst.NOTE_BODY_MAX);
+                string tN = OZ_Text.Clip(nn.Title, OZ_PdaTune.NoteTitleMax());
+                string bN = OZ_Text.Clip(nn.Body, OZ_PdaTune.NoteBodyMax());
 
                 // Дедуп за ВМІСТОМ: цикл експорт->імпорт не плодить копій.
                 bool dupN = false;
@@ -596,8 +596,8 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 error = "STR_OZ_ERR_INTERNAL";
                 return "";
             }
-            m.Name = OZ_Text.Clip(m.Name, OZ_PdaConst.MARKER_NAME_MAX);
-            m.Desc = OZ_Text.Clip(m.Desc, OZ_PdaConst.MARKER_DESC_MAX);
+            m.Name = OZ_Text.Clip(m.Name, OZ_PdaTune.MarkerNameMax());
+            m.Desc = OZ_Text.Clip(m.Desc, OZ_PdaTune.MarkerDescMax());
 
             // Дедуп за ВМІСТОМ -- та сама причина, що в гуртового імпорту:
             // цикл експорт->імпорт не має плодити копії.
@@ -660,7 +660,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             if (profN && profN.Limits)
                 limitN = profN.Limits.Notes;
             if (limitN <= 0)
-                limitN = OZ_PdaConst.NOTES_MAX;
+                limitN = OZ_PdaTune.NotesMax();
 
             if (mineN.Notes.Count() >= limitN)
             {
@@ -668,8 +668,8 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 return "";
             }
 
-            string tN = OZ_Text.Clip(book.Notes[r.Index].Title, OZ_PdaConst.NOTE_TITLE_MAX);
-            string bN = OZ_Text.Clip(book.Notes[r.Index].Body, OZ_PdaConst.NOTE_BODY_MAX);
+            string tN = OZ_Text.Clip(book.Notes[r.Index].Title, OZ_PdaTune.NoteTitleMax());
+            string bN = OZ_Text.Clip(book.Notes[r.Index].Body, OZ_PdaTune.NoteBodyMax());
 
             for (int dn = 0; dn < mineN.Notes.Count(); dn++)
             {
@@ -979,6 +979,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         st.AutoLock  = pda.OZ_AutoLock();
         st.ForceAutoLock = prof.ForceAutoLock;
         st.LockedOut = pda.OZ_IsLockedOut(sender.GetPlainId());
+        st.LockWaitS = pda.OZ_LockWaitSec(sender.GetPlainId());
 
         st.Sealed       = pda.OZ_IsSealed();
         st.HasDecryptor = pda.OZ_HasDecryptor();
@@ -1437,6 +1438,13 @@ class OZ_PdaHandlerQuests : OZ_PageHandler
 [CF_RegisterModule(OZ_PdaModule)]
 class OZ_PdaModule : CF_ModuleWorld
 {
+    private ref Timer m_BeaconTimer;
+
+    void BeaconTick()
+    {
+        OZ_PdaHandlerMap.PushBeacons();
+    }
+
     override void OnInit()
     {
         super.OnInit();
@@ -1512,6 +1520,18 @@ class OZ_PdaModule : CF_ModuleWorld
 
         OZ_PdaProfiles.ServerLoad();
         OZ_PdaHardware.ServerLoad();
+        OZ_PdaTuning.ServerLoad();
+
+        // Конфіги КПК стають редагованими з адмінської консолі ядра.
+        OZ_AdminCfg.Register("Tuning",   OZ_Const.PROFILE_DIR + "\\Tuning.json",   new OZ_PdaTuningApplier(), "pda");
+        OZ_AdminCfg.Register("Profiles", OZ_PdaConst.PROFILES, new OZ_PdaProfilesApplier(), "pda");
+        OZ_AdminCfg.Register("Hardware", OZ_PdaConst.HARDWARE, new OZ_PdaHardwareApplier(), "pda");
+
+        // Маячки транспондера РОЗСИЛАЄ сервер -- раз на кілька секунд тим,
+        // у кого антена справді працює. Клієнт більше нічого не опитує:
+        // на сорока гравцях це мінус десять запитів на секунду.
+        m_BeaconTimer = new Timer(CALL_CATEGORY_SYSTEM);
+        m_BeaconTimer.Run(OZ_PdaTune.BeaconPushSeconds(), this, "BeaconTick", NULL, true);
         OZ_Factions.ServerLoad();
 
         // Ядро пускало всі сторінки, бо пристроїв не має. Тепер вирішує той,

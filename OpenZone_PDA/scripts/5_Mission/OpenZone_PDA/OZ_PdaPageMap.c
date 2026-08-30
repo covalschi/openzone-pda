@@ -159,10 +159,12 @@ class OZ_PdaPageMap : OZ_PdaPage
         Request();
     }
 
-    // Раз на секунду: чужі маячки рухаються самі.
+    // НЕ полить: стан питається при відкритті та після операцій (кожна
+    // операція й так перепитує сама), а маячки сервер ПУШИТЬ окремим
+    // конвертом -- аудит 2026-08-30 нарахував ~59 зайвих запитів на
+    // хвилину відкритої карти на гравця.
     override void OnRefresh()
     {
-        Request();
     }
 
     private void Request()
@@ -729,7 +731,7 @@ class OZ_PdaPageMap : OZ_PdaPage
         // найчастіша дія в Зоні. Мітку В ІНШОМУ місці ставить клік по карті.
         string at = "";
         if (m_State)
-            at = m_State.SelfPos;
+            at = LocalSelfPos();
 
         if (at == "")
         {
@@ -769,14 +771,28 @@ class OZ_PdaPageMap : OZ_PdaPage
 
     private void CentreOnSelf()
     {
-        if (!m_Map || !m_State || m_State.SelfPos == "")
+        string selfPos = LocalSelfPos();
+        if (!m_Map || selfPos == "")
             return;
 
-        m_Map.SetMapPos(m_State.SelfPos.ToVector());
+        m_Map.SetMapPos(selfPos.ToVector());
     }
 
     override void OnResponse(string op, bool ok, string json, string error)
     {
+        // Пуш маячків: жива частина стану їде сама, поки сторінка відкрита.
+        if (op == "beacons" && ok)
+        {
+            OZ_BeaconPush bp;
+            string berr;
+            if (JsonFileLoader<OZ_BeaconPush>.LoadData(json, bp, berr) && bp && m_State)
+            {
+                m_State.Beacons = bp.Beacons;
+                Paint();
+            }
+            return;
+        }
+
         if (op == "route_add" || op == "route_clear" || op == "route_write" || op == "route_take")
         {
             if (!ok)
@@ -840,9 +856,20 @@ class OZ_PdaPageMap : OZ_PdaPage
         Paint();
     }
 
+    // Своя позиція клієнтові відома без сервера; з відповіді вона
+    // прибрана з ужитку -- інакше точка «ти тут» жила б минулою секундою.
+    private string LocalSelfPos()
+    {
+        PlayerBase me = PlayerBase.Cast(GetGame().GetPlayer());
+        if (!me)
+            return "";
+        return me.GetPosition().ToString(false);
+    }
+
     private void Paint()
     {
         SetText("BtnModeText", ModeLabel(m_State.TransponderMode));
+        string selfPos = LocalSelfPos();
 
         if (m_Map)
         {
@@ -855,8 +882,8 @@ class OZ_PdaPageMap : OZ_PdaPage
             // показав би як «you», тут вилізло б на карту як
             // #STR_OZ_MAP_YOU. Розгортаємо самі -- саме для цього
             // Widget.TranslateString і є.
-            if (m_State.SelfPos != "")
-                m_Map.AddUserMark(m_State.SelfPos.ToVector(), Widget.TranslateString("#STR_OZ_MAP_YOU"), ARGB(255, 255, 122, 26), ICON_SELF);
+            if (selfPos != "")
+                m_Map.AddUserMark(selfPos.ToVector(), Widget.TranslateString("#STR_OZ_MAP_YOU"), ARGB(255, 255, 122, 26), ICON_SELF);
 
             for (int i = 0; m_State.Beacons && i < m_State.Beacons.Count(); i++)
             {
@@ -886,10 +913,10 @@ class OZ_PdaPageMap : OZ_PdaPage
 
             // Перше відкриття -- показуємо гравцеві, де він. Далі карта
             // лишається там, куди її поставив він сам.
-            if (!m_Centred && m_State.SelfPos != "")
+            if (!m_Centred && selfPos != "")
             {
                 m_Centred = true;
-                m_Map.SetMapPos(m_State.SelfPos.ToVector());
+                m_Map.SetMapPos(selfPos.ToVector());
                 m_Map.SetScale(0.35);
             }
         }

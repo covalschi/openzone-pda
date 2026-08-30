@@ -1,0 +1,1676 @@
+// Панель «PDA» в адмiнському вiкнi OpenZone (VPP): форма Tuning лiворуч,
+// праворуч -- мiнi-вкладки HARDWARE (форма) i PROFILES (сирий JSON).
+// Жодних лапок усерединi text-значень -- парсер розмiтки висне.
+
+FrameWidgetClass OZ_PdaVppPane {
+ visible 0
+ position 0 96
+ size 1000 524
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ priority 2
+ {
+   PanelWidgetClass SecTunBar {
+    visible 1
+    ignorepointer 1
+    color 1 0.478 0.102 1
+    position 20 4
+    size 3 16
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    priority 3
+    style rover_sim_colorable
+   }
+   TextWidgetClass SecTunLbl {
+    visible 1
+    ignorepointer 1
+    position 32 3
+    size 588 18
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.85 0.85 0.87 1
+    text "PDA TUNING"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 13
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   PanelWidgetClass SecTunRule {
+    visible 1
+    ignorepointer 1
+    color 0.22 0.24 0.28 1
+    position 20 28
+    size 600 1
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    priority 3
+    style rover_sim_colorable
+   }
+   TextWidgetClass TunG0 {
+    visible 1
+    ignorepointer 1
+    position 20 36
+    size 280 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 1 0.478 0.102 1
+    text "PIN"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 12
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   TextWidgetClass TunL_PinMaxFails {
+    visible 1
+    ignorepointer 1
+    position 20 64
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "max fails"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_PinMaxFails {
+    visible 1
+    position 195 62
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   TextWidgetClass TunL_PinLockoutSeconds {
+    visible 1
+    ignorepointer 1
+    position 20 94
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "lockout, s"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_PinLockoutSeconds {
+    visible 1
+    position 195 92
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   TextWidgetClass TunG1 {
+    visible 1
+    ignorepointer 1
+    position 20 128
+    size 280 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 1 0.478 0.102 1
+    text "CHAT"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 12
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   TextWidgetClass TunL_ChatMsgMaxBytes {
+    visible 1
+    ignorepointer 1
+    position 20 156
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "msg bytes"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_ChatMsgMaxBytes {
+    visible 1
+    position 195 154
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   TextWidgetClass TunL_ChatTitleMaxBytes {
+    visible 1
+    ignorepointer 1
+    position 20 186
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "title bytes"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_ChatTitleMaxBytes {
+    visible 1
+    position 195 184
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   TextWidgetClass TunL_ChatDescMaxBytes {
+    visible 1
+    ignorepointer 1
+    position 20 216
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "desc bytes"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_ChatDescMaxBytes {
+    visible 1
+    position 195 214
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   TextWidgetClass TunL_ChatHistoryOpen {
+    visible 1
+    ignorepointer 1
+    position 20 246
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "history open"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_ChatHistoryOpen {
+    visible 1
+    position 195 244
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   TextWidgetClass TunL_ChatHistoryPage {
+    visible 1
+    ignorepointer 1
+    position 20 276
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "history page"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_ChatHistoryPage {
+    visible 1
+    position 195 274
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   TextWidgetClass TunL_ChatGroupMax {
+    visible 1
+    ignorepointer 1
+    position 20 306
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "group max"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_ChatGroupMax {
+    visible 1
+    position 195 304
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   TextWidgetClass TunG2 {
+    visible 1
+    ignorepointer 1
+    position 330 36
+    size 280 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 1 0.478 0.102 1
+    text "NOTES"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 12
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   TextWidgetClass TunL_NotesMaxFallback {
+    visible 1
+    ignorepointer 1
+    position 330 64
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "max notes"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_NotesMaxFallback {
+    visible 1
+    position 505 62
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   TextWidgetClass TunL_NoteTitleMaxBytes {
+    visible 1
+    ignorepointer 1
+    position 330 94
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "title bytes"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_NoteTitleMaxBytes {
+    visible 1
+    position 505 92
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   TextWidgetClass TunL_NoteBodyMaxBytes {
+    visible 1
+    ignorepointer 1
+    position 330 124
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "body bytes"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_NoteBodyMaxBytes {
+    visible 1
+    position 505 122
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   TextWidgetClass TunG3 {
+    visible 1
+    ignorepointer 1
+    position 330 158
+    size 280 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 1 0.478 0.102 1
+    text "MARKS"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 12
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   TextWidgetClass TunL_MarkerNameMaxBytes {
+    visible 1
+    ignorepointer 1
+    position 330 186
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "name bytes"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_MarkerNameMaxBytes {
+    visible 1
+    position 505 184
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   TextWidgetClass TunL_MarkerDescMaxBytes {
+    visible 1
+    ignorepointer 1
+    position 330 216
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "desc bytes"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_MarkerDescMaxBytes {
+    visible 1
+    position 505 214
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   TextWidgetClass TunG4 {
+    visible 1
+    ignorepointer 1
+    position 330 250
+    size 280 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 1 0.478 0.102 1
+    text "CONTACTS"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 12
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   TextWidgetClass TunL_FriendReachMeters {
+    visible 1
+    ignorepointer 1
+    position 330 278
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "reach, m"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_FriendReachMeters {
+    visible 1
+    position 505 276
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   TextWidgetClass TunL_SwapOfferTtlSeconds {
+    visible 1
+    ignorepointer 1
+    position 330 308
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "offer ttl, s"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_SwapOfferTtlSeconds {
+    visible 1
+    position 505 306
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   TextWidgetClass TunG5 {
+    visible 1
+    ignorepointer 1
+    position 330 342
+    size 280 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 1 0.478 0.102 1
+    text "HUD"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 12
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   TextWidgetClass TunL_ToastSeconds {
+    visible 1
+    ignorepointer 1
+    position 330 370
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "toast, s"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_ToastSeconds {
+    visible 1
+    position 505 368
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   TextWidgetClass TunL_RouteAdvanceMeters {
+    visible 1
+    ignorepointer 1
+    position 330 400
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "route advance, m"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_RouteAdvanceMeters {
+    visible 1
+    position 505 398
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   TextWidgetClass TunL_BeaconPushSeconds {
+    visible 1
+    ignorepointer 1
+    position 330 430
+    size 170 20
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text "beacon push, s"
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 11
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+   EditBoxWidgetClass Tun_BeaconPushSeconds {
+    visible 1
+    position 505 428
+    size 90 24
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.788 0.788 0.816 1
+    text ""
+    font "gui/fonts/MetronBook14"
+    "exact text" 1
+    priority 4
+   }
+   ButtonWidgetClass BtnTunSave {
+    visible 1
+    position 20 452
+    size 290 28
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    text ""
+    priority 4
+    {
+     PanelWidgetClass BtnTunSaveEdge {
+      visible 1
+      ignorepointer 1
+      color 0.2 0.35 0.24 1
+      position -1 -1
+      size 292 30
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+     PanelWidgetClass BtnTunSaveBg {
+      visible 1
+      ignorepointer 1
+      color 0.145 0.2 0.145 1
+      position 0 0
+      size 290 28
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 1
+      style rover_sim_colorable
+     }
+     TextWidgetClass BtnTunSaveText {
+      visible 1
+      ignorepointer 1
+      position 0 0
+      size 290 28
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      color 0.494 0.784 0.627 1
+      text "SAVE TUNING"
+      font "gui/fonts/sdf_MetronBook24"
+      "exact text" 1
+      "exact text size" 12
+      "text halign" center
+      "text valign" center
+      priority 2
+     }
+    }
+   }
+   ButtonWidgetClass BtnPdaSubHw {
+    visible 1
+    position 660 4
+    size 155 26
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    text ""
+    priority 4
+    {
+     PanelWidgetClass BtnPdaSubHwEdge {
+      visible 1
+      ignorepointer 1
+      color 0.31 0.31 0.35 1
+      position -1 -1
+      size 157 28
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+     PanelWidgetClass BtnPdaSubHwBg {
+      visible 1
+      ignorepointer 1
+      color 0.145 0.145 0.161 1
+      position 0 0
+      size 155 26
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 1
+      style rover_sim_colorable
+     }
+     TextWidgetClass BtnPdaSubHwText {
+      visible 1
+      ignorepointer 1
+      position 0 0
+      size 155 26
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      color 1 0.478 0.102 1
+      text "HARDWARE"
+      font "gui/fonts/sdf_MetronBook24"
+      "exact text" 1
+      "exact text size" 12
+      "text halign" center
+      "text valign" center
+      priority 2
+     }
+    }
+   }
+   ButtonWidgetClass BtnPdaSubProf {
+    visible 1
+    position 825 4
+    size 155 26
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    text ""
+    priority 4
+    {
+     PanelWidgetClass BtnPdaSubProfEdge {
+      visible 1
+      ignorepointer 1
+      color 0.31 0.31 0.35 1
+      position -1 -1
+      size 157 28
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 0
+      style rover_sim_colorable
+     }
+     PanelWidgetClass BtnPdaSubProfBg {
+      visible 1
+      ignorepointer 1
+      color 0.145 0.145 0.161 1
+      position 0 0
+      size 155 26
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      priority 1
+      style rover_sim_colorable
+     }
+     TextWidgetClass BtnPdaSubProfText {
+      visible 1
+      ignorepointer 1
+      position 0 0
+      size 155 26
+      hexactpos 1
+      vexactpos 1
+      hexactsize 1
+      vexactsize 1
+      color 1 0.478 0.102 1
+      text "PROFILES"
+      font "gui/fonts/sdf_MetronBook24"
+      "exact text" 1
+      "exact text size" 12
+      "text halign" center
+      "text valign" center
+      priority 2
+     }
+    }
+   }
+  FrameWidgetClass PdaHwBox {
+   visible 1
+   position 660 36
+   size 320 452
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 3
+   {
+   TextListboxWidgetClass HwList {
+     visible 1
+     position 0 0
+     size 320 120
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     style NoScrollBar
+     "title visible" 0
+     "highlight row" 1
+     lines 4
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     color 0.788 0.788 0.816 1
+     priority 4
+    }
+    TextWidgetClass HwClassL {
+     visible 1
+     ignorepointer 1
+     position 0 130
+     size 115 20
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.541 0.541 0.565 1
+     text "classname"
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 11
+     "text halign" left
+     "text valign" center
+     priority 3
+    }
+    EditBoxWidgetClass HwClass {
+     visible 1
+     position 118 128
+     size 202 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     priority 4
+    }
+    TextWidgetClass HwNameL {
+     visible 1
+     ignorepointer 1
+     position 0 159
+     size 115 20
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.541 0.541 0.565 1
+     text "display name"
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 11
+     "text halign" left
+     "text valign" center
+     priority 3
+    }
+    EditBoxWidgetClass HwName {
+     visible 1
+     position 118 157
+     size 202 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     priority 4
+    }
+    TextWidgetClass HwKindL {
+     visible 1
+     ignorepointer 1
+     position 0 188
+     size 115 20
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.541 0.541 0.565 1
+     text "kind"
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 11
+     "text halign" left
+     "text valign" center
+     priority 3
+    }
+    EditBoxWidgetClass HwKind {
+     visible 1
+     position 118 186
+     size 202 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     priority 4
+    }
+    TextWidgetClass HwRangeL {
+     visible 1
+     ignorepointer 1
+     position 0 217
+     size 115 20
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.541 0.541 0.565 1
+     text "range, m"
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 11
+     "text halign" left
+     "text valign" center
+     priority 3
+    }
+    EditBoxWidgetClass HwRange {
+     visible 1
+     position 118 215
+     size 202 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     priority 4
+    }
+    TextWidgetClass HwPowerL {
+     visible 1
+     ignorepointer 1
+     position 0 246
+     size 115 20
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.541 0.541 0.565 1
+     text "power factor"
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 11
+     "text halign" left
+     "text valign" center
+     priority 3
+    }
+    EditBoxWidgetClass HwPower {
+     visible 1
+     position 118 244
+     size 202 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     priority 4
+    }
+    TextWidgetClass HwSpyL {
+     visible 1
+     ignorepointer 1
+     position 0 275
+     size 115 20
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.541 0.541 0.565 1
+     text "spy minutes"
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 11
+     "text halign" left
+     "text valign" center
+     priority 3
+    }
+    EditBoxWidgetClass HwSpy {
+     visible 1
+     position 118 273
+     size 202 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     priority 4
+    }
+    TextWidgetClass HwPagesL {
+     visible 1
+     ignorepointer 1
+     position 0 304
+     size 115 20
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.541 0.541 0.565 1
+     text "enables pages"
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 11
+     "text halign" left
+     "text valign" center
+     priority 3
+    }
+    EditBoxWidgetClass HwPages {
+     visible 1
+     position 118 302
+     size 202 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     priority 4
+    }
+    TextWidgetClass HwMarksL {
+     visible 1
+     ignorepointer 1
+     position 0 333
+     size 115 20
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.541 0.541 0.565 1
+     text "max marks"
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 11
+     "text halign" left
+     "text valign" center
+     priority 3
+    }
+    EditBoxWidgetClass HwMarks {
+     visible 1
+     position 118 331
+     size 202 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     priority 4
+    }
+    TextWidgetClass HwNotesL {
+     visible 1
+     ignorepointer 1
+     position 0 362
+     size 115 20
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.541 0.541 0.565 1
+     text "max notes"
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 11
+     "text halign" left
+     "text valign" center
+     priority 3
+    }
+    EditBoxWidgetClass HwNotes {
+     visible 1
+     position 118 360
+     size 202 24
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     priority 4
+    }
+    ButtonWidgetClass BtnHwWritable {
+     visible 1
+     position 0 389
+     size 155 26
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 4
+     {
+      PanelWidgetClass BtnHwWritableEdge {
+       visible 1
+       ignorepointer 1
+       color 0.31 0.31 0.35 1
+       position -1 -1
+       size 157 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+      PanelWidgetClass BtnHwWritableBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 155 26
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnHwWritableText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 155 26
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text "writable: yes"
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+    ButtonWidgetClass BtnHwSave {
+     visible 1
+     position 0 423
+     size 100 28
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 4
+     {
+      PanelWidgetClass BtnHwSaveEdge {
+       visible 1
+       ignorepointer 1
+       color 0.2 0.35 0.24 1
+       position -1 -1
+       size 102 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+      PanelWidgetClass BtnHwSaveBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.2 0.145 1
+       position 0 0
+       size 100 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnHwSaveText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 100 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 0.494 0.784 0.627 1
+       text "SAVE"
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+    ButtonWidgetClass BtnHwDel {
+     visible 1
+     position 110 423
+     size 100 28
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 4
+     {
+      PanelWidgetClass BtnHwDelEdge {
+       visible 1
+       ignorepointer 1
+       color 0.45 0.2 0.2 1
+       position -1 -1
+       size 102 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+      PanelWidgetClass BtnHwDelBg {
+       visible 1
+       ignorepointer 1
+       color 0.2 0.145 0.145 1
+       position 0 0
+       size 100 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnHwDelText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 100 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 0.9 0.45 0.35 1
+       text "DELETE"
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+    ButtonWidgetClass BtnHwNewMod {
+     visible 1
+     position 0 457
+     size 155 28
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 4
+     {
+      PanelWidgetClass BtnHwNewModEdge {
+       visible 1
+       ignorepointer 1
+       color 0.31 0.31 0.35 1
+       position -1 -1
+       size 157 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+      PanelWidgetClass BtnHwNewModBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 155 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnHwNewModText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 155 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text "NEW MODULE"
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+    ButtonWidgetClass BtnHwNewCar {
+     visible 1
+     position 165 457
+     size 155 28
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 4
+     {
+      PanelWidgetClass BtnHwNewCarEdge {
+       visible 1
+       ignorepointer 1
+       color 0.31 0.31 0.35 1
+       position -1 -1
+       size 157 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+      PanelWidgetClass BtnHwNewCarBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 155 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnHwNewCarText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 155 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text "NEW CARRIER"
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+   }
+  }
+  FrameWidgetClass PdaProfBox {
+   visible 0
+   position 660 36
+   size 320 452
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   priority 3
+   {
+   MultilineEditBoxWidgetClass PdaProfEdit {
+     visible 1
+     position 0 0
+     size 320 400
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     lines 22
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     priority 4
+    }
+    ButtonWidgetClass BtnProfReload {
+     visible 1
+     position 0 410
+     size 150 28
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 4
+     {
+      PanelWidgetClass BtnProfReloadEdge {
+       visible 1
+       ignorepointer 1
+       color 0.31 0.31 0.35 1
+       position -1 -1
+       size 152 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+      PanelWidgetClass BtnProfReloadBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 150 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnProfReloadText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 150 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text "RELOAD"
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+    ButtonWidgetClass BtnProfApply {
+     visible 1
+     position 170 410
+     size 150 28
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 4
+     {
+      PanelWidgetClass BtnProfApplyEdge {
+       visible 1
+       ignorepointer 1
+       color 0.2 0.35 0.24 1
+       position -1 -1
+       size 152 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+      PanelWidgetClass BtnProfApplyBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.2 0.145 1
+       position 0 0
+       size 150 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 1
+       style rover_sim_colorable
+      }
+      TextWidgetClass BtnProfApplyText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 150 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 0.494 0.784 0.627 1
+       text "APPLY"
+       font "gui/fonts/sdf_MetronBook24"
+       "exact text" 1
+       "exact text size" 12
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+   }
+  }
+   TextWidgetClass PdaHint {
+    visible 1
+    ignorepointer 1
+    position 20 496
+    size 960 22
+    hexactpos 1
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    color 0.541 0.541 0.565 1
+    text ""
+    font "gui/fonts/sdf_MetronBook24"
+    "exact text" 1
+    "exact text size" 12
+    "text halign" left
+    "text valign" center
+    priority 3
+   }
+ }
+}

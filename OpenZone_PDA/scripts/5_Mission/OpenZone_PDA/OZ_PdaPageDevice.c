@@ -5,6 +5,7 @@
 
 class OZ_PdaPageDevice : OZ_PdaPage
 {
+    private int m_Beat = 0;
     private ItemPreviewWidget m_Preview;
     private Widget m_ChargeFill;
     private ButtonWidget m_BtnPower;
@@ -109,6 +110,11 @@ class OZ_PdaPageDevice : OZ_PdaPage
     // показувати без натискань. Частіше -- марний трафік на кожен тік.
     override void OnRefresh()
     {
+        // Страховка раз на 5 секунд: живі зміни приходять пушами одразу,
+        // щосекундний перепит лише дублював їх (аудит 2026-08-30).
+        m_Beat++;
+        if (m_Beat % 5 != 0)
+            return;
         Request();
     }
 

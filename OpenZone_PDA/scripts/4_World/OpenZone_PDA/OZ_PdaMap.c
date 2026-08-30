@@ -12,8 +12,93 @@
 // інше» -- наприклад стаціонарна вежа з мода рації; тоді маячків не буде
 // доти, доки те інше не з'явиться.
 
+// Пуш маячків: список плюс два клієнтські числа з Tuning.json -- окремий
+// канал для них був би дорожчий за два поля в конверті, який і так їде.
+class OZ_BeaconPush
+{
+    ref array<ref OZ_MapBeacon> Beacons;
+    int AdvanceM = 30;
+    int ToastS   = 8;
+
+    void OZ_BeaconPush()
+    {
+        Beacons = new array<ref OZ_MapBeacon>();
+    }
+}
+
 class OZ_PdaHandlerMap : OZ_PageHandler
 {
+    // Один живий обробник: пуш маячків іде через нього, бо антену, шпигунську
+    // плату й приватність рахує саме цей код.
+    private static OZ_PdaHandlerMap s_Inst;
+
+    void OZ_PdaHandlerMap()
+    {
+        s_Inst = this;
+    }
+
+    // Що кому пішло минулого разу: порожньому за порожнім не шлемо.
+    private ref map<string, string> m_BeaconSig = new map<string, string>();
+
+    static void PushBeacons()
+    {
+        if (s_Inst)
+            s_Inst.PushBeaconsNow();
+    }
+
+    private void PushBeaconsNow()
+    {
+        array<Man> players = new array<Man>();
+        GetGame().GetPlayers(players);
+
+        for (int i = 0; i < players.Count(); i++)
+        {
+            PlayerBase pl = PlayerBase.Cast(players[i]);
+            if (!pl)
+                continue;
+            PlayerIdentity id = pl.GetIdentity();
+            if (!id)
+                continue;
+
+            string uid = id.GetPlainId();
+
+            OZ_PDA_Base pda = OZ_PdaLookup.HeldByPlayer(pl);
+            string sig = "";
+            OZ_BeaconPush push = new OZ_BeaconPush();
+
+            if (pda && pda.OZ_IsOn() && pda.OZ_IsUnlocked())
+            {
+                float range = AntennaRange(pda);
+                if (range > 0)
+                {
+                    FillBeacons(id, pl, pda, range, push.Beacons);
+                    for (int b = 0; b < push.Beacons.Count(); b++)
+                        sig += push.Beacons[b].Name + "|" + push.Beacons[b].Pos + ";";
+                }
+            }
+
+            // Порожньо і минулого разу було порожньо -- мовчимо. Один
+            // порожній пуш на переході все ж їде: клієнт мусить стерти
+            // маячки, коли антена вимкнулась чи всі зникли.
+            string last;
+            if (!m_BeaconSig.Find(uid, last))
+                last = "";
+            if (sig == "" && last == "")
+                continue;
+            m_BeaconSig.Set(uid, sig);
+
+            push.AdvanceM = OZ_PdaTune.RouteAdvanceM();
+            push.ToastS   = OZ_PdaTune.ToastSeconds();
+
+            string json;
+            string err;
+            if (!JsonFileLoader<OZ_BeaconPush>.MakeData(push, json, err, false))
+                continue;
+
+            OZ_Rpc.Respond(id, OZ_PdaConst.PAGE_MAP, "beacons", true, json, "");
+        }
+    }
+
     // Той самий прийом, що й у записках: час у секундах зіткнувся б на двох
     // мітках в одну секунду, тому до нього додається лічильник.
     private static int s_Seq = 0;
@@ -597,10 +682,10 @@ class OZ_PdaHandlerMap : OZ_PageHandler
     private void Scrub(OZ_MapMarker m)
     {
         m.Name = MiscGameplayFunctions.SanitizeString(m.Name);
-        m.Name = OZ_Text.Clip(m.Name, OZ_PdaConst.MARKER_NAME_MAX);
+        m.Name = OZ_Text.Clip(m.Name, OZ_PdaTune.MarkerNameMax());
 
         m.Desc = MiscGameplayFunctions.SanitizeString(m.Desc);
-        m.Desc = OZ_Text.Clip(m.Desc, OZ_PdaConst.MARKER_DESC_MAX);
+        m.Desc = OZ_Text.Clip(m.Desc, OZ_PdaTune.MarkerDescMax());
     }
 
     private int MarkerLimit(OZ_PdaProfile prof)
@@ -665,6 +750,17 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             return Serialise(st, ok, error);
         }
 
+        FillBeacons(sender, me, pda, range, st.Beacons);
+
+        return Serialise(st, ok, error);
+    }
+
+    // Маячки для ОДНОГО глядача. Спільна для відповіді сторінки і серверного
+    // пуша: антена, шпигунська плата і приватність рахуються однаково.
+    private void FillBeacons(PlayerIdentity sender, PlayerBase me, OZ_PDA_Base pda, float range, array<ref OZ_MapBeacon> outBeacons)
+    {
+        string myUid = sender.GetPlainId();
+
         array<Man> near = new array<Man>();
         OZ_Spatial.PlayersInRadius(me.GetPosition(), range, near);
 
@@ -702,10 +798,8 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             OZ_MapBeacon b = new OZ_MapBeacon();
             b.Name = oid.GetName();
             b.Pos  = other.GetPosition().ToString(false);
-            st.Beacons.Insert(b);
+            outBeacons.Insert(b);
         }
-
-        return Serialise(st, ok, error);
     }
 
     // Чи в КПК стоїть жива шпигунська плата.
