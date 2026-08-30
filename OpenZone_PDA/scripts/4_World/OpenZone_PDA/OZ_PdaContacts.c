@@ -139,7 +139,13 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
 
             string uid = id.GetPlainId();
             bool isMe = (uid == myUid);
-            bool isFriend = Has(me.Friends, uid);
+
+            // У записнику люди позначені КЛЮЧЕМ ПЕРСОНАЖА, а не Steam64:
+            // той самий акаунт після пермадесу -- вже інша людина, і його
+            // нове життя в чужих контактах не з'являється саме тому, що
+            // ключ інший.
+            string charKey = OZ_PlayerStore.KeyOf(uid);
+            bool isFriend = Has(me.Friends, charKey);
 
             // Сховався -- значить сховався ВІД УСІХ, і від друзів теж
             // (рішення власника 2026-08-28: перша редакція лишала друзям
@@ -168,7 +174,7 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
 
             OZ_ContactEntry e = new OZ_ContactEntry();
             e.Name = id.GetName();
-            e.Key  = OZ_Names.KeyOf(uid);
+            e.Key  = OZ_Names.KeyOf(charKey);
             e.Me   = isMe;
             e.Rel  = "";
             if (isFriend)
@@ -193,7 +199,7 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
             }
 
             list.Entries.Insert(e);
-            seen.Insert(uid);
+            seen.Insert(charKey);
         }
 
         // 2. Друзі та ті, хто просився, але зараз офлайн. Пропустити їх
@@ -229,42 +235,82 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         return Serialise(list, ok, error);
     }
 
-    private void AddOffline(OZ_ContactList list, array<string> uids, array<string> seen, string rel, string myFaction)
+    // Ті, кого зараз немає в Зоні. Сюди ж потрапляють ЗАМОРОЖЕНІ персонажі
+    // -- ті, чиє життя скінчилось: у записнику вони лишаються назавжди й
+    // виглядають рівно як будь-хто, хто давно не заходив. Різниці не видно
+    // навмисно (рішення власника 2026-08-30): КПК не розповідає про смерть.
+    private void AddOffline(OZ_ContactList list, array<string> keys, array<string> seen, string rel, string myFaction)
     {
-        for (int i = 0; uids && i < uids.Count(); i++)
+        for (int i = 0; keys && i < keys.Count(); i++)
         {
-            string uid = uids[i];
-            if (seen.Find(uid) != -1)
+            string key = keys[i];
+            if (seen.Find(key) != -1)
                 continue;
 
-            OZ_PlayerData d = OZ_PlayerStore.Load(uid);
+            string uid = OZ_PlayerStore.UidOfKey(key);
+
+            // Живий запис або заморожений знімок -- ByKey знає, який саме.
+            OZ_PlayerData d = OZ_PlayerStore.ByKey(key);
 
             OZ_ContactEntry e = new OZ_ContactEntry();
             // Ім'я з кешу: гравця немає на сервері, спитати нема в кого.
             // Порожнє означає «жодного разу не входив після оновлення» --
             // тоді краще чесний прочерк, ніж Steam64 на екрані.
-            e.Name = d.Name;
+            if (d)
+                e.Name = d.Name;
             if (e.Name == "")
                 e.Name = "#STR_OZ_CONTACT_NONAME";
-            e.Key  = OZ_Names.KeyOf(uid);
+            e.Key  = OZ_Names.KeyOf(key);
             e.Rel  = rel;
             e.Near = false;
+
+            // КОЛИ ЙОГО БАЧИЛИ ОСТАННІЙ РАЗ. Для замороженого це мить його
+            // останнього входу й назавжди вона: запис більше не оновиться.
+            if (d)
+                e.LastSeen = d.LastSeen;
 
             // Те саме правило, що й для присутніх: ролі -- лише контактам.
             // Той, хто лише ПОПРОСИВСЯ, ще не контакт.
             if (rel == "friend")
             {
                 // Гравця немає на сервері -- постачальника питати нема про
-                // кого, лишається останнє відоме з його файлу.
-                string ofid    = OZ_Identity.SeenFactionId(uid);
+                // кого, лишається останнє відоме з його файлу. У замороженого
+                // це знімок його останнього дня.
+                string ofid = "";
+                if (d)
+                    ofid = d.SeenFaction;
+
                 e.Faction      = OZ_Factions.NameOf(ofid);
                 e.FactionColor = OZ_Factions.ColorARGB(ofid);
-                IdentifySeen(e, uid, myFaction, ofid);
+
+                if (OZ_PlayerStore.IsLive(key))
+                    IdentifySeen(e, uid, myFaction, ofid);
+                else
+                    IdentifyFrozen(e, d, myFaction, ofid);
             }
 
             list.Entries.Insert(e);
-            seen.Insert(uid);
+            seen.Insert(key);
         }
+    }
+
+    // Знімок замороженого персонажа: звання й мітки беремо З ЙОГО ФАЙЛА, а
+    // не з живого запису акаунта -- інакше в записнику під старим іменем
+    // світилися б ролі нового життя, і це саме те, чого тут не має бути.
+    private void IdentifyFrozen(OZ_ContactEntry e, OZ_PlayerData d, string myFaction, string ofid)
+    {
+        if (!d)
+            return;
+
+        e.Rank = OZ_RoleNames.Of(d.SeenRank);
+
+        if (d.SeenTraits)
+        {
+            for (int i = 0; i < d.SeenTraits.Count(); i++)
+                e.Traits.Insert(OZ_RoleNames.Of(d.SeenTraits[i]));
+        }
+
+        e.Mine = myFaction != "" && ofid == myFaction;
     }
 
     // Три осі, яких у списку не було: звання, посади, мітки.
@@ -275,7 +321,10 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
     {
         e.Rank = OZ_Identity.RankName(uid);
 
-        OZ_Identity.PostNames(uid, e.Posts);
+        // ПОСАД НЕ ШЛЕМО. Хто у фракції лідер чи сержант -- справа тієї
+        // фракції, і видно це в її половині вкладки (рішення власника
+        // 2026-08-30). Не показуємо -- отже й не возимо: конверт, який
+        // несе те, чого ніхто не малює, рано чи пізно десь намалюється.
         OZ_Identity.TraitNames(uid, e.Traits);
 
         // Порівнюємо СЛАГИ, а не назви: дві однакові назви -- право адміна, і
@@ -294,8 +343,6 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
     private void IdentifySeen(OZ_ContactEntry e, string uid, string myFaction, string ofid)
     {
         e.Rank = OZ_Identity.SeenRankName(uid);
-
-        OZ_Identity.SeenPostNames(uid, e.Posts);
         OZ_Identity.SeenTraitNames(uid, e.Traits);
 
         e.Mine = myFaction != "" && ofid == myFaction;
@@ -392,26 +439,40 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         string myUid = m_Acc;
         OZ_PlayerData me = OZ_PlayerStore.Load(myUid);
 
-        string theirUid = UidByKeyIn(me.Friends, r.Key);
-        if (theirUid == "")
+        string theirKey = UidByKeyIn(me.Friends, r.Key);
+        if (theirKey == "")
         {
             error = "STR_OZ_ERR_NO_FRIEND";
             return "";
         }
 
-        int at = me.Friends.Find(theirUid);
+        int at = me.Friends.Find(theirKey);
         if (at != -1)
             me.Friends.Remove(at);
+        OZ_PlayerStore.MarkDirty(myUid);
 
-        // І в нього теж: дружба взаємна в обидва боки, зокрема й коли її
-        // розривають. Лишити запис у нього означало б, що він і далі бачить
-        // того, хто його з друзів викреслив.
+        // ВЗАЄМНІСТЬ -- ЛИШЕ З ЖИВИМ. Дружбу розривають з обох боків, і поки
+        // людина та сама, це правильно: лишити запис у нього означало б, що
+        // він і далі бачить того, хто його викреслив.
+        //
+        // Але заморожений персонаж -- це вже не той, хто носить сьогодні цей
+        // Steam64. Викреслити «у нього» означало б залізти в записник ЖИВОЇ
+        // людини й прибрати звідти когось, кого вона й не чіпала.
+        if (!OZ_PlayerStore.IsLive(theirKey))
+        {
+            ok = true;
+            error = "";
+            return "";
+        }
+
+        string theirUid = OZ_PlayerStore.UidOfKey(theirKey);
+        string myKey    = OZ_PlayerStore.KeyOf(myUid);
+
         OZ_PlayerData them = OZ_PlayerStore.Load(theirUid);
-        int at2 = them.Friends.Find(myUid);
+        int at2 = them.Friends.Find(myKey);
         if (at2 != -1)
             them.Friends.Remove(at2);
 
-        OZ_PlayerStore.MarkDirty(myUid);
         OZ_PlayerStore.MarkDirty(theirUid);
 
         // Розірваний контакт заморожує особисту розмову: читати можна,

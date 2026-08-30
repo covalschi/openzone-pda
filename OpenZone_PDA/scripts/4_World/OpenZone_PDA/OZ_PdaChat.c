@@ -60,6 +60,15 @@ class OZ_ChatAskStart
     string Name;
     string OtherUid;
     string OtherName;
+
+    // КЛЮЧІ ПЕРСОНАЖІВ, з яких міст робить id розмови. Steam64 для цього не
+    // годиться: після пермадесу той самий акаунт -- уже інша людина, а id,
+    // зроблений із пари Steam64, привів би її в чужу розмову з небіжчиком,
+    // разом з усією його перепискою.
+    //
+    // Доставка й склад лишаються за Steam64 -- пише все-таки акаунт.
+    string MyKey;
+    string OtherKey;
 }
 
 class OZ_ChatAskGroup
@@ -642,19 +651,36 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         string uid = m_Acc;
         OZ_PlayerData me = OZ_PlayerStore.Load(uid);
 
-        string theirUid = UidByKeyIn(me.Friends, r.Key);
-        if (theirUid == "")
+        string theirKey = UidByKeyIn(me.Friends, r.Key);
+        if (theirKey == "")
         {
             // Не контакт -- писати нема кому. Саме тому контакти й заводять.
             error = "STR_OZ_ERR_NOT_CONTACT";
             return "";
         }
 
+        // ЗАМОРОЖЕНОМУ НЕ ПИШУТЬ, і відмова тут навмисно та сама, що й для
+        // будь-кого не-контакта. Пристрій того персонажа мовчить назавжди;
+        // сказати про це окремими словами означало б повідомити про смерть,
+        // чого КПК не робить (рішення власника 2026-08-30).
+        //
+        // Механічна причина не менш важлива: за цим Steam64 сьогодні живе
+        // ІНША людина, і лист «старому знайомому» приїхав би саме їй.
+        if (!OZ_PlayerStore.IsLive(theirKey))
+        {
+            error = "STR_OZ_ERR_NOT_CONTACT";
+            return "";
+        }
+
+        string theirUid = OZ_PlayerStore.UidOfKey(theirKey);
+
         OZ_ChatAskStart a = new OZ_ChatAskStart();
         a.Uid       = uid;
         a.Name      = OZ_ChatWho.NameOf(uid, sender);
         a.OtherUid  = theirUid;
         a.OtherName = OZ_PlayerStore.Load(theirUid).Name;
+        a.MyKey     = OZ_PlayerStore.KeyOf(uid);
+        a.OtherKey  = theirKey;
 
         string letter;
         if (!JsonFileLoader<OZ_ChatAskStart>.MakeData(a, letter, err, false))
@@ -809,7 +835,13 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         OZ_ChatInvitees inv = new OZ_ChatInvitees();
         for (int i = 0; i < me.Friends.Count(); i++)
         {
-            OZ_PlayerData d = OZ_PlayerStore.Load(me.Friends[i]);
+            // Заморожених у переліку немає: покликати нікуди. Вони просто
+            // не з'являються серед тих, кого можна додати, -- рівно як
+            // будь-хто, кого сервер не знає на ім'я.
+            if (!OZ_PlayerStore.IsLive(me.Friends[i]))
+                continue;
+
+            OZ_PlayerData d = OZ_PlayerStore.Load(OZ_PlayerStore.UidOfKey(me.Friends[i]));
             if (d && d.Name != "")
                 inv.Names.Insert(d.Name);
         }
@@ -886,23 +918,31 @@ class OZ_PdaHandlerChat : OZ_PageHandler
     // Тому тут ім'я лишається, але з двома правилами, яких раніше не було:
     // порожнє не збігається ні з чим (інакше воно ловило б кожного, чиє ім'я
     // ще не кешоване), і двоє однакових -- це відмова, а не перший-ліпший.
-    private string UidByNameIn(array<string> uids, string name)
+    // Ім'я -> Steam64, серед СВОЇХ контактів. Список тримає ключі персонажів;
+    // заморожені пропускаємо -- покликати того, кого вже немає, нікуди, а за
+    // його Steam64 сьогодні живе інша людина.
+    private string UidByNameIn(array<string> keys, string name)
     {
         if (name == "")
             return "";
 
         string found = "";
 
-        for (int i = 0; uids && i < uids.Count(); i++)
+        for (int i = 0; keys && i < keys.Count(); i++)
         {
-            OZ_PlayerData d = OZ_PlayerStore.Load(uids[i]);
+            if (!OZ_PlayerStore.IsLive(keys[i]))
+                continue;
+
+            string uid = OZ_PlayerStore.UidOfKey(keys[i]);
+
+            OZ_PlayerData d = OZ_PlayerStore.Load(uid);
             if (!d || d.Name != name)
                 continue;
 
             if (found != "")
                 return "";
 
-            found = uids[i];
+            found = uid;
         }
 
         return found;

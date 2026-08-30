@@ -5,8 +5,8 @@
 
 FrameWidgetClass OZ_PageFaction {
  visible 1
- position 0 0
- size 1306 518
+ position 640 0
+ size 666 518
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -18,7 +18,7 @@ FrameWidgetClass OZ_PageFaction {
      visible 1
      ignorepointer 1
      color 0.22 0.24 0.28 1
-     position 640 12
+     position 0 12
      size 1 494
      hexactpos 1
      vexactpos 1
@@ -31,7 +31,7 @@ FrameWidgetClass OZ_PageFaction {
     TextWidgetClass FactionTitle {
      visible 1
      ignorepointer 1
-     position 660 14
+     position 20 14
      size 626 30
      hexactpos 1
      vexactpos 1
@@ -50,7 +50,7 @@ FrameWidgetClass OZ_PageFaction {
     TextWidgetClass FactionMine {
      visible 1
      ignorepointer 1
-     position 660 46
+     position 20 46
      size 626 20
      hexactpos 1
      vexactpos 1
@@ -71,7 +71,7 @@ FrameWidgetClass OZ_PageFaction {
      visible 1
      ignorepointer 1
      color 1 0.478 0.102 1
-     position 660 78
+     position 20 78
      size 3 16
      hexactpos 1
      vexactpos 1
@@ -83,7 +83,7 @@ FrameWidgetClass OZ_PageFaction {
     TextWidgetClass SecMembLbl {
      visible 1
      ignorepointer 1
-     position 672 77
+     position 32 77
      size 614 18
      hexactpos 1
      vexactpos 1
@@ -102,7 +102,7 @@ FrameWidgetClass OZ_PageFaction {
      visible 1
      ignorepointer 1
      color 0.22 0.24 0.28 1
-     position 660 102
+     position 20 102
      size 626 1
      hexactpos 1
      vexactpos 1
@@ -113,7 +113,7 @@ FrameWidgetClass OZ_PageFaction {
     }
   ScrollWidgetClass FactionScroll {
    visible 1
-   position 660 110
+   position 20 110
    size 626 220
    hexactpos 1
    vexactpos 1
@@ -138,7 +138,7 @@ FrameWidgetClass OZ_PageFaction {
   PanelWidgetClass InvitePane {
    visible 0
    color 0.09 0.07 0.045 1
-   position 660 336
+   position 20 336
    size 626 60
    hexactpos 1
    vexactpos 1
@@ -303,7 +303,7 @@ FrameWidgetClass OZ_PageFaction {
      visible 1
      ignorepointer 1
      color 1 0.478 0.102 1
-     position 660 402
+     position 20 402
      size 3 16
      hexactpos 1
      vexactpos 1
@@ -315,7 +315,7 @@ FrameWidgetClass OZ_PageFaction {
     TextWidgetClass SecActLbl {
      visible 1
      ignorepointer 1
-     position 672 401
+     position 32 401
      size 614 18
      hexactpos 1
      vexactpos 1
@@ -334,7 +334,7 @@ FrameWidgetClass OZ_PageFaction {
      visible 1
      ignorepointer 1
      color 0.22 0.24 0.28 1
-     position 660 426
+     position 20 426
      size 626 1
      hexactpos 1
      vexactpos 1
@@ -346,7 +346,7 @@ FrameWidgetClass OZ_PageFaction {
 
     ButtonWidgetClass BtnFPromote {
      visible 0
-     position 660 430
+     position 20 430
      size 200 30
      hexactpos 1
      vexactpos 1
@@ -404,7 +404,7 @@ FrameWidgetClass OZ_PageFaction {
 
     ButtonWidgetClass BtnFDemote {
      visible 0
-     position 872 430
+     position 232 430
      size 200 30
      hexactpos 1
      vexactpos 1
@@ -462,7 +462,7 @@ FrameWidgetClass OZ_PageFaction {
 
     ButtonWidgetClass BtnFLeave {
      visible 0
-     position 1084 464
+     position 444 464
      size 200 30
      hexactpos 1
      vexactpos 1
@@ -520,7 +520,7 @@ FrameWidgetClass OZ_PageFaction {
 
     ButtonWidgetClass BtnFKick {
      visible 0
-     position 872 464
+     position 232 464
      size 200 30
      hexactpos 1
      vexactpos 1
@@ -578,7 +578,7 @@ FrameWidgetClass OZ_PageFaction {
 
     ButtonWidgetClass BtnFLead {
      visible 0
-     position 1084 430
+     position 444 430
      size 200 30
      hexactpos 1
      vexactpos 1
@@ -636,7 +636,7 @@ FrameWidgetClass OZ_PageFaction {
 
     ButtonWidgetClass BtnFInvite {
      visible 0
-     position 660 464
+     position 20 464
      size 200 30
      hexactpos 1
      vexactpos 1
@@ -696,7 +696,7 @@ FrameWidgetClass OZ_PageFaction {
     TextWidgetClass FactionHint {
      visible 1
      ignorepointer 1
-     position 660 496
+     position 20 496
      size 626 22
      hexactpos 1
      vexactpos 1

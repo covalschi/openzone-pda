@@ -105,9 +105,16 @@ class OZ_PdaHandlerFaction : OZ_PageHandler
             OZ_PlayerData me = OZ_PlayerStore.Load(uid);
             for (int f = 0; f < me.Friends.Count(); f++)
             {
-                if (OZ_Factions.OfUid(me.Friends[f]) == slug)
+                // Заморожених не кличуть: у списку контактів вони лишаються
+                // назавжди, але позвати їх нікуди.
+                if (!OZ_PlayerStore.IsLive(me.Friends[f]))
                     continue;
-                OZ_PlayerData fd = OZ_PlayerStore.Load(me.Friends[f]);
+
+                string fuid = OZ_PlayerStore.UidOfKey(me.Friends[f]);
+                if (OZ_Factions.OfUid(fuid) == slug)
+                    continue;
+
+                OZ_PlayerData fd = OZ_PlayerStore.Load(fuid);
                 if (fd.Name != "")
                     st.Candidates.Insert(fd.Name);
             }

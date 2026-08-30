@@ -9,7 +9,7 @@
 FrameWidgetClass OZ_PageContacts {
  visible 1
  position 0 0
- size 1306 518
+ size 640 518
  hexactpos 1
  vexactpos 1
  hexactsize 1

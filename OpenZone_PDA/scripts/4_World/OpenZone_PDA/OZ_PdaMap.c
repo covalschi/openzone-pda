@@ -835,14 +835,16 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         {
             if (!them.TransponderTo)
                 return false;
-            return them.TransponderTo.Find(toUid) != -1;
+            // Списки тримають КЛЮЧІ ПЕРСОНАЖІВ: маячок, дозволений колишньому
+            // життю цього акаунта, новому не дістається.
+            return them.TransponderTo.Find(OZ_PlayerStore.KeyOf(toUid)) != -1;
         }
 
         if (them.TransponderMode == "friends")
         {
             if (!them.Friends)
                 return false;
-            return them.Friends.Find(toUid) != -1;
+            return them.Friends.Find(OZ_PlayerStore.KeyOf(toUid)) != -1;
         }
 
         if (them.TransponderMode == "faction")

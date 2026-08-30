@@ -1021,7 +1021,9 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 snap.Faction = OZ_Factions.NameOf(OZ_Factions.OfUid(ownUid));
                 for (int sf = 0; sf < ownPd.Friends.Count(); sf++)
                 {
-                    OZ_PlayerData fr = OZ_PlayerStore.Load(ownPd.Friends[sf]);
+                    // Ім'я з ТОГО САМОГО персонажа, а не з акаунта: у капсулі
+                    // мусить лишитись той, кого власник знав.
+                    OZ_PlayerData fr = OZ_PlayerStore.ByKey(ownPd.Friends[sf]);
                     if (fr && fr.Name != "")
                         snap.Contacts.Insert(fr.Name);
                 }

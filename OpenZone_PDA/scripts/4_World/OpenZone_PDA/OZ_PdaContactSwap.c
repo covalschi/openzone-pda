@@ -47,34 +47,40 @@ class OZ_PdaContactSwap
         OZ_PlayerData me   = OZ_PlayerStore.Load(myUid);
         OZ_PlayerData them = OZ_PlayerStore.Load(theirUid);
 
-        if (Has(me.Friends, theirUid))
+        // У записнику люди позначені КЛЮЧЕМ ПЕРСОНАЖА, а не Steam64: після
+        // пермадесу той самий акаунт -- уже інша людина, і знайомитись із
+        // нею доводиться наново. Саме тому обмін пише ключі, а не uid-и.
+        string myKey    = OZ_PlayerStore.KeyOf(myUid);
+        string theirKey = OZ_PlayerStore.KeyOf(theirUid);
+
+        if (Has(me.Friends, theirKey))
         {
             Say(from, "STR_OZ_SWAP_ALREADY");
             return;
         }
 
         // ЗУСТРІЧНИЙ ТИК: він уже пропонував мені -- замикаємо.
-        if (Has(me.FriendReq, theirUid))
+        if (Has(me.FriendReq, theirKey))
         {
             if (!Fresh(theirUid, myUid))
             {
                 // Пропозиція протухла. Прибираємо й починаємо як з нуля --
                 // цей самий тик стає новою пропозицією з мого боку.
-                Drop(me.FriendReq, theirUid);
+                Drop(me.FriendReq, theirKey);
                 OZ_PlayerStore.MarkDirty(myUid);
             }
             else
             {
-                Drop(me.FriendReq, theirUid);
+                Drop(me.FriendReq, theirKey);
                 Forget(theirUid, myUid);
 
                 // Пишемо ОБОМ. Контакт взаємний, і однобокий запис зробив би
                 // його видимим лише з одного боку -- тобто зламаним там, де
                 // це найважче помітити.
-                if (!Has(me.Friends, theirUid))
-                    me.Friends.Insert(theirUid);
-                if (!Has(them.Friends, myUid))
-                    them.Friends.Insert(myUid);
+                if (!Has(me.Friends, theirKey))
+                    me.Friends.Insert(theirKey);
+                if (!Has(them.Friends, myKey))
+                    them.Friends.Insert(myKey);
 
                 OZ_PlayerStore.MarkDirty(myUid);
                 OZ_PlayerStore.MarkDirty(theirUid);
@@ -99,9 +105,9 @@ class OZ_PdaContactSwap
         Prune(them);
 
         // ПЕРШИЙ ТИК: лишаємо пропозицію в нього.
-        if (!Has(them.FriendReq, myUid))
+        if (!Has(them.FriendReq, myKey))
         {
-            them.FriendReq.Insert(myUid);
+            them.FriendReq.Insert(myKey);
             OZ_PlayerStore.MarkDirty(theirUid);
         }
 
@@ -158,10 +164,16 @@ class OZ_PdaContactSwap
 
         for (int i = them.FriendReq.Count() - 1; i >= 0; i--)
         {
-            if (Fresh(them.FriendReq[i], them.SteamId))
+            // У списку -- КЛЮЧІ ПЕРСОНАЖІВ, а строк живе за акаунтами:
+            // пропозицію робить людина, а не її покоління. Без цього
+            // переведення жодна пропозиція не вважалась би свіжою, і
+            // зустрічний тик перестав би замикатись узагалі.
+            string who = OZ_PlayerStore.UidOfKey(them.FriendReq[i]);
+
+            if (Fresh(who, them.SteamId))
                 continue;
 
-            Forget(them.FriendReq[i], them.SteamId);
+            Forget(who, them.SteamId);
             them.FriendReq.Remove(i);
             touched = true;
         }
