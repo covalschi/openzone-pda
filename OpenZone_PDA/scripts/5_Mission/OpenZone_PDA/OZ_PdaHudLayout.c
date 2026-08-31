@@ -27,7 +27,7 @@ class OZ_PdaHudLayout
 {
     private static ref OZ_HudLayoutFile s_File;
     private static const string DIR  = "$profile:OpenZone";
-    private static const string PATH = "$profile:OpenZone\\HudLayout.json";
+    private static const string PATH = "$profile:OpenZone\\OZ_PDA_HudLayout.json";
 
     private static void LoadOnce()
     {

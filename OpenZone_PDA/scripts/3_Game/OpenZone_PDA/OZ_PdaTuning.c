@@ -164,7 +164,7 @@ class OZ_PdaTuning : OZ_ConfigBase
     static void ServerLoad()
     {
         s_Inst = new OZ_PdaTuning();
-        OZ_ConfigLoader<OZ_PdaTuning>.Load(OZ_Const.PROFILE_DIR + "\\Tuning.json", "Tuning", s_Inst);
+        OZ_ConfigLoader<OZ_PdaTuning>.Load(OZ_Const.PROFILE_DIR + "\\OZ_PDA_Tuning.json", "Tuning", s_Inst);
     }
 }
 

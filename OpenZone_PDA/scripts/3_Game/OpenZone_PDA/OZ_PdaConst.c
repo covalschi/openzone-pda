@@ -1,8 +1,8 @@
 class OZ_PdaConst
 {
-    static const string PROFILES = "$profile:OpenZone\\Profiles.json";
+    static const string PROFILES = "$profile:OpenZone\\OZ_PDA_Profiles.json";
 
-    static const string HARDWARE = "$profile:OpenZone\\Hardware.json";
+    static const string HARDWARE = "$profile:OpenZone\\OZ_PDA_Hardware.json";
 
     static const int SCHEMA_PROFILES = 1;
 

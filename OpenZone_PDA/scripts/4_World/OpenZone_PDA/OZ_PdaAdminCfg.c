@@ -19,7 +19,7 @@ class OZ_PdaTuningApplier : OZ_AdminCfgApplier
             return false;
         }
 
-        OZ_ConfigLoader<OZ_PdaTuning>.Save(OZ_Const.PROFILE_DIR + "\\Tuning.json", "Tuning", tmp);
+        OZ_ConfigLoader<OZ_PdaTuning>.Save(OZ_Const.PROFILE_DIR + "\\OZ_PDA_Tuning.json", "Tuning", tmp);
         OZ_PdaTuning.ServerLoad();
         return true;
     }

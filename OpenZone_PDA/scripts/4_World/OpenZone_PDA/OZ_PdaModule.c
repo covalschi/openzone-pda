@@ -1533,7 +1533,7 @@ class OZ_PdaModule : CF_ModuleWorld
         OZ_PdaTuning.ServerLoad();
 
         // Конфіги КПК стають редагованими з адмінської консолі ядра.
-        OZ_AdminCfg.Register("Tuning",   OZ_Const.PROFILE_DIR + "\\Tuning.json",   new OZ_PdaTuningApplier(), "pda");
+        OZ_AdminCfg.Register("Tuning",   OZ_Const.PROFILE_DIR + "\\OZ_PDA_Tuning.json",   new OZ_PdaTuningApplier(), "pda");
         OZ_AdminCfg.Register("Profiles", OZ_PdaConst.PROFILES, new OZ_PdaProfilesApplier(), "pda");
         OZ_AdminCfg.Register("Hardware", OZ_PdaConst.HARDWARE, new OZ_PdaHardwareApplier(), "pda");
 
