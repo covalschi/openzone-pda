@@ -215,9 +215,13 @@ class OZ_DataCarrier_Base : ItemBase
     // заради нової форми немає підстав: рід тут -- звичайний рядок, а ці три
     // просто знає сам КПК.
 
-    static const string KIND_MARKS = "markers";
-    static const string KIND_NOTES = "notes";
-    static const string KIND_ROUTE = "route";
+    // РІД НЕСЕ ВЛАСНИКА, як і імена файлів у профілі. Простір родів спільний
+    // для всіх модів, що пишуть на носії, і голе "markers" -- та сама міна, що
+    // й голе "Radio.json": другий охочий колись з'явиться, і зіткнення буде
+    // тихим. Домовленість проста -- oz_<мод>_<що>.
+    static const string KIND_MARKS = "oz_pda_markers";
+    static const string KIND_NOTES = "oz_pda_notes";
+    static const string KIND_ROUTE = "oz_pda_route";
 
     string OZ_Marks()      { return OZ_Read(KIND_MARKS); }
     string OZ_Notes()      { return OZ_Read(KIND_NOTES); }

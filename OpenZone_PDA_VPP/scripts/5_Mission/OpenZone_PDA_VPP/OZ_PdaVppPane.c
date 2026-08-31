@@ -233,7 +233,9 @@ modded class OZ_VppAdminMenu
             OZ_CarrierSpec cs = m_HwCfg.Carriers[idx];
             SetEdit("HwClass", cs.ClassName);
             SetEdit("HwName",  cs.DisplayName);
-            SetEdit("HwKind",  cs.DefaultKind);
+            // Носій більше не має "виду вмісту": на ньому лежить стільки родів,
+            // скільки на нього записали.
+            SetEdit("HwKind",  "");
             SetEdit("HwRange", "");
             SetEdit("HwPower", "");
             SetEdit("HwSpy",   "");
@@ -350,7 +352,6 @@ modded class OZ_VppAdminMenu
 
             cs.ClassName   = cls;
             cs.DisplayName = GetEdit("HwName");
-            cs.DefaultKind = GetEdit("HwKind");
             cs.Writable    = m_HwWritable;
             cs.MaxRecords  = GetEdit("HwMarks").ToInt();
         }

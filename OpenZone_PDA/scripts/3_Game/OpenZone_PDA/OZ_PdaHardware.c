@@ -51,9 +51,6 @@ class OZ_CarrierSpec
 {
     string ClassName   = "";
     string DisplayName = "";
-    // Вид вмісту за замовчуванням. Збігається з id сторінки, яка вміє його
-    // читати: "markers", "chatlog" і так далі.
-    string DefaultKind = "";
     // Чи можна перезаписати носій із КПК. Одноразовий чип із чужої схованки
     // перезаписувати не можна -- у цьому половина його цінності.
     bool   Writable    = true;
@@ -136,7 +133,6 @@ class OZ_PdaHardwareConfig : OZ_ConfigBase
         OZ_CarrierSpec floppy = new OZ_CarrierSpec();
         floppy.ClassName   = "OZ_DataCarrier_Floppy";
         floppy.DisplayName = "#STR_OZ_CARRIER_FLOPPY";
-        floppy.DefaultKind = "";
         floppy.Writable    = true;
         floppy.MaxRecords  = 6;
         Carriers.Insert(floppy);
@@ -144,7 +140,6 @@ class OZ_PdaHardwareConfig : OZ_ConfigBase
         OZ_CarrierSpec chip = new OZ_CarrierSpec();
         chip.ClassName   = "OZ_DataCarrier_Chip";
         chip.DisplayName = "#STR_OZ_CARRIER_CHIP";
-        chip.DefaultKind = "";
         chip.Writable    = true;
         chip.MaxRecords  = 24;
         Carriers.Insert(chip);
@@ -152,7 +147,6 @@ class OZ_PdaHardwareConfig : OZ_ConfigBase
         OZ_CarrierSpec drive = new OZ_CarrierSpec();
         drive.ClassName   = "OZ_DataCarrier_Drive";
         drive.DisplayName = "#STR_OZ_CARRIER_DRIVE";
-        drive.DefaultKind = "";
         drive.Writable    = true;
         Carriers.Insert(drive);
     }
