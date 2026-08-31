@@ -177,10 +177,12 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
         }
         else
         {
-            OZ_CarrierSpec spec = OZ_PdaHardware.CarrierFor(c.GetType());
-            if (spec && spec.MaxNotes > 0 && book.Notes.Count() >= spec.MaxNotes)
+            // Місце -- носія, а не записника: тут заповнився ЧИП, і сказати
+            // «записник повний» означало б показати не ту причину.
+            int room = c.OZ_RoomFor(OZ_DataCarrier_Base.KIND_NOTES);
+            if (room >= 0 && book.Notes.Count() >= room)
             {
-                error = "STR_OZ_ERR_NOTES_FULL";
+                error = "STR_OZ_ERR_CARRIER_FULL";
                 return "";
             }
             book.Notes.Insert(n);

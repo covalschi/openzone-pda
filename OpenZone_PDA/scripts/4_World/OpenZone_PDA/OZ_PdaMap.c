@@ -303,10 +303,13 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         if (!c)
             return "";
 
-        OZ_CarrierSpec spec = OZ_PdaHardware.CarrierFor(c.GetType());
-        if (spec && spec.MaxMarks > 0 && route.Items.Count() > spec.MaxMarks)
+        // Місце питаємо в САМОГО носія: він знає і свою стелю, і скільки на
+        // ньому вже лежить чужих родів. Точка маршруту -- такий самий запис,
+        // як мітка чи нотатка, і платить так само.
+        int room = c.OZ_RoomFor(OZ_DataCarrier_Base.KIND_ROUTE);
+        if (room >= 0 && route.Items.Count() > room)
         {
-            error = "STR_OZ_ERR_MARKERS_FULL";
+            error = "STR_OZ_ERR_CARRIER_FULL";
             return "";
         }
 
@@ -447,10 +450,10 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         }
         else
         {
-            OZ_CarrierSpec spec = OZ_PdaHardware.CarrierFor(c.GetType());
-            if (spec && spec.MaxMarks > 0 && carried.Items.Count() >= spec.MaxMarks)
+            int room = c.OZ_RoomFor(OZ_DataCarrier_Base.KIND_MARKS);
+            if (room >= 0 && carried.Items.Count() >= room)
             {
-                error = "STR_OZ_ERR_MARKERS_FULL";
+                error = "STR_OZ_ERR_CARRIER_FULL";
                 return "";
             }
             carried.Items.Insert(found);

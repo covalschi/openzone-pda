@@ -145,13 +145,15 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             if (JsonFileLoader<OZ_MarkerList>.LoadData(payload, pl, perr) && pl && pl.Items)
                 cnt = pl.Items.Count();
 
-            // Місткість класу: на дискету йде стільки, скільки влазить, --
-            // ПЕРШІ зі списку, і відповідь чесно каже скільки.
+            // Місце питаємо в носія: на дискету йде стільки, скільки влазить
+            // ПОРУЧ ІЗ ТИМ, ЩО НА НІЙ УЖЕ Є, -- перші зі списку, і відповідь
+            // чесно каже скільки.
+            int room = c.OZ_RoomFor(OZ_DataCarrier_Base.KIND_MARKS);
             int wrote = cnt;
-            if (spec.MaxMarks > 0 && pl && pl.Items && cnt > spec.MaxMarks)
+            if (room >= 0 && pl && pl.Items && cnt > room)
             {
-                pl.Items.Resize(spec.MaxMarks);
-                wrote = spec.MaxMarks;
+                pl.Items.Resize(room);
+                wrote = room;
 
                 if (!JsonFileLoader<OZ_MarkerList>.MakeData(pl, payload, perr, false))
                 {
@@ -193,10 +195,11 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
 
             int totalW = bookW.Notes.Count();
             int wroteW = totalW;
-            if (spec.MaxNotes > 0 && totalW > spec.MaxNotes)
+            int roomW  = c.OZ_RoomFor(OZ_DataCarrier_Base.KIND_NOTES);
+            if (roomW >= 0 && totalW > roomW)
             {
-                bookW.Notes.Resize(spec.MaxNotes);
-                wroteW = spec.MaxNotes;
+                bookW.Notes.Resize(roomW);
+                wroteW = roomW;
             }
 
             string payloadW;
@@ -262,8 +265,8 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         OZ_CarrierSpec vspec = OZ_PdaHardware.CarrierFor(c.GetType());
         if (vspec)
         {
-            v.MaxMarks = vspec.MaxMarks;
-            v.MaxNotes = vspec.MaxNotes;
+            v.MaxRecords  = vspec.MaxRecords;
+            v.UsedRecords = c.OZ_Used();
         }
 
         string outJson;
@@ -956,8 +959,13 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             {
                 st.CarrierWritable = cs.Writable;
                 st.CarrierDisplay  = cs.DisplayName;
-                st.CarrierMaxMarks = cs.MaxMarks;
-                st.CarrierMaxNotes = cs.MaxNotes;
+                st.CarrierMaxRecords = cs.MaxRecords;
+
+                // Зайняте питаємо в САМОГО носія, а не в таблиці: таблиця
+                // знає стелю класу, скільки на ньому лежить -- лише він.
+                OZ_DataCarrier_Base held = OZ_DataCarrier_Base.Cast(pda.OZ_Attached(OZ_PdaConst.SLOT_CARRIER));
+                if (held)
+                    st.CarrierUsedRecords = held.OZ_Used();
             }
 
             // ВМІСТ чипа -- лише на УВІМКНЕНОМУ пристрої. Наявність носія

@@ -1,148 +1,245 @@
 // Носій даних: флешка, чип, папка з логами -- що завгодно, що вставляється
 // в КПК і щось у собі несе.
 //
-// Носій НЕ знає, що на ньому записано. Він везе ВИД і корисне навантаження
-// рядком JSON, а розбирає й малює це та сторінка, якій цей вид належить:
-// "markers" -- сторінка міток, "chatlog" -- сторінка чату. Той самий принцип,
-// що й у мосту: ядро возить конверти, а не читає листи.
+// Носій НЕ знає, що на ньому записано. Він везе СЕКЦІЇ: рід плюс корисне
+// навантаження рядком JSON, а розбирає й малює це та сторінка, якій цей рід
+// належить. Той самий принцип, що й у мосту: ядро возить конверти, а не читає
+// листи.
 //
-// Наслідок, заради якого це так і зроблено: щоб додати новий тип носія, не
-// треба чіпати ані КПК, ані ядро. Досить мода зі своєю сторінкою й своїм
-// класнеймом у таблиці.
+// ЧОМУ СЕКЦІЇ, А НЕ ТРИ ПОЛЯ. Раніше тут стояли рівно три: мітки, нотатки,
+// маршрут -- і формат сховища перелічував їх позиційно. Це означало, що чужий
+// мод не міг покласти на носій НІЧОГО СВОГО: поля під нього немає, у форматі
+// місця немає, а завантажувач чужий рід прямо викидав («читати його нема
+// кому»). Тобто носій був відкритий на словах і закритий на ділі.
+//
+// Тепер секцій скільки завгодно, і рід -- звичайний рядок. Мод, що хоче
+// зберігати своє, кличе OZ_Write("свій_рід", json, скільки_записів) і читає
+// OZ_Read("свій_рід"). Ані КПК, ані цей файл про нього не знають.
+//
+// ВМІСТИМІСТЬ ЗАГАЛЬНА, В ЗАПИСАХ, і це друга половина тієї ж думки. Стелі
+// «скільки міток» і «скільки нотаток» вимагали б від кожного носія знати про
+// кожен майбутній рід, а від кожного нового роду -- прописатись у кожному
+// носії. Замість цього носій має ОДНЕ число: скільки записів на нього влазить.
+// Мітка -- запис, нотатка -- запис, точка маршруту -- запис, частота -- запис.
+// Носій не питає, що це, і саме тому нічого не мусить знати наперед.
+
+// Одна секція носія. Рід -- домовленість між тим, хто пише, і тим, хто читає;
+// сюди він приходить рядком і тут рядком і лишається.
+class OZ_CarrierSection
+{
+    string Kind    = "";
+    string Payload = "";
+    // Скільки записів коштує ця секція. Рахує ТОЙ, ХТО ПИШЕ: лише він знає,
+    // що всередині його JSON. Носієві досить суми.
+    int    Records = 0;
+}
 
 class OZ_DataCarrier_Base : ItemBase
 {
-    // ДВІ СЕКЦІЇ замість одного роду (рішення власника 2026-08-28): мітки й
-    // нотатки живуть на одному чипі одночасно, і гейт роду помер разом із
-    // m_Kind. Кожна секція -- свій JSON, порожній рядок -- секції немає.
-    private string m_Marks = "";
-    private string m_Notes = "";
-    private string m_Route = "";
-    // Чи записаний носій узагалі. Порожній чип -- теж законний предмет.
-    private bool   m_Written = false;
-    // Лічильники транзієнтні: рахуються з пейлоада при записі й при
-    // завантаженні, тому формат сховища не росте. -1 -- секції немає.
-    private int    m_MarkCount = -1;
-    private int    m_NoteCount = -1;
-    private int    m_RoutePts  = -1;
+    private ref array<ref OZ_CarrierSection> m_Sections;
 
-    string OZ_Marks()
+    void OZ_DataCarrier_Base()
     {
-        return m_Marks;
+        m_Sections = new array<ref OZ_CarrierSection>();
     }
 
-    string OZ_Notes()
+    // ------------------------------------------------------------ читання
+
+    private OZ_CarrierSection Find(string kind)
     {
-        return m_Notes;
+        if (!m_Sections)
+            return null;
+
+        for (int i = 0; i < m_Sections.Count(); i++)
+        {
+            if (m_Sections[i].Kind == kind)
+                return m_Sections[i];
+        }
+        return null;
     }
 
-    string OZ_Route()
+    string OZ_Read(string kind)
     {
-        return m_Route;
+        OZ_CarrierSection s = Find(kind);
+        if (!s)
+            return "";
+        return s.Payload;
     }
 
-    int OZ_RoutePts()
+    // -1 -- секції немає. Нуль -- секція є й порожня, що не те саме.
+    int OZ_Records(string kind)
     {
-        return m_RoutePts;
+        OZ_CarrierSection s = Find(kind);
+        if (!s)
+            return -1;
+        return s.Records;
+    }
+
+    // Які роди тут узагалі лежать. Потрібно тому, хто малює носій, не знаючи
+    // наперед, що на ньому.
+    void OZ_Kinds(out array<string> kinds)
+    {
+        kinds = new array<string>();
+        if (!m_Sections)
+            return;
+        for (int i = 0; i < m_Sections.Count(); i++)
+            kinds.Insert(m_Sections[i].Kind);
     }
 
     bool OZ_IsWritten()
     {
-        return m_Written;
+        return m_Sections && m_Sections.Count() > 0;
     }
 
-    int OZ_MarkCount()
+    int OZ_Used()
     {
-        return m_MarkCount;
+        int total = 0;
+        if (!m_Sections)
+            return 0;
+        for (int i = 0; i < m_Sections.Count(); i++)
+            total += m_Sections[i].Records;
+        return total;
     }
 
-    int OZ_NoteCount()
+    // Стеля цього класу носія. Нуль у таблиці означає «без стелі», і назовні
+    // це -1: нуль вільних місць і відсутність стелі -- протилежні речі, і
+    // плутати їх не можна.
+    int OZ_Max()
     {
-        return m_NoteCount;
+        OZ_CarrierSpec spec = OZ_PdaHardware.CarrierFor(GetType());
+        if (!spec || spec.MaxRecords <= 0)
+            return -1;
+        return spec.MaxRecords;
     }
 
-    // Серверні: вміст носія клієнт задавати не може. Порожній json стирає
-    // саме цю секцію, друга живе далі.
-    void OZ_WriteMarks(string json, int count)
+    int OZ_Free()
+    {
+        int max = OZ_Max();
+        if (max < 0)
+            return -1;
+
+        int free = max - OZ_Used();
+        if (free < 0)
+            free = 0;
+        return free;
+    }
+
+    // Скільки влізе В ЦЕЙ РІД, якщо його переписати: місце, яке зараз займає
+    // він сам, звільниться. Саме це число потрібне тому, хто збирається
+    // обрізати свій список під носій.
+    int OZ_RoomFor(string kind)
+    {
+        int max = OZ_Max();
+        if (max < 0)
+            return -1;
+
+        int mine = OZ_Records(kind);
+        if (mine < 0)
+            mine = 0;
+
+        int room = max - OZ_Used() + mine;
+        if (room < 0)
+            room = 0;
+        return room;
+    }
+
+    // ------------------------------------------------------------- запис
+    //
+    // Серверний: вміст носія клієнт задавати не може. Порожній json стирає
+    // саме цей рід, решта живе далі.
+    //
+    // Відмовляє, коли не влазить, а не обрізає: обрізати може лише той, хто
+    // знає, що в JSON, -- він і мусить спитати OZ_RoomFor заздалегідь. Але
+    // перевірка стоїть ТУТ, а не тільки в нього: писар, який забув спитати,
+    // отримує відмову, а не тихе переповнення.
+    bool OZ_Write(string kind, string json, int records)
     {
         if (!GetGame().IsServer())
-            return;
+            return false;
+        if (kind == "")
+            return false;
 
-        m_Marks = json;
-        m_MarkCount = count;
         if (json == "")
-            m_MarkCount = -1;
+        {
+            OZ_Drop(kind);
+            return true;
+        }
 
-        RefreshWritten();
+        if (records < 0)
+            records = 0;
+
+        int room = OZ_RoomFor(kind);
+        if (room >= 0 && records > room)
+        {
+            string full = "carrier " + GetType() + ": " + kind;
+            full += " needs " + records.ToString() + " records, room for " + room.ToString();
+            OZ_Log.Warn(full);
+            return false;
+        }
+
+        OZ_CarrierSection s = Find(kind);
+        if (!s)
+        {
+            s = new OZ_CarrierSection();
+            s.Kind = kind;
+            m_Sections.Insert(s);
+        }
+
+        s.Payload = json;
+        s.Records = records;
+        return true;
     }
 
-    void OZ_WriteNotes(string json, int count)
+    void OZ_Drop(string kind)
     {
-        if (!GetGame().IsServer())
+        if (!GetGame().IsServer() || !m_Sections)
             return;
 
-        m_Notes = json;
-        m_NoteCount = count;
-        if (json == "")
-            m_NoteCount = -1;
-
-        RefreshWritten();
-    }
-
-    void OZ_WriteRoute(string json, int count)
-    {
-        if (!GetGame().IsServer())
-            return;
-
-        m_Route = json;
-        m_RoutePts = count;
-        if (json == "")
-            m_RoutePts = -1;
-
-        RefreshWritten();
+        for (int i = m_Sections.Count() - 1; i >= 0; i--)
+        {
+            if (m_Sections[i].Kind == kind)
+                m_Sections.Remove(i);
+        }
     }
 
     void OZ_Erase()
     {
         if (!GetGame().IsServer())
             return;
-
-        m_Marks = "";
-        m_Notes = "";
-        m_Route = "";
-        m_MarkCount = -1;
-        m_NoteCount = -1;
-        m_RoutePts  = -1;
-        m_Written = false;
+        m_Sections.Clear();
     }
 
-    private void RefreshWritten()
-    {
-        m_Written = (m_Marks != "" || m_Notes != "" || m_Route != "");
-    }
+    // ------------------------------------------------- знайомі роди КПК
+    //
+    // Тонкі обгортки, і тільки. Решта КПК писалась під них, і переписувати її
+    // заради нової форми немає підстав: рід тут -- звичайний рядок, а ці три
+    // просто знає сам КПК.
 
-    private static int CountMarks(string payload)
-    {
-        string err;
-        OZ_MarkerList ml;
-        if (JsonFileLoader<OZ_MarkerList>.LoadData(payload, ml, err) && ml && ml.Items)
-            return ml.Items.Count();
-        return -1;
-    }
+    static const string KIND_MARKS = "markers";
+    static const string KIND_NOTES = "notes";
+    static const string KIND_ROUTE = "route";
 
-    private static int CountNotes(string payload)
-    {
-        string err;
-        OZ_NoteBook nb;
-        if (JsonFileLoader<OZ_NoteBook>.LoadData(payload, nb, err) && nb && nb.Notes)
-            return nb.Notes.Count();
-        return -1;
-    }
+    string OZ_Marks()      { return OZ_Read(KIND_MARKS); }
+    string OZ_Notes()      { return OZ_Read(KIND_NOTES); }
+    string OZ_Route()      { return OZ_Read(KIND_ROUTE); }
 
+    int OZ_MarkCount()     { return OZ_Records(KIND_MARKS); }
+    int OZ_NoteCount()     { return OZ_Records(KIND_NOTES); }
+    int OZ_RoutePts()      { return OZ_Records(KIND_ROUTE); }
+
+    bool OZ_WriteMarks(string json, int count) { return OZ_Write(KIND_MARKS, json, count); }
+    bool OZ_WriteNotes(string json, int count) { return OZ_Write(KIND_NOTES, json, count); }
+    bool OZ_WriteRoute(string json, int count) { return OZ_Write(KIND_ROUTE, json, count); }
+
+    // ---------------------------------------------------------- сховище
+    //
     // ДОПИСУВАТИ тільки в кінець і читати за GetVersion(). Записи CF
-    // позиційні: вставка поля в середину зсуває потік і з'їдає дані всіх,
-    // хто пише після нас. Рядок-маркер "mix" на місці старого m_Kind -- це
-    // водночас версія формату і сумісність: старі чипи несуть там свій рід.
+    // позиційні: вставка поля в середину зсуває потік і з'їдає дані всіх, хто
+    // пише після нас.
+    //
+    // Формат один -- "kv1", і старих він не читає. Мод живе на стенді
+    // розробки, збережених носіїв ніде немає, а код, що вміє читати формати,
+    // яких більше не існує, -- це код, який ніхто ніколи не перевірить.
     override void CF_OnStoreSave(CF_ModStorageMap storage)
     {
         super.CF_OnStoreSave(storage);
@@ -151,14 +248,18 @@ class OZ_DataCarrier_Base : ItemBase
         if (!ctx)
             return;
 
-        ctx.Write(m_Written);
-        // "mix2" -- формат із маршрутом. Читач розуміє й старіші.
-        ctx.Write("mix2");
-        // Секції -- шматками: стеля рядка сховища 1023 байти, подробиці
-        // в OZ_StoreBig.
-        OZ_StoreBig.Write(ctx, m_Marks);
-        OZ_StoreBig.Write(ctx, m_Notes);
-        OZ_StoreBig.Write(ctx, m_Route);
+        ctx.Write("kv1");
+        ctx.Write(m_Sections.Count());
+
+        for (int i = 0; i < m_Sections.Count(); i++)
+        {
+            OZ_CarrierSection s = m_Sections[i];
+            ctx.Write(s.Kind);
+            ctx.Write(s.Records);
+            // Секції -- шматками: стеля рядка сховища 1023 байти, подробиці
+            // в OZ_StoreBig.
+            OZ_StoreBig.Write(ctx, s.Payload);
+        }
     }
 
     override bool CF_OnStoreLoad(CF_ModStorageMap storage)
@@ -170,51 +271,39 @@ class OZ_DataCarrier_Base : ItemBase
         if (!ctx)
             return true;
 
-        if (!ctx.Read(m_Written))
+        string tag;
+        if (!ctx.Read(tag))
             return false;
 
-        string kind;
-        if (!ctx.Read(kind))
+        if (tag != "kv1")
+        {
+            // Чужий або старий формат: читати його нема чим, і вдавати, що
+            // прочитали, гірше за порожній носій.
+            OZ_Log.Warn("carrier " + GetType() + ": unknown storage format " + tag + " - the carrier comes up empty");
+            return true;
+        }
+
+        int count;
+        if (!ctx.Read(count))
             return false;
 
-        if (kind == "mix2")
+        m_Sections.Clear();
+        for (int i = 0; i < count; i++)
         {
-            if (!OZ_StoreBig.Read(ctx, m_Marks))
+            OZ_CarrierSection s = new OZ_CarrierSection();
+            if (!ctx.Read(s.Kind))
                 return false;
-            if (!OZ_StoreBig.Read(ctx, m_Notes))
+            if (!ctx.Read(s.Records))
                 return false;
-            if (!OZ_StoreBig.Read(ctx, m_Route))
-                return false;
-        }
-        else if (kind == "mix")
-        {
-            if (!OZ_StoreBig.Read(ctx, m_Marks))
-                return false;
-            if (!OZ_StoreBig.Read(ctx, m_Notes))
-                return false;
-        }
-        else
-        {
-            // Старий одно-родовий чип: одна секція за родом, друга порожня.
-            string payload;
-            if (!OZ_StoreBig.Read(ctx, payload))
+            if (!OZ_StoreBig.Read(ctx, s.Payload))
                 return false;
 
-            if (kind == "markers")
-                m_Marks = payload;
-            else if (kind == "notes")
-                m_Notes = payload;
-            // Чужий/зондовий рід свідомо губиться: читати його нема кому.
+            // ЧУЖИЙ РІД ЗБЕРІГАЄТЬСЯ. Раніше він тут губився -- і саме це
+            // робило носій нерозширюваним: мод міг записати своє й побачити,
+            // що після перезаходу цього немає.
+            m_Sections.Insert(s);
         }
 
-        if (m_Marks != "")
-            m_MarkCount = CountMarks(m_Marks);
-        if (m_Notes != "")
-            m_NoteCount = CountNotes(m_Notes);
-        if (m_Route != "")
-            m_RoutePts = CountMarks(m_Route);
-
-        RefreshWritten();
         return true;
     }
 }
@@ -286,8 +375,11 @@ class OZ_CarrierView
 {
     ref OZ_MarkerList Marks;
     ref OZ_NoteBook   Notes;
-    int MaxMarks = 0;
-    int MaxNotes = 0;
+    // Спільна місткість і скільки з неї зайнято. Двох чисел досить, щоб
+    // намалювати смужку заповнення для будь-якого набору родів -- зокрема
+    // тих, про які ця сторінка не знає.
+    int MaxRecords  = 0;
+    int UsedRecords = 0;
 }
 
 

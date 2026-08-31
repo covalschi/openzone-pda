@@ -625,11 +625,11 @@ class OZ_PdaPageDevice : OZ_PdaPage
             noteCnt = m_CarNotes.Notes.Count();
 
         string head = "#STR_OZ_DEV_CAR_MARKS " + markCnt.ToString();
-        if (v.MaxMarks > 0)
-            head += "/" + v.MaxMarks.ToString();
+        if (v.MaxRecords > 0)
+            head += "/" + v.MaxRecords.ToString();
         head += "   #STR_OZ_DEV_CAR_NOTES " + noteCnt.ToString();
-        if (v.MaxNotes > 0)
-            head += "/" + v.MaxNotes.ToString();
+        if (v.MaxRecords > 0)
+            head += "/" + v.MaxRecords.ToString();
         SetText("CarPaneHead", head);
 
         if (m_CarList)
@@ -807,8 +807,8 @@ class OZ_PdaPageDevice : OZ_PdaPage
             if (st.CarrierMarks >= 0)
             {
                 parts += "#STR_OZ_DEV_CAR_MARKS " + st.CarrierMarks.ToString();
-                if (st.CarrierMaxMarks > 0)
-                    parts += "/" + st.CarrierMaxMarks.ToString();
+                if (st.CarrierMaxRecords > 0)
+                    parts += "/" + st.CarrierMaxRecords.ToString();
             }
 
             if (st.CarrierNotes >= 0)
@@ -816,8 +816,8 @@ class OZ_PdaPageDevice : OZ_PdaPage
                 if (parts != "")
                     parts += "   ";
                 parts += "#STR_OZ_DEV_CAR_NOTES " + st.CarrierNotes.ToString();
-                if (st.CarrierMaxNotes > 0)
-                    parts += "/" + st.CarrierMaxNotes.ToString();
+                if (st.CarrierMaxRecords > 0)
+                    parts += "/" + st.CarrierMaxRecords.ToString();
             }
 
             if (parts == "")

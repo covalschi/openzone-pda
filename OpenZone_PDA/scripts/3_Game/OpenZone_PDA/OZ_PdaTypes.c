@@ -61,8 +61,8 @@ class OZ_PdaDeviceStatus
     // Секції нарізно: -1 -- секції немає. Стелі класу поруч, 0 -- безліміт.
     int    CarrierMarks = -1;
     int    CarrierNotes = -1;
-    int    CarrierMaxMarks = 0;
-    int    CarrierMaxNotes = 0;
+    int    CarrierMaxRecords  = 0;
+    int    CarrierUsedRecords = 0;
     // Скільки одиниць на чипі; -1 -- невідомо (чужий род або старий запис).
 
     // --- замок ---

@@ -57,11 +57,18 @@ class OZ_CarrierSpec
     // Чи можна перезаписати носій із КПК. Одноразовий чип із чужої схованки
     // перезаписувати не можна -- у цьому половина його цінності.
     bool   Writable    = true;
-    // Місткість: скільки міток і скільки записок ВЛАЗИТЬ на цей клас.
-    // 0 -- без стелі. Це другий важіль тиру після відсіків: дискета на
-    // чотири мітки і польовий накопичувач -- різні речі за той самий слот.
-    int    MaxMarks    = 0;
-    int    MaxNotes    = 0;
+    // Місткість -- ОДНЕ число, в записах, байдуже яких. Мітка -- запис,
+    // нотатка -- запис, точка маршруту -- запис, частота -- запис. 0 -- без
+    // стелі.
+    //
+    // Раніше стелі були окремі на кожен відомий рід, і саме це робило носій
+    // закритим: щоб мод поклав на нього своє, він мусив би прописати собі
+    // стелю в КОЖНОМУ класі носія, а автор носія -- знати всі майбутні роди.
+    // Спільний лічильник знімає обидві половини цієї вимоги.
+    //
+    // Другий важіль тиру після відсіків: дискета на шість записів і польовий
+    // накопичувач -- різні речі за той самий слот.
+    int    MaxRecords  = 0;
 }
 
 class OZ_PdaHardwareConfig : OZ_ConfigBase
@@ -131,8 +138,7 @@ class OZ_PdaHardwareConfig : OZ_ConfigBase
         floppy.DisplayName = "#STR_OZ_CARRIER_FLOPPY";
         floppy.DefaultKind = "";
         floppy.Writable    = true;
-        floppy.MaxMarks    = 4;
-        floppy.MaxNotes    = 2;
+        floppy.MaxRecords  = 6;
         Carriers.Insert(floppy);
 
         OZ_CarrierSpec chip = new OZ_CarrierSpec();
@@ -140,8 +146,7 @@ class OZ_PdaHardwareConfig : OZ_ConfigBase
         chip.DisplayName = "#STR_OZ_CARRIER_CHIP";
         chip.DefaultKind = "";
         chip.Writable    = true;
-        chip.MaxMarks    = 16;
-        chip.MaxNotes    = 8;
+        chip.MaxRecords  = 24;
         Carriers.Insert(chip);
 
         OZ_CarrierSpec drive = new OZ_CarrierSpec();

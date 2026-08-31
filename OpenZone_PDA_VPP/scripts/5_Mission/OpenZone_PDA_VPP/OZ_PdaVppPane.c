@@ -226,7 +226,6 @@ modded class OZ_VppAdminMenu
             SetEdit("HwSpy",   ms.SpyMinutes.ToString());
             SetEdit("HwPages", JoinPages(ms.EnablesPages));
             SetEdit("HwMarks", "");
-            SetEdit("HwNotes", "");
             m_HwWritable = true;
         }
         else
@@ -239,8 +238,9 @@ modded class OZ_VppAdminMenu
             SetEdit("HwPower", "");
             SetEdit("HwSpy",   "");
             SetEdit("HwPages", "");
-            SetEdit("HwMarks", cs.MaxMarks.ToString());
-            SetEdit("HwNotes", cs.MaxNotes.ToString());
+            // Одне число замість двох: місткість носія тепер рахується в
+            // ЗАПИСАХ, байдуже яких. Див. OZ_CarrierSpec.
+            SetEdit("HwMarks", cs.MaxRecords.ToString());
             m_HwWritable = cs.Writable;
         }
         PaintHwToggles();
@@ -261,7 +261,6 @@ modded class OZ_VppAdminMenu
         SetEdit("HwSpy",   "0");
         SetEdit("HwPages", "");
         SetEdit("HwMarks", "0");
-        SetEdit("HwNotes", "0");
         if (kind == "module")
             SetEdit("HwKind", "antenna");
         else
@@ -353,8 +352,7 @@ modded class OZ_VppAdminMenu
             cs.DisplayName = GetEdit("HwName");
             cs.DefaultKind = GetEdit("HwKind");
             cs.Writable    = m_HwWritable;
-            cs.MaxMarks    = GetEdit("HwMarks").ToInt();
-            cs.MaxNotes    = GetEdit("HwNotes").ToInt();
+            cs.MaxRecords  = GetEdit("HwMarks").ToInt();
         }
         else
         {

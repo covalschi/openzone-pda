@@ -1172,7 +1172,7 @@ FrameWidgetClass OZ_PdaVppPane {
      hexactsize 1
      vexactsize 1
      color 0.541 0.541 0.565 1
-     text "max marks"
+     text "max records"
      font "gui/fonts/sdf_MetronBook24"
      "exact text" 1
      "exact text size" 11
@@ -1183,38 +1183,6 @@ FrameWidgetClass OZ_PdaVppPane {
     EditBoxWidgetClass HwMarks {
      visible 1
      position 118 331
-     size 202 24
-     hexactpos 1
-     vexactpos 1
-     hexactsize 1
-     vexactsize 1
-     color 0.788 0.788 0.816 1
-     text ""
-     font "gui/fonts/MetronBook14"
-     "exact text" 1
-     priority 4
-    }
-    TextWidgetClass HwNotesL {
-     visible 1
-     ignorepointer 1
-     position 0 362
-     size 115 20
-     hexactpos 1
-     vexactpos 1
-     hexactsize 1
-     vexactsize 1
-     color 0.541 0.541 0.565 1
-     text "max notes"
-     font "gui/fonts/sdf_MetronBook24"
-     "exact text" 1
-     "exact text size" 11
-     "text halign" left
-     "text valign" center
-     priority 3
-    }
-    EditBoxWidgetClass HwNotes {
-     visible 1
-     position 118 360
      size 202 24
      hexactpos 1
      vexactpos 1
