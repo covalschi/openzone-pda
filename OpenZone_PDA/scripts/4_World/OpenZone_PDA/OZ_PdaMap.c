@@ -975,8 +975,11 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         return false;
     }
 
+    // ПЕРЕМАГАЄ БІЛЬША ДАЛЬНІСТЬ (ТЗ-4 R-F3.1): дві антени в приладі дають
+    // радіус сильнішої, а не тієї, що стоїть у першому гнізді.
     private float AntennaRange(OZ_PDA_Base pda)
     {
+        float best = 0;
         for (int i = 0; i < OZ_PdaConst.MODULE_SLOTS_MAX; i++)
         {
             string cls = pda.OZ_ModuleClass(i);
@@ -987,10 +990,10 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             if (!spec || spec.Kind != OZ_PdaConst.MOD_ANTENNA)
                 continue;
 
-            if (spec.RangeM > 0)
-                return spec.RangeM;
+            if (spec.RangeM > best)
+                best = spec.RangeM;
         }
-        return 0;
+        return best;
     }
 
     private string Serialise(OZ_MapState st, out bool ok, out string error)

@@ -727,12 +727,15 @@ class OZ_PDA_Base : ItemBase
     // механізм і читаються з тих самих позицій сховища), але РАХУЮТЬСЯ
     // РАЗОМ із чужими розділами: пам'ять одна, і байдуже, хто її зайняв.
 
+    // Число -- з профілю, і лише з нього (ТЗ-4 R-F1.2); Validate уже
+    // гарантує, що воно там є. Без профілю (клас, якого немає в
+    // Profiles.json) -- те саме задокументоване умовчання.
     int OZ_Max()
     {
         OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(GetType());
         if (prof && prof.Limits && prof.Limits.Memory > 0)
             return prof.Limits.Memory;
-        return OZ_PdaConst.NOTES_MAX;
+        return OZ_PdaConst.MEMORY_DEFAULT;
     }
 
     // Скільки ячеек коштують ВЛАСНІ розділи приладу. Рахуємо розбором, а не
@@ -1071,6 +1074,14 @@ class OZ_PDA_Base : ItemBase
     // Класнейм модуля у відсіку i, або порожній рядок.
     string OZ_ModuleClass(int i)
     {
+        // СХОВАНИЙ ВІДСІК -- ВИМКНЕНИЙ ВІДСІК (ТЗ-4 R-F2.1). ModuleSlots профілю
+        // досі лише ховав гнізда понад число, а модуль у схованому працював
+        // повністю. Усі, хто питає «що стоїть у відсіку», проходять тут, тож
+        // одного місця досить: антена, дешифратор, GPS, витрата живлення.
+        OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(GetType());
+        if (prof && i >= prof.ModuleSlots)
+            return "";
+
         EntityAI m = OZ_Attached(OZ_PdaConst.ModuleSlot(i));
         if (!m)
             return "";

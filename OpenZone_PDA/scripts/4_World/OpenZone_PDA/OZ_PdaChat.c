@@ -76,6 +76,9 @@ class OZ_ChatAskGroup
     string Uid;
     string Title;
     string Desc;
+    // Скільки груп цей прилад дозволяє заснувати (Limits.GroupChats профілю,
+    // ТЗ-4 R-F1.6). Рахує міст -- групи живуть у нього; нуль -- без межі.
+    int    Max;
 }
 
 // Правка існуючої групи: назва й опис. Порожнє поле -- «не чіпати» вирішує
@@ -187,6 +190,8 @@ class OZ_ChatFail
             return "STR_OZ_ERR_NO_BRIDGE";
         if (code == "read_only")
             return "STR_OZ_ERR_READ_ONLY";
+        if (code == "groups_full")
+            return "STR_OZ_ERR_GROUPS_FULL";
         if (code == "not_owner")
             return "STR_OZ_ERR_NOT_OWNER";
         if (code == "group_full")
@@ -737,6 +742,16 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         a.Uid   = uid;
         a.Title = title;
         a.Desc  = OZ_Text.Clip(MiscGameplayFunctions.SanitizeString(r.Desc), OZ_PdaTune.ChatDescMax());
+
+        // Межа груп -- з профілю приладу засновника (ТЗ-4 R-F1.6).
+        a.Max = 0;
+        OZ_PDA_Base gdev = OZ_PdaLookup.HeldBy(sender);
+        if (gdev)
+        {
+            OZ_PdaProfile gprof = OZ_PdaProfiles.ForClass(gdev.GetType());
+            if (gprof && gprof.Limits)
+                a.Max = gprof.Limits.GroupChats;
+        }
 
         string letter;
         if (!JsonFileLoader<OZ_ChatAskGroup>.MakeData(a, letter, err, false))

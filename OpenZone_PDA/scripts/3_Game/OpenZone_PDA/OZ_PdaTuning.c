@@ -30,7 +30,6 @@ class OZ_PdaTuning : OZ_ConfigBase
 
     // --- нотатки ---
     // Запасна стеля кількості, коли профіль пристрою не каже своєї.
-    int NotesMaxFallback = 50;
     int NoteTitleMaxBytes = 64;
     // Не більше 1000: JsonFileLoader ріже рядки на 1023 байтах, і міст
     // кліпає на тій самій межі. Validate не дасть поставити більше.
@@ -78,7 +77,6 @@ class OZ_PdaTuning : OZ_ConfigBase
         ChatHistoryPage   = 20;
         ChatGroupMax      = 16;
 
-        NotesMaxFallback  = 50;
         NoteTitleMaxBytes = 64;
         NoteBodyMaxBytes  = 1000;
 
@@ -135,8 +133,6 @@ class OZ_PdaTuning : OZ_ConfigBase
         warnings += ClampMin("ChatGroupMax", ChatGroupMax, 0);
         ChatGroupMax = Math.Max(ChatGroupMax, 0);
 
-        warnings += ClampMin("NotesMaxFallback", NotesMaxFallback, 1);
-        NotesMaxFallback = Math.Max(NotesMaxFallback, 1);
 
         warnings += ClampMin("FriendReachMeters", FriendReachMeters, 1);
         FriendReachMeters = Math.Max(FriendReachMeters, 1);
@@ -234,14 +230,6 @@ class OZ_PdaTune
         if (t)
             return t.ChatGroupMax;
         return OZ_PdaConst.CHAT_GROUP_MAX;
-    }
-
-    static int NotesMax()
-    {
-        OZ_PdaTuning t = OZ_PdaTuning.Get();
-        if (t)
-            return t.NotesMaxFallback;
-        return OZ_PdaConst.NOTES_MAX;
     }
 
 

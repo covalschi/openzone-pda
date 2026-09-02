@@ -129,6 +129,19 @@ class OZ_PdaHardwareConfig : OZ_ConfigBase
         gps.EnablesPages = new array<string>();
         Modules.Insert(gps);
 
+        // Шпигунська антена ЗАПИСАНА в залізі (ТЗ-4 R-F4.1): предмет спавнився,
+        // а запису не мав -- і з коробки не робив нічого. Антена як антена,
+        // плюс лічені хвилини ока на всіх (SpyMinutes), потім плата згорає.
+        OZ_ModuleSpec spy = new OZ_ModuleSpec();
+        spy.ClassName    = "OZ_Module_SpyAntenna";
+        spy.DisplayName  = "#STR_OZ_MOD_SPY";
+        spy.Kind         = "antenna";
+        spy.RangeM       = 500;
+        spy.SpyMinutes   = 60;
+        spy.PowerFactor  = 2.0;
+        spy.EnablesPages = new array<string>();
+        Modules.Insert(spy);
+
         // Дешифратор. Відкриває запечатані КПК -- і тільки їх; на звичайному
         // пристрої він просто займає відсік. Їсть багато: він рахує.
         OZ_ModuleSpec dec = new OZ_ModuleSpec();

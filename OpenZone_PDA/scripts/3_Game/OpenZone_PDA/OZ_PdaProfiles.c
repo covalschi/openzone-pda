@@ -25,7 +25,11 @@ class OZ_PdaLimits
     //
     // Друзі й групові розмови сюди НЕ входять: вони не лежать у пам'яті
     // приладу, а живуть на сервері й у мосту.
-    int Memory     = 10;
+    // НУЛЬ, а не число: профіль, що не оголосив пам'ять, отримує
+    // задокументоване умовчання з WARNING (ТЗ-4 R-F1.1--R-F1.3), а не тихе
+    // число з іншого файлу. Два числа у двох місцях -- це те, з чого все
+    // почалось.
+    int Memory     = 0;
     int Friends    = 20;
     int GroupChats = 2;
 }
@@ -119,6 +123,9 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
         p.BatteryClassNames.Insert("Battery9V");
 
         p.Limits            = new OZ_PdaLimits();
+        // Поставочні числа (ТЗ-4 R-F1.4) -- стартова точка балансу, не договір:
+        // novice 25, advanced 60, sealed 10. Правляться в Profiles.json.
+        p.Limits.Memory     = 25;
         p.PinProtectedPages = new array<string>();
         Profiles.Insert(p);
 
@@ -142,7 +149,7 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
         a.BatteryClassNames.Insert("Battery9V");
 
         a.Limits            = new OZ_PdaLimits();
-        a.Limits.Memory     = 40;
+        a.Limits.Memory     = 60;
         a.Limits.Friends    = 60;
         a.Limits.GroupChats = 8;
         a.PinProtectedPages = new array<string>();
@@ -170,7 +177,7 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
         q.BatteryClassNames.Insert("Battery9V");
 
         q.Limits            = new OZ_PdaLimits();
-        q.Limits.Memory     = 20;
+        q.Limits.Memory     = 10;
         q.PinProtectedPages = new array<string>();
         q.ModuleSlots       = 2;
         q.LockAfterMinutes  = 1;
@@ -240,6 +247,18 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
 
             if (!p.Limits)
                 p.Limits = new OZ_PdaLimits();
+
+            // Limits.Memory -- ЄДИНЕ джерело числа ячейок (ТЗ-4 R-F1.2). Немає
+            // -- WARNING з іменем профілю й задокументоване умовчання, а не
+            // мовчазний перехід на константу з іншого файлу (R-F1.3).
+            if (p.Limits.Memory <= 0)
+            {
+                string wmem = "profile \"" + p.Id + "\" declares no Limits.Memory - using ";
+                wmem += OZ_PdaConst.MEMORY_DEFAULT.ToString() + " cells; set it in Profiles.json";
+                OZ_Log.Warn(wmem);
+                p.Limits.Memory = OZ_PdaConst.MEMORY_DEFAULT;
+                warnings++;
+            }
             if (!p.BatteryClassNames)
                 p.BatteryClassNames = new array<string>();
             if (!p.PinProtectedPages)

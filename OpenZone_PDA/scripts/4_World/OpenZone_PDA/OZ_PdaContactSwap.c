@@ -26,6 +26,24 @@ class OZ_PdaContactSwap
     // myUid/theirUid -- АКАУНТИ, чиї пристрої потисли руки. Для власного
     // КПК це збігається; для чужого живого -- ні, і це навмисно: рішення
     // власника 2026-08-29, контакт належить сесії пристрою.
+    // Чи повний записник у того, хто тримає прилад. Межу дає профіль ЙОГО
+    // приладу; без приладу чи без межі (0) -- місця досить.
+    private static bool Full(PlayerIdentity who, OZ_PlayerData d)
+    {
+        if (!who || !d || !d.Friends)
+            return false;
+
+        OZ_PDA_Base dev = OZ_PdaLookup.HeldBy(who);
+        if (!dev)
+            return false;
+
+        OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(dev.GetType());
+        if (!prof || !prof.Limits || prof.Limits.Friends <= 0)
+            return false;
+
+        return d.Friends.Count() >= prof.Limits.Friends;
+    }
+
     static void Offer(PlayerIdentity from, PlayerIdentity to, string myUid, string theirUid)
     {
         if (!GetGame().IsServer())
@@ -64,6 +82,21 @@ class OZ_PdaContactSwap
         if (Has(me.Friends, theirKey))
         {
             Say(from, "STR_OZ_SWAP_ALREADY");
+            return;
+        }
+
+        // МІСТКІСТЬ ЗАПИСНИКА -- Limits.Friends профілю приладу, з обох боків
+        // (ТЗ-4 R-F1.6: поле було оголошене, задефолчене, провалідоване -- і не
+        // читалось ніде). Повний записник -- відмова словом, ще до пропозиції.
+        if (Full(from, me))
+        {
+            Say(from, "STR_OZ_ERR_CONTACTS_FULL");
+            return;
+        }
+        if (Full(to, them))
+        {
+            Say(from, "STR_OZ_ERR_THEIR_CONTACTS_FULL");
+            Say(to,   "STR_OZ_ERR_CONTACTS_FULL");
             return;
         }
 
