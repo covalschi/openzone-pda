@@ -616,7 +616,14 @@ class OZ_PdaHandlerChat : OZ_PageHandler
             return "";
         }
 
-        text = OZ_Text.Clip(text, OZ_PdaTune.ChatMsgMax());
+        // ВІДМОВА, а не мовчазне усічення (ТЗ-4 R-D1.3): рядок, який гравець
+        // вважає надісланим, не має губити хвіст без жодного слова. Клієнт
+        // рахує ті самі байти й відмовляє раніше; це -- межа для нечесного.
+        if (text.Length() > OZ_PdaTune.ChatMsgMax())
+        {
+            error = "STR_OZ_ERR_MSG_TOO_LONG";
+            return "";
+        }
 
         string uid = m_Acc;
 

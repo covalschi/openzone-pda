@@ -18,13 +18,13 @@ class OZ_PdaTuning : OZ_ConfigBase
     int PinLockoutSeconds = 300;
 
     // --- chat ---
-    int ChatMsgMaxBytes   = 220;
+    int ChatMsgMaxBytes   = 1000;
     int ChatTitleMaxBytes = 32;
     int ChatDescMaxBytes  = 96;
     // Скільки останніх рядків віддає міст при відкритті розмови...
-    int ChatHistoryOpen = 100;
+    int ChatHistoryOpen = 20;
     // ...і скільки довантажує LOAD OLDER за один крок.
-    int ChatHistoryPage = 50;
+    int ChatHistoryPage = 20;
     // Стеля складу групи. 0 -- без межі. Перевіряє МІСТ при запрошенні.
     int ChatGroupMax = 16;
 
@@ -71,11 +71,11 @@ class OZ_PdaTuning : OZ_ConfigBase
         PinMaxFails       = 5;
         PinLockoutSeconds = 300;
 
-        ChatMsgMaxBytes   = 220;
+        ChatMsgMaxBytes   = 1000;
         ChatTitleMaxBytes = 32;
         ChatDescMaxBytes  = 96;
-        ChatHistoryOpen   = 100;
-        ChatHistoryPage   = 50;
+        ChatHistoryOpen   = 20;
+        ChatHistoryPage   = 20;
         ChatGroupMax      = 16;
 
         NotesMaxFallback  = 50;
@@ -217,7 +217,7 @@ class OZ_PdaTune
         OZ_PdaTuning t = OZ_PdaTuning.Get();
         if (t)
             return t.ChatHistoryOpen;
-        return OZ_PdaConst.CHAT_KEEP;
+        return OZ_PdaConst.CHAT_HISTORY_OPEN;
     }
 
     static int ChatHistoryPage()
@@ -225,7 +225,7 @@ class OZ_PdaTune
         OZ_PdaTuning t = OZ_PdaTuning.Get();
         if (t)
             return t.ChatHistoryPage;
-        return 50;
+        return OZ_PdaConst.CHAT_HISTORY_PAGE;
     }
 
     static int ChatGroupMax()

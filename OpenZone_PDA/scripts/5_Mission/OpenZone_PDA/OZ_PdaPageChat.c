@@ -428,6 +428,14 @@ class OZ_PdaPageChat : OZ_PdaPage
             return;
         }
 
+        // Стеля -- та сама, що в сервера (їде пакетом синхронізації); понад
+        // неї не шлемо взагалі, а кажемо чому (ТЗ-4 R-D1.3).
+        if (m_Input && m_Input.GetText().Length() > MsgMax())
+        {
+            SetHintSticky("ChatHint", "#STR_OZ_ERR_MSG_TOO_LONG");
+            return;
+        }
+
         OZ_ChatSend s = new OZ_ChatSend();
         s.Id = m_OpenId;
         if (m_Input)
@@ -440,6 +448,58 @@ class OZ_PdaPageChat : OZ_PdaPage
         string err;
         if (JsonFileLoader<OZ_ChatSend>.MakeData(s, json, err, false))
             OZ_Rpc.Request(OZ_PdaConst.PAGE_CHAT, "send", json);
+    }
+
+    // Стеля повідомлення в байтах: значення адміна з пакета синхронізації
+    // (pda.msg_max), інакше поставочне.
+    private int MsgMax()
+    {
+        int v = OZ_ClientState.Extra(OZ_PdaConst.SYNC_MSG_MAX, "").ToInt();
+        if (v > 0)
+            return v;
+        return OZ_PdaConst.CHAT_MSG_MAX;
+    }
+
+    // Лічильник байтів під час набору (ТЗ-4 R-D1.3): рядок Length() -- це
+    // байти UTF-8, і саме їх рахує сервер. Перевищення -- словом, а не
+    // тихим обрізанням.
+    override bool OnPageChange(Widget w, bool finished)
+    {
+        if (!m_Input || w != m_Input)
+            return false;
+
+        PaintCounter();
+        return true;
+    }
+
+    // Лічильник живе й крізь щосекундну перемальовку: вона кличе його
+    // замість того, щоб стирати підказку (зміряно на стенді -- «bytes left»
+    // зникав за секунду після набору).
+    private void PaintCounter()
+    {
+        if (!m_Input)
+            return;
+
+        int used = m_Input.GetText().Length();
+        int max  = MsgMax();
+
+        if (used == 0)
+        {
+            SetHint("ChatHint", "");
+            return;
+        }
+
+        if (used > max)
+        {
+            string over = Widget.TranslateString("#STR_OZ_CHAT_OVER");
+            over += " " + (used - max).ToString();
+            SetHint("ChatHint", over);
+            return;
+        }
+
+        string left = Widget.TranslateString("#STR_OZ_CHAT_LEFT");
+        left += " " + (max - used).ToString();
+        SetHint("ChatHint", left);
     }
 
     override void OnResponse(string op, bool ok, string json, string error)
@@ -1060,7 +1120,7 @@ class OZ_PdaPageChat : OZ_PdaPage
         else if (m_View && (m_View.Kind == "npc" || m_View.Frozen))
             SetText("ChatHint", "#STR_OZ_CHAT_PAGER_RO");
         else
-            SetText("ChatHint", "");
+            PaintCounter();
     }
 
     private void PaintView()
@@ -1131,7 +1191,7 @@ class OZ_PdaPageChat : OZ_PdaPage
         if (n == 0)
             SetText("ChatHint", "#STR_OZ_CHAT_EMPTY");
         else
-            SetText("ChatHint", "");
+            PaintCounter();
 
         // NPC-розмова -- скриптова: історію їй не «довантажують», вона
         // ВЕДЕТЬСЯ. Кнопка старого тут лише збивала б з пантелику.

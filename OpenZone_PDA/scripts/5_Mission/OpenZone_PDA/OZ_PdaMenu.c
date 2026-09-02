@@ -1324,6 +1324,20 @@ class OZ_PdaMenu : UIScriptedMenu
         return super.OnKeyPress(w, x, y, key);
     }
 
+    // Зміна в полі вводу -- сторінці, яка його тримає. Досі сторінки не
+    // чули змін узагалі, і лічильник байтів (ТЗ-4 R-D1.3) було нікуди
+    // повісити.
+    override bool OnChange(Widget w, int x, int y, bool finished)
+    {
+        if (m_Current != "" && m_Pages && m_Pages.Contains(m_Current))
+        {
+            OZ_PdaPage page = m_Pages.Get(m_Current);
+            if (page && page.OnPageChange(w, finished))
+                return true;
+        }
+        return super.OnChange(w, x, y, finished);
+    }
+
     override bool OnClick(Widget w, int x, int y, int button)
     {
         if (w == m_BtnClose)

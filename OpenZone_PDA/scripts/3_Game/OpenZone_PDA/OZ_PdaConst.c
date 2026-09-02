@@ -75,6 +75,9 @@ class OZ_PdaConst
     // хто носить антену.
     static const string SYNC_TOAST_S = "pda.toast_s";
     static const string SYNC_ROUTE_M = "pda.route_m";
+    // Стеля повідомлення -- клієнтові, щоб лічильник рахував за тим самим
+    // числом, що й сервер (ТЗ-4 R-D1.3).
+    static const string SYNC_MSG_MAX = "pda.msg_max";
     static const string PAGE_QUESTS = "quests";
     static const string PAGE_CONTACTS = "contacts";
     static const string PAGE_NOTES    = "notes";
@@ -112,7 +115,13 @@ class OZ_PdaConst
 
     // Межі розмов. Довжина повідомлення -- не смак: текст їде в JSON на диску
     // і згодом у тред Discord, у якого своя межа.
-    static const int CHAT_MSG_MAX   = 220;
+    // 1000, а не 220 (ТЗ-4 R-D1.2): рушійний RPC псує рядки понад ~1024 байти,
+    // але конверт ріже від 900 (OZ_Const.RPC_STR_CHUNK), тож тисяча проходить;
+    // у ліміт Discord (2000 символів) тисяча байтів кирилиці вкладається двічі.
+    static const int CHAT_MSG_MAX   = 1000;
+    // Сторінка історії -- ЧИСЛО рядків, не вікно часу (ТЗ-4 R-D2): 20 і 20.
+    static const int CHAT_HISTORY_OPEN = 20;
+    static const int CHAT_HISTORY_PAGE = 20;
     static const int CHAT_TITLE_MAX = 32;
     static const int CHAT_DESC_MAX  = 96;
     static const int CHAT_KEEP      = 100;

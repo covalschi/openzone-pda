@@ -120,6 +120,12 @@ class OZ_PdaPage
         return false;
     }
 
+    // Поле вводу змінилось. Повертати true -- «моє, оброблено».
+    bool OnPageChange(Widget w, bool finished)
+    {
+        return false;
+    }
+
     bool OnPageItemSelected(Widget w, int row)
     {
         return false;

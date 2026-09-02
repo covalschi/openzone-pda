@@ -1671,6 +1671,7 @@ class OZ_PdaModule : CF_ModuleWorld
     {
         OZ_SyncExtras.Put(p, OZ_PdaConst.SYNC_TOAST_S, OZ_PdaTune.ToastSeconds().ToString());
         OZ_SyncExtras.Put(p, OZ_PdaConst.SYNC_ROUTE_M, OZ_PdaTune.RouteAdvanceM().ToString());
+        OZ_SyncExtras.Put(p, OZ_PdaConst.SYNC_MSG_MAX, OZ_PdaTune.ChatMsgMax().ToString());
     }
 
     override void OnMissionStart(Class sender, CF_EventArgs args)
