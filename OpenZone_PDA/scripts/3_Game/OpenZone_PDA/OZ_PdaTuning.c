@@ -25,6 +25,10 @@ class OZ_PdaTuning : OZ_ConfigBase
     int ChatHistoryOpen = 20;
     // ...і скільки довантажує LOAD OLDER за один крок.
     int ChatHistoryPage = 20;
+    // Скільки живе запрошення до групи (ТЗ-4 R-D3.3): своє поле, своє
+    // число -- фракційне (Faction.InviteTtlSeconds, 120 с) для групи
+    // замале: пропозиція має пережити ніч. Міст прибирає протухлі сам.
+    int GroupInviteTtlSeconds = 86400;
     // Стеля складу групи. 0 -- без межі. Перевіряє МІСТ при запрошенні.
     int ChatGroupMax = 16;
 
@@ -76,6 +80,7 @@ class OZ_PdaTuning : OZ_ConfigBase
         ChatHistoryOpen   = 20;
         ChatHistoryPage   = 20;
         ChatGroupMax      = 16;
+        GroupInviteTtlSeconds = 86400;
 
         NoteTitleMaxBytes = 64;
         NoteBodyMaxBytes  = 1000;
@@ -131,6 +136,8 @@ class OZ_PdaTuning : OZ_ConfigBase
         warnings += ClampMin("ChatHistoryPage", ChatHistoryPage, 1);
         ChatHistoryPage = Math.Max(ChatHistoryPage, 1);
         warnings += ClampMin("ChatGroupMax", ChatGroupMax, 0);
+        warnings += ClampMin("GroupInviteTtlSeconds", GroupInviteTtlSeconds, 60);
+        GroupInviteTtlSeconds = Math.Max(GroupInviteTtlSeconds, 60);
         ChatGroupMax = Math.Max(ChatGroupMax, 0);
 
 
@@ -222,6 +229,14 @@ class OZ_PdaTune
         if (t)
             return t.ChatHistoryPage;
         return OZ_PdaConst.CHAT_HISTORY_PAGE;
+    }
+
+    static int GroupInviteTtlS()
+    {
+        OZ_PdaTuning t = OZ_PdaTuning.Get();
+        if (t)
+            return t.GroupInviteTtlSeconds;
+        return 86400;
     }
 
     static int ChatGroupMax()

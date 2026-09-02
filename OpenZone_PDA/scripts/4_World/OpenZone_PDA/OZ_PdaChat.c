@@ -167,6 +167,8 @@ class OZ_ChatAskInvite
     // Стеля складу групи з Tuning.json; склад знає лише міст, тому межа
     // їде разом із запрошенням. 0 -- без межі.
     int Max = 0;
+    // Скільки секунд живе запрошення (ТЗ-4 R-D3.3); нуль -- безстроково.
+    int TtlS = 0;
     string Uid;
     string Id;
     string OtherUid;
@@ -942,6 +944,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         a.Id       = add.Id;
         a.OtherUid = theirUid;
         a.Max      = OZ_PdaTune.ChatGroupMax();
+        a.TtlS     = OZ_PdaTune.GroupInviteTtlS();
 
         string letter;
         if (!JsonFileLoader<OZ_ChatAskInvite>.MakeData(a, letter, err, false))
