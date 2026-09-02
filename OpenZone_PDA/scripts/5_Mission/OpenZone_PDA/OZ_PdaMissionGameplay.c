@@ -49,6 +49,17 @@ modded class MissionGameplay
 
         OZ_PdaMenuGate.Bind(new OZ_PdaMenuOpener());
         OZ_PdaInput.Init();
+
+        // Числа худу з пакета ядра (D87) -- на кожен пакет, перший чи
+        // повторний; і одразу, якщо пакет випередив місію.
+        OZ_ClientState.SyncWatch().Insert(OZ_PdaSync);
+        if (OZ_ClientState.Ready())
+            OZ_PdaHud.ApplySync();
+    }
+
+    void OZ_PdaSync(OZ_SyncPayload p)
+    {
+        OZ_PdaHud.ApplySync();
     }
 
     override void OnUpdate(float timeslice)
@@ -68,6 +79,7 @@ modded class MissionGameplay
         // наступну подію вже з мертвими руками.
         OZ_Show.OnShow.Remove(OZ_PdaShow);
         OZ_RoleNotice.OnAnswer.Remove(OZ_PdaNotice);
+        OZ_ClientState.SyncWatch().Remove(OZ_PdaSync);
 
         OZ_PdaHud.Teardown();
         super.OnMissionFinish();

@@ -1660,9 +1660,25 @@ class OZ_PdaModule : CF_ModuleWorld
         OZ_PdaHandlerMap.ForgetBeacons(dArgs.UID);
     }
 
+    // Що КПК докладає до пакета синхронізації ядра (D87).
+    //
+    // Тост і крок ведення маршрутом їхали лише в посилці маячків, а її
+    // отримує той, у кого є антена: решта жила на умовчаннях із config.cpp,
+    // хоч адмін виставив інше в OZ_PDA_Tuning.json. Пакет ядра їде кожному
+    // на вході й знову на кожну зміну -- саме те місце для двох чисел, які
+    // потрібні всім і не змінюються від маячка до маячка.
+    void OZ_PdaSyncFill(OZ_SyncPayload p)
+    {
+        OZ_SyncExtras.Put(p, OZ_PdaConst.SYNC_TOAST_S, OZ_PdaTune.ToastSeconds().ToString());
+        OZ_SyncExtras.Put(p, OZ_PdaConst.SYNC_ROUTE_M, OZ_PdaTune.RouteAdvanceM().ToString());
+    }
+
     override void OnMissionStart(Class sender, CF_EventArgs args)
     {
         super.OnMissionStart(sender, args);
+
+        if (GetGame().IsServer())
+            OZ_SyncExtras.OnFill().Insert(OZ_PdaSyncFill);
 
         if (!GetGame().IsServer())
             return;

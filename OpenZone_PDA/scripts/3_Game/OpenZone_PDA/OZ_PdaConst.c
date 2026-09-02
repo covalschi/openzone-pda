@@ -67,6 +67,12 @@ class OZ_PdaConst
     // Вхід у «КПК без предмета» (D132). Єдина операція сторінки «Пристрій»,
     // яку клієнт шле з порожніми руками; решту порожні руки не проходять.
     static const string OP_VIRTUAL_OPEN = "virtual_open";
+
+    // Ключі в пакеті синхронізації ядра (OZ_SyncExtras, D87): два числа з
+    // OZ_PDA_Tuning.json, які потрібні худу КОЖНОГО гравця, а не лише того,
+    // хто носить антену.
+    static const string SYNC_TOAST_S = "pda.toast_s";
+    static const string SYNC_ROUTE_M = "pda.route_m";
     static const string PAGE_QUESTS = "quests";
     static const string PAGE_CONTACTS = "contacts";
     static const string PAGE_NOTES    = "notes";

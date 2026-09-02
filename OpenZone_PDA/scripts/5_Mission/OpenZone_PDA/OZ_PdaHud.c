@@ -484,6 +484,24 @@ class OZ_PdaHud
         return OZ_PDA_Base.Cast(p.GetItemInHands());
     }
 
+    // Два числа з пакета синхронізації ядра (D87). Посилка маячків їх теж
+    // везе -- і лишається джерелом для того, хто її отримує; але цей шлях
+    // доходить до КОЖНОГО, а не лише до власника антени.
+    static void ApplySync()
+    {
+        int adv = OZ_ClientState.Extra(OZ_PdaConst.SYNC_ROUTE_M, "").ToInt();
+        if (adv > 0)
+            s_AdvanceM = adv;
+
+        int toast = OZ_ClientState.Extra(OZ_PdaConst.SYNC_TOAST_S, "").ToInt();
+        if (toast > 0)
+            s_ToastHoldMs = toast * 1000;
+
+        string line = "hud: sync gave toast=" + toast.ToString() + "s";
+        line += " advance=" + adv.ToString() + "m";
+        OZ_Log.Dbg(line);
+    }
+
     private static void Ensure()
     {
         if (s_Root)
