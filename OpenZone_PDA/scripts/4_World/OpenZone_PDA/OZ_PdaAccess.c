@@ -60,6 +60,15 @@ class OZ_PdaAccess : OZ_PageAccess
         {
             // Пристрою немає -- лишається «віртуальний КПК», якщо його
             // увімкнув адмін.
+            //
+            // Дві операції сторінки «Пристрій» пускаємо повз список сторінок:
+            // сам вхід (virtual_open) і стан (status). Без них віртуальний
+            // прилад не відкрити взагалі -- а вписувати "device" у
+            // VirtualDevice.Pages адмін не зобов'язаний і до D132 ніколи не
+            // мусив. Решта порожніми руками не проходить, як і раніше.
+            if (pageId == OZ_PdaConst.PAGE_DEVICE && (op == OZ_PdaConst.OP_VIRTUAL_OPEN || op == "status"))
+                return OZ_PdaLookup.VirtualFor(who.GetPlainId());
+
             return OZ_PdaLookup.VirtualAllows(who.GetPlainId(), pageId);
         }
 
@@ -293,6 +302,18 @@ class OZ_PdaLookup
         if (!cfg.VirtualDevice.Pages)
             return false;
         if (cfg.VirtualDevice.Pages.Find(pageId) == -1)
+            return false;
+
+        return VirtualFor(uid);
+    }
+
+    // Чи положено цьому гравцеві віртуальний КПК ВЗАГАЛІ -- без питання про
+    // сторінку. Відповідь на «чи відкривати» (D132); сторінки потім питає
+    // VirtualAllows окремо, як і раніше.
+    static bool VirtualFor(string uid)
+    {
+        OZ_PdaProfilesConfig cfg = OZ_PdaProfiles.Get();
+        if (!cfg || !cfg.VirtualDevice || !cfg.VirtualDevice.Enabled)
             return false;
 
         // ОБМЕЖЕННЯ ПО ФРАКЦІЯХ -- те, заради чого поле й заводили.

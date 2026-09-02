@@ -11,6 +11,9 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         if (op == "status")
             return Status(sender, ok, error);
 
+        if (op == OZ_PdaConst.OP_VIRTUAL_OPEN)
+            return VirtualOpen(sender, ok, error);
+
         if (op == "unlock")
             return Unlock(json, sender, ok, error);
 
@@ -874,6 +877,98 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
 
     private static int s_CarrierSeq = 0;
 
+    // «КПК без предмета» (D132): відкрити екран тому, кому адмін дозволив
+    // віртуальний прилад. Ворота вже сказали «так» (OZ_PdaAccess.Check
+    // пускає цю операцію через VirtualFor), тут лишається не відкрити
+    // віртуальний екран тому, у кого в руках чи на грудях є справжній: для
+    // нього відкриття -- дія на приладі, рішення власника.
+    //
+    // Відкриває СЕРВЕР, тим самим каналом, що й OZ_ActionOpenPda: клієнт
+    // просить, сервер вирішує і каже "pda_virtual" -- і місія знає, що цей
+    // екран не має за собою предмета.
+    private string VirtualOpen(PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        if (OZ_PdaLookup.HeldBy(sender))
+        {
+            error = "STR_OZ_ERR_HAVE_DEVICE";
+            return "";
+        }
+
+        OZ_Rpc.Show(sender, "pda_virtual");
+        ok = true;
+        return "{}";
+    }
+
+    // Стан «КПК без предмета»: не річ, а дозвіл. Живлення повне, замка немає,
+    // сесія -- самого гравця; сторінки -- зі списку VirtualDevice.Pages, і
+    // лише ті, що зареєстровані й видимі цьому гравцеві, як і в справжнього.
+    private string VirtualStatus(PlayerIdentity sender, out bool ok, out string error)
+    {
+        ok = false;
+
+        string uid = sender.GetPlainId();
+        OZ_PdaProfilesConfig cfg = OZ_PdaProfiles.Get();
+        if (!cfg || !cfg.VirtualDevice || !cfg.VirtualDevice.Pages)
+        {
+            error = "STR_OZ_ERR_NO_DEVICE";
+            return "";
+        }
+
+        OZ_PdaDeviceStatus st = new OZ_PdaDeviceStatus();
+        st.Virtual     = true;
+        st.ClassName   = "";
+        st.ProfileId   = "virtual";
+        st.DisplayName = "#STR_OZ_DEV_VIRTUAL";
+        st.ModuleSlots = 0;
+        st.InHands     = false;
+
+        for (int i = 0; i < cfg.VirtualDevice.Pages.Count(); i++)
+        {
+            string page = cfg.VirtualDevice.Pages[i];
+            if (!OZ_PageRegistry.VisibleFor(page, uid))
+                continue;
+            if (st.Pages.Find(page) != -1)
+                continue;
+            st.Pages.Insert(page);
+        }
+
+        st.Powered    = true;
+        st.HasBattery = true;
+        st.Charge01   = 1.0;
+
+        for (int b = 0; b < OZ_PdaConst.MODULE_SLOTS_MAX; b++)
+        {
+            OZ_BayInfo bay = new OZ_BayInfo();
+            bay.Index   = b;
+            bay.Visible = false;
+            st.Bays.Insert(bay);
+        }
+
+        st.HasPin   = false;
+        st.Unlocked = true;
+        st.Sealed   = false;
+
+        OZ_PlayerData pd = OZ_PlayerStore.Load(uid);
+        st.Owned       = true;
+        st.OwnerName   = pd.Name;
+        st.Online      = true;
+        st.SessionMine = true;
+
+        string json;
+        string jerr;
+        if (!JsonFileLoader<OZ_PdaDeviceStatus>.MakeData(st, json, jerr, false))
+        {
+            OZ_Log.Error("pda: cannot build the virtual status: " + jerr);
+            error = "STR_OZ_ERR_INTERNAL";
+            return "";
+        }
+
+        ok = true;
+        return json;
+    }
+
     private string Status(PlayerIdentity sender, out bool ok, out string error)
     {
         ok = false;
@@ -881,6 +976,11 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
         if (!pda)
         {
+            // Порожні руки дійшли сюди лише через VirtualFor у воротах:
+            // отже, це стан віртуального приладу, а не помилка.
+            if (OZ_PdaLookup.VirtualFor(sender.GetPlainId()))
+                return VirtualStatus(sender, ok, error);
+
             error = "STR_OZ_ERR_NO_DEVICE";
             return "";
         }

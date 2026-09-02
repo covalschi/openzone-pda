@@ -35,6 +35,32 @@ class OZ_PdaMenuGate
         return s_Inst != null;
     }
 
+    // ---- «КПК без предмета» (D132) ----
+    //
+    // Меню одне, а приводів відкрити його два: дія на приладі й дозвіл
+    // адміна без приладу. Прапорець живе тут, бо сюди дивляться обидва
+    // кінці: місія ставить його, отримавши "pda_virtual" від сервера, а меню
+    // читає, вирішуючи, чи закриватись через порожні руки. Знімає його саме
+    // закриття (OnHide), щоб наступне відкриття дією не успадкувало чужий
+    // режим.
+    private static bool s_Virtual = false;
+
+    static void OpenVirtual()
+    {
+        s_Virtual = true;
+        Open();
+    }
+
+    static bool Virtual()
+    {
+        return s_Virtual;
+    }
+
+    static void ClearVirtual()
+    {
+        s_Virtual = false;
+    }
+
     // Перевизначає нащадок у 5_Mission.
     void DoOpen()  { }
     void DoClose() { }
