@@ -278,7 +278,18 @@ class OZ_ChatWho
 
             string acc = id.GetPlainId();
             OZ_PDA_Base dev = OZ_PdaLookup.HeldByPlayer(pl);
-            if (dev && dev.OZ_SessionUid() != "")
+
+            // НЕМАЄ ПРИЛАДУ -- НЕМАЄ РЯДКІВ (ТЗ-4 R-G3.1). Живі рядки досі
+            // доносились і гравцеві без КПК, і в коді це стояло як навмисне;
+            // рішення власника зняло це. Виняток один -- віртуальний термінал,
+            // якому адмін дозволив чат: у нього немає предмета за задумом.
+            // Навантаження не росте (R-G3.2): прилад тут і так уже знайдено.
+            if (!dev)
+            {
+                if (!OZ_PdaLookup.VirtualAllows(acc, OZ_PdaConst.PAGE_CHAT))
+                    continue;
+            }
+            else if (dev.OZ_SessionUid() != "")
             {
                 if (OZ_PdaCapsule.IsFrozen(dev))
                     continue;

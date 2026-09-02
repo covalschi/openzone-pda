@@ -494,6 +494,18 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         string myUid = m_Acc;
         OZ_PlayerData me = OZ_PlayerStore.Load(myUid);
 
+        // NPC-контакт (ТЗ-4 R-G2.3): кнопка «прибрати» на його рядку досі
+        // гарантовано відмовляла -- у записнику друзів такого ключа немає.
+        // NPC живуть у своєму просторі імен ("npc:<id>"), і прибирають їх
+        // тим же публічним входом, яким їх додавали.
+        if (r.Key.IndexOf("npc:") == 0)
+        {
+            OZ_PdaNpc.DropContact(r.Key.Substring(4, r.Key.Length() - 4), myUid);
+            ok = true;
+            error = "";
+            return "";
+        }
+
         string theirKey = UidByKeyIn(me.Friends, r.Key);
         if (theirKey == "")
         {
