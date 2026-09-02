@@ -57,7 +57,6 @@ class OZ_PdaConst
     // Ім'я інпута з data/inputs.xml. Імена глобальні для ВСІХ завантажених
     // модів, тому префікс обов'язковий.
     static const string INPUT_OPEN = "UAOZPdaOpen";
-    static const string INPUT_PTT  = "UAOZPdaPtt";
 
     // Сторінки, які несе сам КПК.
     //

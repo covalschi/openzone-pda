@@ -20,6 +20,15 @@ class OZ_ModuleSpec
     string ClassName   = "";
     string DisplayName = "";
 
+    // ХТО ВОЛОДІЄ ЗАПИСОМ (D94, друга половина). Порожньо -- запис адміна:
+    // файл головніший, чуже оголошення того самого класу його не чіпає.
+    // Непорожньо -- запис приніс інший мод (Declare ставить назву мода або
+    // "mod"): він потрапляє у файл, щоб адмін його БАЧИВ у редакторі, але
+    // належить модові -- наступне оголошення того ж класу його замінює.
+    // Хочеш перекрити чужий модуль назавжди -- зітри Origin: запис стає
+    // твоїм, і файл знову виграє.
+    string Origin = "";
+
     // Що це за прилад. Рядком, а не числом: мод-постачальник не мусить знати
     // наших констант, а адмін бачить у JSON слово, а не код.
     //
@@ -341,8 +350,23 @@ class OZ_PdaHardware
         // лишається головнішим -- і робимо це при КОЖНОМУ завантаженні, а не
         // лише при першому: гаряче застосування з вкладки VPP теж проходить
         // сюди.
+        bool changed = false;
         for (int i = 0; s_Declared && i < s_Declared.Count(); i++)
-            Insert(s_Declared[i]);
+        {
+            if (Insert(s_Declared[i]))
+                changed = true;
+        }
+
+        // Чужі записи -- У ФАЙЛ (D94, друга половина). Досі вони жили лише в
+        // пам'яті, і редактор RAW JSON у VPP їх не показував: адмін не міг ні
+        // побачити плату рації, ні перекрити її, не знаючи класнейма. Тепер
+        // після кожного завантаження файл наздоганяє пам'ять; що кому
+        // належить, каже Origin. Пишемо лише коли щось справді додалось.
+        if (changed)
+        {
+            OZ_ConfigLoader<OZ_PdaHardwareConfig>.Save(OZ_PdaConst.HARDWARE, "Hardware", s_Cfg);
+            OZ_Log.Info("hardware: foreign module declarations written to Hardware.json");
+        }
     }
 
     // Чуже залізо. Мод, що приносить свій модуль, оголошує його ОДНИМ рядком
@@ -361,6 +385,8 @@ class OZ_PdaHardware
 
         if (!spec.EnablesPages)
             spec.EnablesPages = new array<string>();
+        if (spec.Origin == "")
+            spec.Origin = "mod";
 
         // ЗАПАМ'ЯТОВУЄМО ЗАВЖДИ -- і коли конфіг уже є, і коли ще ні.
         //
@@ -376,7 +402,17 @@ class OZ_PdaHardware
         if (!s_Cfg)
             return true;
 
-        return Insert(spec);
+        // Конфіг уже є -- пишемо у файл одразу. Порядок OnMissionStart між
+        // модами не гарантований (див. чергу вище): коли КПК завантажився
+        // ПЕРШИМ, оголошення не проходить через ServerLoad, і без цього рядка
+        // файл наздогнав би пам'ять лише наступним перечитуванням.
+        bool added = Insert(spec);
+        if (added)
+        {
+            OZ_ConfigLoader<OZ_PdaHardwareConfig>.Save(OZ_PdaConst.HARDWARE, "Hardware", s_Cfg);
+            OZ_Log.Info("hardware: a module declared after the load is written to Hardware.json: " + spec.ClassName);
+        }
+        return added;
     }
 
     private static bool Known(string cls)
@@ -394,11 +430,43 @@ class OZ_PdaHardware
         if (!s_Cfg || !spec)
             return false;
 
-        if (ModuleFor(spec.ClassName))
-            return false;
+        OZ_ModuleSpec had = ModuleFor(spec.ClassName);
+        if (had)
+        {
+            // Запис адміна (Origin порожній) -- головніший, не чіпаємо.
+            if (had.Origin == "")
+                return false;
+
+            // Запис мода -- мод і оновлює. Той самий вміст переписувати нема
+            // чого; це й тримає файл у спокої між запусками.
+            if (Same(had, spec))
+                return false;
+
+            int at = s_Cfg.Modules.Find(had);
+            if (at >= 0)
+                s_Cfg.Modules.Set(at, spec);
+            OZ_Log.Dbg("module re-declared by another mod: " + spec.ClassName);
+            return true;
+        }
 
         s_Cfg.Modules.Insert(spec);
         OZ_Log.Dbg("module declared by another mod: " + spec.ClassName);
+        return true;
+    }
+
+    private static bool Same(OZ_ModuleSpec a, OZ_ModuleSpec b)
+    {
+        if (a.DisplayName != b.DisplayName || a.Kind != b.Kind || a.Origin != b.Origin)
+            return false;
+        if (a.SpyMinutes != b.SpyMinutes || a.RangeM != b.RangeM || a.PowerFactor != b.PowerFactor)
+            return false;
+        if (!a.EnablesPages || !b.EnablesPages || a.EnablesPages.Count() != b.EnablesPages.Count())
+            return false;
+        for (int i = 0; i < a.EnablesPages.Count(); i++)
+        {
+            if (a.EnablesPages[i] != b.EnablesPages[i])
+                return false;
+        }
         return true;
     }
 

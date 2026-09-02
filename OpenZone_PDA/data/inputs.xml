@@ -16,19 +16,14 @@
 	<inputs>
 		<actions>
 			<input name="UAOZPdaOpen" loc="oz_input_pda_open"/>
-			<input name="UAOZPdaPtt"  loc="oz_input_pda_ptt"/>
 		</actions>
 		<sorting name="openzone" loc="oz_input_group">
 			<input name="UAOZPdaOpen"/>
-			<input name="UAOZPdaPtt"/>
 		</sorting>
 	</inputs>
 	<preset>
 		<input name="UAOZPdaOpen">
 			<btn name="kO"/>
-		</input>
-		<input name="UAOZPdaPtt">
-			<btn name="kCapital"/>
 		</input>
 	</preset>
 </modded_inputs>
