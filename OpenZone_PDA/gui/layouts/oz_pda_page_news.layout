@@ -1,6 +1,7 @@
 // Сторінка «Новини». Кладеться скриптом у PageHost меню (1045x414 одиниць).
 // Імена читає OZ_PdaPageNews.c: NewsRows, PostTitle, PostMeta, PostBody,
-// NewsHint.
+// NewsHint; перо лідера (ТЗ-6 R2.1): BtnWrite, ComposePanel, CmpHead,
+// CmpTitle, CmpBody, BtnCmpWho, BtnCmpCancel, BtnCmpSend.
 
 FrameWidgetClass OZ_PageNews {
  visible 1
@@ -120,11 +121,367 @@ FrameWidgetClass OZ_PageNews {
    }
   }
 
+  ButtonWidgetClass BtnWrite {
+   visible 1
+   position 1156 475
+   size 130 28
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnWriteEdge {
+     visible 1
+     ignorepointer 1
+     color 0.31 0.31 0.35 1
+     position -1 -1
+     size 132 30
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
+
+    PanelWidgetClass BtnWriteBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 130 28
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
+
+    TextWidgetClass BtnWriteText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 130 28
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
+  PanelWidgetClass ComposePanel {
+   visible 0
+   position 435 15
+   size 851 445
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.043 0.043 0.051 1
+   priority 6
+   style rover_sim_colorable
+   {
+    TextWidgetClass CmpHead {
+     visible 1
+     ignorepointer 1
+     position 10 5
+     size 831 20
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     "text halign" left
+     "text valign" center
+     priority 2
+    }
+
+    PanelWidgetClass CmpTitleFrame {
+     visible 1
+     ignorepointer 1
+     color 0.31 0.31 0.35 1
+     position 10 35
+     size 831 32
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
+
+    PanelWidgetClass CmpTitleFill {
+     visible 1
+     ignorepointer 1
+     color 0.086 0.086 0.098 1
+     position 11 36
+     size 829 30
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
+
+    EditBoxWidgetClass CmpTitle {
+     visible 1
+     position 15 37
+     size 821 28
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     priority 2
+    }
+
+    PanelWidgetClass CmpBodyFrame {
+     visible 1
+     ignorepointer 1
+     color 0.31 0.31 0.35 1
+     position 10 80
+     size 831 300
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
+
+    PanelWidgetClass CmpBodyFill {
+     visible 1
+     ignorepointer 1
+     color 0.086 0.086 0.098 1
+     position 11 81
+     size 829 298
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 0
+     style rover_sim_colorable
+    }
+
+    MultilineEditBoxWidgetClass CmpBody {
+     visible 1
+     position 15 84
+     size 821 292
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     lines 16
+     color 0.788 0.788 0.816 1
+     text ""
+     font "gui/fonts/MetronBook14"
+     "exact text" 1
+     priority 2
+    }
+
+    ButtonWidgetClass BtnCmpWho {
+     visible 1
+     position 10 395
+     size 400 28
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnCmpWhoEdge {
+       visible 1
+       ignorepointer 1
+       color 0.31 0.31 0.35 1
+       position -1 -1
+       size 402 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      PanelWidgetClass BtnCmpWhoBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 400 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      TextWidgetClass BtnCmpWhoText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 400 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/MetronBook14"
+       "exact text" 1
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
+    ButtonWidgetClass BtnCmpCancel {
+     visible 1
+     position 571 395
+     size 130 28
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnCmpCancelEdge {
+       visible 1
+       ignorepointer 1
+       color 0.31 0.31 0.35 1
+       position -1 -1
+       size 132 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      PanelWidgetClass BtnCmpCancelBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 130 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      TextWidgetClass BtnCmpCancelText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 130 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/MetronBook14"
+       "exact text" 1
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
+    ButtonWidgetClass BtnCmpSend {
+     visible 1
+     position 711 395
+     size 130 28
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text ""
+     priority 3
+     {
+      PanelWidgetClass BtnCmpSendEdge {
+       visible 1
+       ignorepointer 1
+       color 0.31 0.31 0.35 1
+       position -1 -1
+       size 132 30
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      PanelWidgetClass BtnCmpSendBg {
+       visible 1
+       ignorepointer 1
+       color 0.145 0.145 0.161 1
+       position 0 0
+       size 130 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       priority 0
+       style rover_sim_colorable
+      }
+
+      TextWidgetClass BtnCmpSendText {
+       visible 1
+       ignorepointer 1
+       position 0 0
+       size 130 28
+       hexactpos 1
+       vexactpos 1
+       hexactsize 1
+       vexactsize 1
+       color 1 0.478 0.102 1
+       text ""
+       font "gui/fonts/MetronBook14"
+       "exact text" 1
+       "text halign" center
+       "text valign" center
+       priority 2
+      }
+     }
+    }
+
+   }
+  }
+
   TextWidgetClass NewsHint {
    visible 1
    ignorepointer 1
    position 20 475
-   size 1266 28
+   size 1120 28
    hexactpos 1
    vexactpos 1
    hexactsize 1
