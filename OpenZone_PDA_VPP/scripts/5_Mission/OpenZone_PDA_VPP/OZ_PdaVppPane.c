@@ -124,7 +124,6 @@ modded class OZ_VppAdminMenu
         SetEdit("Tun_ChatHistoryOpen",     m_PdaTun.ChatHistoryOpen.ToString());
         SetEdit("Tun_ChatHistoryPage",     m_PdaTun.ChatHistoryPage.ToString());
         SetEdit("Tun_ChatGroupMax",        m_PdaTun.ChatGroupMax.ToString());
-        SetEdit("Tun_NotesMaxFallback",    m_PdaTun.NotesMaxFallback.ToString());
         SetEdit("Tun_NoteTitleMaxBytes",   m_PdaTun.NoteTitleMaxBytes.ToString());
         SetEdit("Tun_NoteBodyMaxBytes",    m_PdaTun.NoteBodyMaxBytes.ToString());
         SetEdit("Tun_MarkerNameMaxBytes",  m_PdaTun.MarkerNameMaxBytes.ToString());
@@ -154,7 +153,6 @@ modded class OZ_VppAdminMenu
         m_PdaTun.ChatHistoryOpen     = GetEdit("Tun_ChatHistoryOpen").ToInt();
         m_PdaTun.ChatHistoryPage     = GetEdit("Tun_ChatHistoryPage").ToInt();
         m_PdaTun.ChatGroupMax        = GetEdit("Tun_ChatGroupMax").ToInt();
-        m_PdaTun.NotesMaxFallback    = GetEdit("Tun_NotesMaxFallback").ToInt();
         m_PdaTun.NoteTitleMaxBytes   = GetEdit("Tun_NoteTitleMaxBytes").ToInt();
         m_PdaTun.NoteBodyMaxBytes    = GetEdit("Tun_NoteBodyMaxBytes").ToInt();
         m_PdaTun.MarkerNameMaxBytes  = GetEdit("Tun_MarkerNameMaxBytes").ToInt();

@@ -366,38 +366,6 @@ FrameWidgetClass OZ_PdaVppPane {
     "text valign" center
     priority 3
    }
-   TextWidgetClass TunL_NotesMaxFallback {
-    visible 1
-    ignorepointer 1
-    position 330 64
-    size 170 20
-    hexactpos 1
-    vexactpos 1
-    hexactsize 1
-    vexactsize 1
-    color 0.541 0.541 0.565 1
-    text "max notes"
-    font "gui/fonts/sdf_MetronBook24"
-    "exact text" 1
-    "exact text size" 11
-    "text halign" left
-    "text valign" center
-    priority 3
-   }
-   EditBoxWidgetClass Tun_NotesMaxFallback {
-    visible 1
-    position 505 62
-    size 90 24
-    hexactpos 1
-    vexactpos 1
-    hexactsize 1
-    vexactsize 1
-    color 0.788 0.788 0.816 1
-    text ""
-    font "gui/fonts/MetronBook14"
-    "exact text" 1
-    priority 4
-   }
    TextWidgetClass TunL_NoteTitleMaxBytes {
     visible 1
     ignorepointer 1
