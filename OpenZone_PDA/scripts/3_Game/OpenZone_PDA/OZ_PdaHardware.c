@@ -166,6 +166,36 @@ class OZ_PdaHardwareConfig : OZ_ConfigBase
         if (!Carriers)
             Carriers = new array<ref OZ_CarrierSpec>();
 
+        // ДУБЛІКАТ КЛАСНЕЙМА ВІДКИДАЄМО, і кажемо про це вголос.
+        //
+        // Пошук завжди повертає ПЕРШИЙ запис, тож другий не працює ніколи --
+        // а форма в адмінці показує його як збережений. Адмін правив другий,
+        // бачив його і в списку, і у файлі, і не розумів, чому прилад
+        // поводиться по-старому. Викидаємо ззаду наперед, щоб індекси не
+        // з'їхали, і лишаємо саме перший -- той, який і працює.
+        for (int d = Modules.Count() - 1; d >= 0; d--)
+        {
+            if (!Modules[d])
+                continue;
+
+            int firstAt = -1;
+            for (int f = 0; f < d; f++)
+            {
+                if (Modules[f] && Modules[f].ClassName == Modules[d].ClassName)
+                {
+                    firstAt = f;
+                    break;
+                }
+            }
+
+            if (firstAt == -1)
+                continue;
+
+            OZ_Log.Warn("module \"" + Modules[d].ClassName + "\" is declared twice in Hardware.json - only the first entry ever worked, the later one is dropped");
+            Modules.Remove(d);
+            warnings++;
+        }
+
         for (int i = 0; i < Modules.Count(); i++)
         {
             OZ_ModuleSpec m = Modules[i];
@@ -200,6 +230,30 @@ class OZ_PdaHardwareConfig : OZ_ConfigBase
             }
         }
 
+        // Носії -- те саме правило: пошук бере перший, отже другий мертвий.
+        for (int cd = Carriers.Count() - 1; cd >= 0; cd--)
+        {
+            if (!Carriers[cd])
+                continue;
+
+            int cFirst = -1;
+            for (int cf = 0; cf < cd; cf++)
+            {
+                if (Carriers[cf] && Carriers[cf].ClassName == Carriers[cd].ClassName)
+                {
+                    cFirst = cf;
+                    break;
+                }
+            }
+
+            if (cFirst == -1)
+                continue;
+
+            OZ_Log.Warn("carrier \"" + Carriers[cd].ClassName + "\" is declared twice in Hardware.json - only the first entry ever worked, the later one is dropped");
+            Carriers.Remove(cd);
+            warnings++;
+        }
+
         for (int c = 0; c < Carriers.Count(); c++)
         {
             if (!GetGame().ConfigIsExisting("CfgVehicles " + Carriers[c].ClassName))
@@ -224,7 +278,19 @@ class OZ_PdaHardware
     //
     // Тому Declare нічого не вимагає від порядку: якщо конфіга ще немає,
     // оголошення чекає в черзі, а ServerLoad його забирає.
-    private static ref array<ref OZ_ModuleSpec> s_Pending;
+    //
+    // ЧЕРГА НЕ ЧИСТИТЬСЯ ПІСЛЯ ПЕРШОГО ЗАВАНТАЖЕННЯ, і це головне в ній.
+    //
+    // Раніше вона обнулялась, і це ламало гаряче застосування заліза з
+    // вкладки VPP: адмін тиснув SAVE, ServerLoad перечитував файл із диска
+    // -- а чужі оголошення жили ЛИШЕ в пам'яті, і після перечитування їх
+    // не було. Плата рації переставала впізнаватись до найближчого
+    // рестарту, і жодного рядка про це ніде.
+    //
+    // Тепер список -- це пам'ять про все, що оголосили чужі моди за цей
+    // запуск, і ServerLoad накладає його поверх файла КОЖНОГО разу. Адмін
+    // лишається головнішим: Insert не чіпає клас, який уже є у файлі.
+    private static ref array<ref OZ_ModuleSpec> s_Declared;
 
     static OZ_PdaHardwareConfig Get()      { return s_Cfg; }
 
@@ -247,12 +313,12 @@ class OZ_PdaHardware
         s_Cfg = new OZ_PdaHardwareConfig();
         OZ_ConfigLoader<OZ_PdaHardwareConfig>.Load(OZ_PdaConst.HARDWARE, "Hardware", s_Cfg);
 
-        // Ті, хто оголосив себе до нас, чекають у черзі. Забираємо їх ПІСЛЯ
-        // завантаження конфіга -- адмін лишається головнішим.
-        for (int i = 0; s_Pending && i < s_Pending.Count(); i++)
-            Insert(s_Pending[i]);
-
-        s_Pending = null;
+        // Чужі оголошення накладаємо ПІСЛЯ завантаження конфіга -- адмін
+        // лишається головнішим -- і робимо це при КОЖНОМУ завантаженні, а не
+        // лише при першому: гаряче застосування з вкладки VPP теж проходить
+        // сюди.
+        for (int i = 0; s_Declared && i < s_Declared.Count(); i++)
+            Insert(s_Declared[i]);
     }
 
     // Чуже залізо. Мод, що приносить свій модуль, оголошує його ОДНИМ рядком
@@ -272,17 +338,31 @@ class OZ_PdaHardware
         if (!spec.EnablesPages)
             spec.EnablesPages = new array<string>();
 
-        // Конфіга ще немає -- станемо в чергу. Відповідаємо true: оголошення
-        // ПРИЙНЯТО, і мод, який його зробив, має право так і вважати.
+        // ЗАПАМ'ЯТОВУЄМО ЗАВЖДИ -- і коли конфіг уже є, і коли ще ні.
+        //
+        // Список потрібен не лише для черги: він переживає перечитування
+        // конфіга (гаряче застосування з VPP) і накладається знову.
+        if (!s_Declared)
+            s_Declared = new array<ref OZ_ModuleSpec>();
+        if (!Known(spec.ClassName))
+            s_Declared.Insert(spec);
+
+        // Конфіга ще немає -- лишаємось у черзі. Відповідаємо true:
+        // оголошення ПРИЙНЯТО, і мод, який його зробив, має право так вважати.
         if (!s_Cfg)
-        {
-            if (!s_Pending)
-                s_Pending = new array<ref OZ_ModuleSpec>();
-            s_Pending.Insert(spec);
             return true;
-        }
 
         return Insert(spec);
+    }
+
+    private static bool Known(string cls)
+    {
+        for (int i = 0; s_Declared && i < s_Declared.Count(); i++)
+        {
+            if (s_Declared[i] && s_Declared[i].ClassName == cls)
+                return true;
+        }
+        return false;
     }
 
     private static bool Insert(OZ_ModuleSpec spec)

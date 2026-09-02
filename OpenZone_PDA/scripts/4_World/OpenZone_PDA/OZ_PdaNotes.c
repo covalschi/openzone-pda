@@ -11,7 +11,7 @@
 //   -- моста не треба взагалі: всі операції синхронні, і записки
 //      працюють навіть тоді, коли Discord лежить.
 //
-// Стеля книжки -- справа моделі пристрою (Limits.Notes у профілі),
+// Стеля книжки -- ПАМ'ЯТЬ ПРИЛАДУ (Limits.Memory), спільна з мітками,
 // запасна -- OZ_PdaConst.NOTES_MAX.
 
 
@@ -97,12 +97,19 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
         return book;
     }
 
+    // Стеля записника -- це ПАМ'ЯТЬ ПРИЛАДУ, а не окреме число під нотатки.
+    // Скільки їх влізе, залежить від того, скільки ячеек уже зайняли мітки,
+    // маршрут і розділи чужих модулів: пам'ять одна на всіх.
     private int LimitOf(OZ_PDA_Base pda)
     {
-        OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(pda.GetType());
-        if (prof && prof.Limits && prof.Limits.Notes > 0)
-            return prof.Limits.Notes;
-        return OZ_PdaTune.NotesMax();
+        OZ_NoteBook book = BookOf(pda);
+        int have = 0;
+        if (book && book.Notes)
+            have = book.Notes.Count();
+
+        // Вільне ПЛЮС своє: інакше вже записані нотатки рахувались би як
+        // чужа зайнятість і записник «повнішав» від власного вмісту.
+        return pda.OZ_Free() + have;
     }
 
     private bool Flush(OZ_PDA_Base pda, OZ_NoteBook book, out string error)
@@ -195,7 +202,12 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
             return "";
         }
 
-        c.OZ_WriteNotes(outJson, book.Notes.Count());
+        // Успіх -- лише після запису: OZ_Write відмовляє, коли місця немає.
+        if (!c.OZ_WriteNotes(outJson, book.Notes.Count()))
+        {
+            error = "STR_OZ_ERR_CARRIER_FULL";
+            return "";
+        }
 
         ok = true;
         error = "";

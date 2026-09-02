@@ -56,9 +56,17 @@ class OZ_PdaPageMap : OZ_PdaPage
     // одиниць розкладки -- панель починається на 785.
     private static const float LIST_SQUEEZE = 0.7397;
 
-    // Адмінська кнопка: поставити зону спавна там, де я стою.
-    private ButtonWidget m_BtnSpawn;
-    private ButtonWidget m_BtnSpawnOff;
+    // АДМІНСЬКИХ КНОПОК ТУТ БІЛЬШЕ НЕМАЄ.
+    //
+    // SET SPAWN i CLEAR ZONE переїхали на панель SPAWNS у вкладцi VPP
+    // (рiшення власника 2026-09-01: «КПК взагалi не повинен мати адмiнських
+    // функцiй»). Знято ПIСЛЯ того, як панель навчилась усього, що вмiли цi
+    // двi: слаг органiзацiї, слаг базової фракцiї, стейджинґ, запасну зону,
+    // особисту точку й видиму вiдмову. Ранiше -- означало б лишити сервер
+    // без ЄДИНОГО способу поставити зону.
+    //
+    // Разом iз ними пiшло подвiйне призначення поля MarkName: воно знову
+    // просто iм'я мiтки, i нiчого бiльше.
 
     private ref OZ_MapState m_State;
     private bool m_Centred = false;
@@ -84,17 +92,6 @@ class OZ_PdaPageMap : OZ_PdaPage
         m_BtnMode   = ButtonWidget.Cast(Wgt("BtnMode"));
         m_Name      = EditBoxWidget.Cast(Wgt("MarkName"));
         m_BtnMark   = ButtonWidget.Cast(Wgt("BtnMark"));
-        m_BtnSpawn  = ButtonWidget.Cast(Wgt("BtnSpawn"));
-        m_BtnSpawnOff = ButtonWidget.Cast(Wgt("BtnSpawnOff"));
-
-        // Малюється лише адмінові. Прапорець приходить із сервера тим самим
-        // конвертом синхронізації -- клієнт про свої права не здогадується.
-        if (m_BtnSpawn)
-            m_BtnSpawn.Show(OZ_ClientState.IsAdmin());
-        if (m_BtnSpawnOff)
-            m_BtnSpawnOff.Show(OZ_ClientState.IsAdmin());
-        SetText("BtnSpawnText", "#STR_OZ_MAP_SETSPAWN");
-        SetText("BtnSpawnOffText", "#STR_OZ_MAP_CLEARSPAWN");
 
         SetText("BtnCenterText", "#STR_OZ_MAP_CENTER");
 
@@ -186,46 +183,8 @@ class OZ_PdaPageMap : OZ_PdaPage
         // Кліка по самій карті ТУТ немає: MapWidget -- не кнопка, OnClick
         // по ньому не приходить (зміряно). Він збирається в OnPageMouseUp.
 
-        // ЗОНА СПАВНА -- ТУТ, ДЕ Я СТОЮ.
-        //
-        // Карта -- саме та сторінка: вона про місця. І координат набирати не
-        // треба, бо єдиний надійний спосіб дізнатись, куди ставити зону, --
-        // прийти туди й подивитись; тепер прийти туди й ЛИШИТИСЬ.
-        //
-        // Слаг ролі береться з того ж поля, що й назва мітки: одне поле, дві
-        // дії, і обидві -- «назви щось і натисни». Порожнє поле означає
-        // ЗАПАСНУ зону, "*" -- стейджинґ.
-        if (w == m_BtnSpawn)
-        {
-            string slug = "-";
-            if (m_Name)
-            {
-                string typed = m_Name.GetText();
-                if (typed != "")
-                    slug = typed;
-            }
-
-            OZ_Rpc.RoleRequest(OZ_RoleOp.SPAWN_HERE, "", slug);
-            SetHintSticky("MapHint", "#STR_OZ_MAP_SPAWN_SENT");
-            return true;
-        }
-
-        // Та сама домовленість про поле, що й у кнопки поруч: порожнє --
-        // запасна зона, "*" -- стейджинґ, інакше слаг фракції.
-        if (w == m_BtnSpawnOff)
-        {
-            string off = "-";
-            if (m_Name)
-            {
-                string typedOff = m_Name.GetText();
-                if (typedOff != "")
-                    off = typedOff;
-            }
-
-            OZ_Rpc.RoleRequest(OZ_RoleOp.SPAWN_CLEAR, "", off);
-            SetHintSticky("MapHint", "#STR_OZ_MAP_SPAWN_SENT");
-            return true;
-        }
+        // Зони спавна більше не ставлять звідси -- див. коментар угорі про
+        // те, куди вони поїхали й чому саме в цьому порядку.
 
         if (w == m_BtnList)
         {

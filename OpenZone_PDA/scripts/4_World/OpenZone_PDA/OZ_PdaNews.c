@@ -132,7 +132,10 @@ class OZ_PdaHandlerNews : OZ_PageHandler
         ok    = false;
         error = "STR_OZ_ERR_UNKNOWN_OP";
 
-        if (!OZ_BridgeClient.IsRunning())
+        // Alive(), а не IsRunning(): друге лишається true при мертвому боті,
+        // і новини віддавали б порожній список замість «недоступно»
+        // (ТЗ-2 R4.1, та сама причина, що в OZ_PdaChat).
+        if (!OZ_BridgeClient.Alive())
         {
             error = "STR_OZ_ERR_NO_BRIDGE";
             return "";

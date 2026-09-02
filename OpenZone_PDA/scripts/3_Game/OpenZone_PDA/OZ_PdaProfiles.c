@@ -10,11 +10,22 @@
 
 class OZ_PdaLimits
 {
-    int Markers    = 10;
-    // Записки -- пам'ять пристрою, як мітки (рішення власника 2026-08-28),
-    // тож і стеля їхня -- справа моделі. 0 і менше -- запасна
-    // OZ_PdaConst.NOTES_MAX, щоб старий конфіг без поля не давав нуль.
-    int Notes      = 10;
+    // ЯЧЕЙКИ ПАМ'ЯТІ, спільні на все, що прилад тримає в собі.
+    //
+    // Було по стелі на кожен рід -- Markers і Notes окремо. Це вимагало від
+    // МОДЕЛІ ПРИЛАДУ знати наперед про кожен майбутній рід даних: поки родів
+    // три й усі свої, це працює, а перший же чужий модуль опиняється або без
+    // стелі, або з полем, вписаним у чужий конфіг. Рівно та сама пастка, з
+    // якої вже вийшов носій.
+    //
+    // Тепер одне число, і ціна однакова: мітка -- ячейка, нотатка -- ячейка,
+    // частота -- ячейка, маршрут -- ячейка (він лише ПОРЯДОК зв'язків між
+    // мітками, а не самі мітки; тому перенести маршрут означає перенести його
+    // мітки ПЛЮС його самого).
+    //
+    // Друзі й групові розмови сюди НЕ входять: вони не лежать у пам'яті
+    // приладу, а живуть на сервері й у мосту.
+    int Memory     = 10;
     int Friends    = 20;
     int GroupChats = 2;
 }
@@ -99,11 +110,6 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
         p.Pages.Insert(OZ_PdaConst.PAGE_DEVICE);
         p.Pages.Insert(OZ_PdaConst.PAGE_QUESTS);
         p.Pages.Insert(OZ_PdaConst.PAGE_CONTACTS);
-        // Фракція -- одразу після людей, і це не лише порядок: коли в наборі
-        // є обидві, вони діляться ОДНІЄЮ вкладкою (ліворуч люди, праворуч
-        // свої). Прибери звідси контакти -- фракція знову отримає власну
-        // кнопку, приліпитись їй буде нема до чого.
-        p.Pages.Insert(OZ_PdaConst.PAGE_FACTION);
         p.Pages.Insert(OZ_PdaConst.PAGE_NOTES);
         p.Pages.Insert(OZ_PdaConst.PAGE_MAP);
         p.Pages.Insert(OZ_PdaConst.PAGE_CHAT);
@@ -136,7 +142,7 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
         a.BatteryClassNames.Insert("Battery9V");
 
         a.Limits            = new OZ_PdaLimits();
-        a.Limits.Markers    = 40;
+        a.Limits.Memory     = 40;
         a.Limits.Friends    = 60;
         a.Limits.GroupChats = 8;
         a.PinProtectedPages = new array<string>();
@@ -164,7 +170,7 @@ class OZ_PdaProfilesConfig : OZ_ConfigBase
         q.BatteryClassNames.Insert("Battery9V");
 
         q.Limits            = new OZ_PdaLimits();
-        q.Limits.Markers    = 20;
+        q.Limits.Memory     = 20;
         q.PinProtectedPages = new array<string>();
         q.ModuleSlots       = 2;
         q.LockAfterMinutes  = 1;
@@ -291,6 +297,11 @@ class OZ_PdaProfiles
         OZ_ConfigLoader<OZ_PdaProfilesConfig>.Load(OZ_PdaConst.PROFILES, "Profiles", s_Cfg);
     }
 
+    // Класи, про які ми вже поскаржились. Скарга потрібна ОДНА на клас за
+    // сеанс: цю функцію питають на кожну операцію кожної сторінки, і без
+    // пам'яті вона залила б лог тим самим рядком.
+    private static ref array<string> s_Unknown;
+
     static OZ_PdaProfile ForClass(string cls)
     {
         if (!s_Cfg)
@@ -305,6 +316,22 @@ class OZ_PdaProfiles
                     return s_Cfg.Profiles[i];
             }
         }
+
+        // КЛАС НАЗИВАЄТЬСЯ ВГОЛОС.
+        //
+        // Прилад без запису в OZ_PDA_Profiles.json не робить нічого: сторінок
+        // немає, стелі немає, живлення немає. Мовчазний null лишав адміна з
+        // приладом, який просто «не працює», і жодної підказки, що виправити
+        // треба ім'я класу в конфізі.
+        if (!s_Unknown)
+            s_Unknown = new array<string>();
+
+        if (s_Unknown.Find(cls) == -1)
+        {
+            s_Unknown.Insert(cls);
+            OZ_Log.Warn("pda profile: class \"" + cls + "\" is in no profile of OZ_PDA_Profiles.json - the device will do nothing");
+        }
+
         return null;
     }
 }

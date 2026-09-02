@@ -131,7 +131,7 @@ class CfgMods
         // 3: the "already seeded" flag for sealed devices, appended after the
         // markers. Preset content must be written exactly once, and the flag
         // is what remembers that it was.
-        storageVersion = 5;
+        storageVersion = 6;
         dependencies[] = {"Game", "World", "Mission"};
         defines[] = {"OPENZONE_PDA"};
 
@@ -206,7 +206,17 @@ class CfgVehicles
         class EnergyManager
         {
             hasIcon = 1;
-            autoSwitchOffWhenInCargo = 1;
+            // OFF, and deliberately (owner's decision 2026-09-01). The engine
+            // reads this in componentenergymanager.c:191 and the chain
+            // EECargoIn -> OnMovedInsideCargo -> HandleMoveInsideCargo ->
+            // SwitchOff() is straight. A PLAYER IS A CONTAINER TOO, so with
+            // the flag on the device switched itself off the moment it went
+            // into a backpack -- and, because the wear slot is an attachment
+            // rather than cargo, the two cases were impossible to tell apart
+            // from the player's side. The device now stays on wherever it is
+            // carried; the battery keeps draining, which is the intended
+            // friction.
+            autoSwitchOffWhenInCargo = 0;
             // 0.5 per minute. Modules raise the effective drain through their
             // PowerFactor; this is the bare device.
             energyUsagePerSecond = 0.0083;

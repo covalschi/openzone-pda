@@ -40,10 +40,20 @@ class OZ_PdaAccess : OZ_PageAccess
         if (!who)
             return false;
 
-        // Адмінська консоль ядра -- не сторінка пристрою: їй не потрібен КПК
-        // у руках, і ворота в неї власні (OZ_Perm.IsAdmin у самому обробнику).
-        if (pageId == OZ_Const.PAGE_ADMIN)
-            return true;
+        // ВИНЯТКІВ ТУТ НЕМАЄ, і це головне, що можна сказати про ці ворота.
+        //
+        // Тут стояв рядок «якщо сторінка admin -- пропустити»: адмінська
+        // консоль була сторінкою в спільному реєстрі, і приладу їй справді не
+        // треба. Ціна була в тому, що межа безпеки мала двері збоку -- одну
+        // сторінку, яку клієнт міг назвати й пройти, не маючи в руках нічого.
+        // А розділ фракцій, який такого рядка не мав, не проходив узагалі й
+        // мовчав: половина вкладки VPP не працювала жодного разу саме через
+        // цю пару.
+        //
+        // Рішення власника 2026-09-01: у КПК немає адмінських функцій зовсім.
+        // Консоль поїхала у власний реєстр і власний конверт (OZ_AdminReq),
+        // де ворота -- OZ_Perm.IsAdmin і більш ніщо. У цих же лишилось одне
+        // правило без винятків: сторінка вимагає приладу.
 
         OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(who);
         if (!pda)
@@ -193,13 +203,20 @@ class OZ_PdaAccess : OZ_PageAccess
 
 class OZ_PdaLookup
 {
-// Знайти КПК, який гравець тримає або НОСИТЬ. Рюкзак не рахується --
+// Знайти КПК, який гравець НОСИТЬ або тримає. Рюкзак не рахується --
     // рішення власника 2026-08-28, і воно ж прибрало обхід інвентаря звідси.
 
-    // Знайти КПК, який гравець тримає або несе.
+    // ПОРЯДОК: СПЕРШУ СЛОТ, ПОТІМ РУКИ. Одне правило на весь мод.
     //
-    // Спершу руки, потім інвентар: пристрій у руках -- це той, з яким гравець
-    // працює зараз, і якщо їх два, брати треба саме його.
+    // Рішення власника 2026-08-28: надітий -- це робочий термінал на грудях, а
+    // в руках може бути чужий трофей, який лише роздивляються. Головний той,
+    // що надітий; руки -- запасний варіант, коли слот порожній.
+    //
+    // Тут було НАВПАКИ, і мод носив ОБИДВА порядки одночасно: OZ_PdaHud.Device()
+    // брав надітий першим, ця функція -- з рук першою. Наслідки видно було
+    // обидва: полоска HUD показувала заряд свого приладу, а екран відкривав
+    // чужий; і детектор змін синхрозмінних у меню стежив за надітим, поки меню
+    // розмовляло з трофеєм у руках -- заряд блимав раз на секунду.
     static OZ_PDA_Base HeldBy(PlayerIdentity who)
     {
         return HeldByPlayer(OZ_PdaLookup.PlayerOf(who));
@@ -219,23 +236,23 @@ class OZ_PdaLookup
         if (!player)
             return null;
 
-        OZ_PDA_Base inHands = OZ_PDA_Base.Cast(player.GetItemInHands());
-        if (inHands)
-            return inHands;
-
         // Рішення власника 2026-08-28: у РЮКЗАКУ пристрій НЕ активний.
-        // Активний він у руках або в слоті носіння на грудях -- і крапка.
+        // Активний він у слоті носіння на грудях або в руках -- і крапка.
         // Це ще й дешевше: замість обходу всього інвентаря (PREORDER по
         // кожному контейнеру на кожен запит) -- одна вибірка слота.
         GameInventory inv = player.GetInventory();
-        if (!inv)
-            return null;
+        if (inv)
+        {
+            int slotId = InventorySlots.GetSlotIdFromString(OZ_PdaConst.SLOT_WEAR);
+            if (slotId != -1)
+            {
+                OZ_PDA_Base worn = OZ_PDA_Base.Cast(inv.FindAttachment(slotId));
+                if (worn)
+                    return worn;
+            }
+        }
 
-        int slotId = InventorySlots.GetSlotIdFromString(OZ_PdaConst.SLOT_WEAR);
-        if (slotId == -1)
-            return null;
-
-        return OZ_PDA_Base.Cast(inv.FindAttachment(slotId));
+        return OZ_PDA_Base.Cast(player.GetItemInHands());
     }
 
     static PlayerBase PlayerOf(PlayerIdentity who)
@@ -292,6 +309,18 @@ class OZ_PdaLookup
         if (cfg.VirtualDevice.Factions.Count() == 0)
             return true;
 
-        return cfg.VirtualDevice.Factions.Find(OZ_Factions.OfUid(uid)) != -1;
+        // ОБИДВІ ОСІ, і кожна сама по собі відчиняє (ТЗ-1 R3.1). Адмін,
+        // що написав "stalkers", має на увазі «всім»; той, хто написав
+        // "duty", -- членам Боргу. Перевіряти лише угруповання означало б,
+        // що перший список не діє ні на кого, бо угруповання "stalkers"
+        // не буває ні в кого.
+        if (cfg.VirtualDevice.Factions.Find(OZ_Identity.Get().OrgOf(uid)) != -1)
+            return true;
+
+        string baseSlug = OZ_Identity.Get().BaseOf(uid);
+        if (baseSlug == "")
+            return false;
+
+        return cfg.VirtualDevice.Factions.Find(baseSlug) != -1;
     }
 }

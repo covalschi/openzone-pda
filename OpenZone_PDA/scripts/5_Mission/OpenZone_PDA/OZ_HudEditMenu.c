@@ -157,7 +157,15 @@ class OZ_HudEditMenu : UIScriptedMenu
                 float px;
                 float py;
                 m_Proxies[i].GetPos(px, py);
-                OZ_PdaHudLayout.Put(m_Panes[i].Id, px, py);
+
+                // Панель на своєму типовому місці -- це ВІДСУТНІСТЬ запису, а
+                // не запис із типовими числами: інакше файл розкладки
+                // заповнюється рядками, які нічого не міняють, і зміна
+                // типового місця в наступній збірці їх уже не зрушить.
+                if (px == m_Panes[i].DefX && py == m_Panes[i].DefY)
+                    OZ_PdaHudLayout.Forget(m_Panes[i].Id);
+                else
+                    OZ_PdaHudLayout.Put(m_Panes[i].Id, px, py);
             }
 
             OZ_PdaHudLayout.Save();
@@ -168,16 +176,18 @@ class OZ_HudEditMenu : UIScriptedMenu
 
         if (w == m_BtnReset)
         {
-            // Повернути ТИПОВІ місця -- і на прокси, і в збереження: RESET
-            // означає «як з коробки», а не «як було хвилину тому».
+            // RESET ПЕРЕСУВАЄ РАМКИ Й БІЛЬШЕ НІЧОГО.
+            //
+            // Він писав на диск одразу -- і цим відбирав у CANCEL його
+            // єдиний сенс. Заголовок цього ж файла обіцяє інше: «APPLY
+            // зберігає, RESET повертає типові місця, CANCEL лишає як було».
+            // Після RESET+CANCEL розкладка не поверталась: її вже стерли.
+            //
+            // Тепер на диск пише рівно APPLY, і жодна кнопка редактора не
+            // міняє нічого поза його вікном, поки не натиснуто APPLY.
             for (int k = 0; k < m_Proxies.Count(); k++)
-            {
                 m_Proxies[k].SetPos(m_Panes[k].DefX, m_Panes[k].DefY);
-                OZ_PdaHudLayout.Forget(m_Panes[k].Id);
-            }
 
-            OZ_PdaHudLayout.Save();
-            OZ_PdaHud.Reapply();
             return true;
         }
 

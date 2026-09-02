@@ -63,7 +63,10 @@ class OZ_PdaNpc
             return;
         }
 
-        if (!OZ_BridgeClient.IsRunning())
+        // Alive(), а не IsRunning(): друге лишається true при мертвому боті,
+        // тож рядок NPC мовчки їхав у нікуди й у лозі не було навіть цього
+        // попередження (ТЗ-2 R4.1).
+        if (!OZ_BridgeClient.Alive())
         {
             OZ_Log.Warn("npc: bridge is down, Say(" + npcId + ") dropped");
             return;

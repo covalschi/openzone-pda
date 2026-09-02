@@ -84,14 +84,28 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
     // Ворота доступу безкоштовні: ці опи не входять у винятки живлення й
     // замка, тож OZ_PdaAccess вже вимагає ввімкнений і відімкнений пристрій.
 
-    private OZ_DataCarrier_Base CarrierOf(PlayerIdentity sender, out string error)
+    // Прилад гравця, з тією ж перевіркою, що й у CarrierOf.
+    //
+    // Шість місць у операціях носія брали прилад ПОВТОРНО -- рядком
+    // `OZ_PdaLookup.HeldBy(sender)` без жодної перевірки -- і одразу його
+    // розіменовували. Трималось воно на негласному припущенні «CarrierOf уже
+    // пройшов, значить прилад є». Припущення сьогодні правдиве й нікому не
+    // сказане: ворота КПК пускають і БЕЗ приладу (віртуальний КПК адміна,
+    // OZ_PdaLookup.VirtualAllows), і перше ж місце, куди такий запит дійде
+    // повз CarrierOf, розіменує null.
+    private OZ_PDA_Base DeviceOf(PlayerIdentity sender, out string error)
     {
         OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
         if (!pda)
-        {
             error = "STR_OZ_ERR_NO_DEVICE";
+        return pda;
+    }
+
+    private OZ_DataCarrier_Base CarrierOf(PlayerIdentity sender, out string error)
+    {
+        OZ_PDA_Base pda = DeviceOf(sender, error);
+        if (!pda)
             return null;
-        }
 
         OZ_DataCarrier_Base c = OZ_DataCarrier_Base.Cast(pda.OZ_Attached(OZ_PdaConst.SLOT_CARRIER));
         if (!c)
@@ -134,7 +148,10 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         // і навпаки. Стирання лишилось окремою дією для чистки ОБОХ.
         if (opw.Kind == "markers")
         {
-            OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+            OZ_PDA_Base pda = DeviceOf(sender, error);
+            if (!pda)
+                return "";
+
             string payload = pda.OZ_MarkersJson();
             if (payload == "")
                 payload = "{\"Version\":1,\"Items\":[]}";
@@ -162,7 +179,14 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 }
             }
 
-            c.OZ_WriteMarks(payload, wrote);
+            // Успіх -- лише після запису: OZ_Write ВІДМОВЛЯЄ, коли місця немає
+            // (він не обрізає), а безумовне ok = true казало «збережено» над
+            // чипом, на який нічого не лягло.
+            if (!c.OZ_WriteMarks(payload, wrote))
+            {
+                error = "STR_OZ_ERR_CARRIER_FULL";
+                return "";
+            }
 
             OZ_CarrierTaken wt = new OZ_CarrierTaken();
             wt.Taken = wrote;
@@ -183,7 +207,9 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             // книжка вже в руках, міст не потрібен, відповідь синхронна.
             // Місткість класу чипа: на малий носій лягають ПЕРШІ записки,
             // і відповідь чесно каже скільки з скількох.
-            OZ_PDA_Base pdaW = OZ_PdaLookup.HeldBy(sender);
+            OZ_PDA_Base pdaW = DeviceOf(sender, error);
+            if (!pdaW)
+                return "";
 
             OZ_NoteBook bookW = new OZ_NoteBook();
             if (pdaW.OZ_NotesJson() != "")
@@ -209,7 +235,11 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 return "";
             }
 
-            c.OZ_WriteNotes(payloadW, wroteW);
+            if (!c.OZ_WriteNotes(payloadW, wroteW))
+            {
+                error = "STR_OZ_ERR_CARRIER_FULL";
+                return "";
+            }
 
             OZ_CarrierTaken wtN = new OZ_CarrierTaken();
             wtN.Taken = wroteW;
@@ -311,7 +341,10 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 return "";
             }
 
-            OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+            OZ_PDA_Base pda = DeviceOf(sender, error);
+            if (!pda)
+                return "";
+
             OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(pda.GetType());
 
             OZ_MarkerList mine = new OZ_MarkerList();
@@ -323,9 +356,10 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                     mine = parsed;
             }
 
-            int limit = 0;
-            if (prof && prof.Limits)
-                limit = prof.Limits.Markers;
+            // Стеля -- ПАМ'ЯТЬ ПРИЛАДУ, спільна з нотатками, маршрутом і
+            // розділами чужих модулів: вільні ячейки плюс ті, що вже зайняли
+            // власні мітки (їх імпорт не додає, а доповнює).
+            int limit = pda.OZ_Free() + mine.Items.Count();
 
             // limit <= 0 -- зіпсований конфіг. Сторінка карти в цьому стані
             // відмовляє СТАВИТИ, тож імпорт поводиться так само, а не читає
@@ -419,7 +453,10 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             // Записки -- пам'ять ПРИСТРОЮ: книжка чипа зливається в книжку
             // приладу тут же, синхронно. Межі й дедап ті самі, що в міток,
             // а підсумок один на обидві ноги -- одна op, одна цифра.
-            OZ_PDA_Base pdaN = OZ_PdaLookup.HeldBy(sender);
+            OZ_PDA_Base pdaN = DeviceOf(sender, error);
+            if (!pdaN)
+                return "";
+
             OZ_PdaProfile profN = OZ_PdaProfiles.ForClass(pdaN.GetType());
 
             OZ_NoteBook mineN = new OZ_NoteBook();
@@ -430,11 +467,14 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                     mineN = parsedN;
             }
 
-            int limitN = 0;
-            if (profN && profN.Limits)
-                limitN = profN.Limits.Notes;
-            if (limitN <= 0)
-                limitN = OZ_PdaTune.NotesMax();
+            // Та сама спільна пам'ять -- див. вище про мітки.
+            //
+            // ПІДСТАВНОГО ПОТОЛКА ТУТ БІЛЬШЕ НЕМАЄ. Стояло
+            // `if (limitN <= 0) limitN = OZ_PdaTune.NotesMax();` -- тобто
+            // прилад, у якого ВЖЕ НЕМАЄ вільних ячейок, отримував дозвіл
+            // дописати ще стільки записок, скільки каже налаштування. Нуль
+            // тут означає «повний», а не «невідомо».
+            int limitN = pdaN.OZ_Free() + mineN.Notes.Count();
 
             int totalN = book.Notes.Count();
             int takenN = 0;
@@ -571,7 +611,10 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 return "";
             }
 
-            OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+            OZ_PDA_Base pda = DeviceOf(sender, error);
+            if (!pda)
+                return "";
+
             OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(pda.GetType());
 
             OZ_MarkerList mine = new OZ_MarkerList();
@@ -583,9 +626,10 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                     mine = parsed;
             }
 
-            int limit = 0;
-            if (prof && prof.Limits)
-                limit = prof.Limits.Markers;
+            // Стеля -- ПАМ'ЯТЬ ПРИЛАДУ, спільна з нотатками, маршрутом і
+            // розділами чужих модулів: вільні ячейки плюс ті, що вже зайняли
+            // власні мітки (їх імпорт не додає, а доповнює).
+            int limit = pda.OZ_Free() + mine.Items.Count();
 
             if (limit <= 0 || mine.Items.Count() >= limit)
             {
@@ -648,7 +692,10 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             // Записки -- пам'ять ПРИСТРОЮ: забрати з чипа означає
             // дописати в книжку приладу, без моста. Межі й дедап ті
             // самі, що в міток: цикл експорт->імпорт не плодить копій.
-            OZ_PDA_Base pdaN = OZ_PdaLookup.HeldBy(sender);
+            OZ_PDA_Base pdaN = DeviceOf(sender, error);
+            if (!pdaN)
+                return "";
+
             OZ_PdaProfile profN = OZ_PdaProfiles.ForClass(pdaN.GetType());
 
             OZ_NoteBook mineN = new OZ_NoteBook();
@@ -659,11 +706,14 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                     mineN = parsedN;
             }
 
-            int limitN = 0;
-            if (profN && profN.Limits)
-                limitN = profN.Limits.Notes;
-            if (limitN <= 0)
-                limitN = OZ_PdaTune.NotesMax();
+            // Та сама спільна пам'ять -- див. вище про мітки.
+            //
+            // ПІДСТАВНОГО ПОТОЛКА ТУТ БІЛЬШЕ НЕМАЄ. Стояло
+            // `if (limitN <= 0) limitN = OZ_PdaTune.NotesMax();` -- тобто
+            // прилад, у якого ВЖЕ НЕМАЄ вільних ячейок, отримував дозвіл
+            // дописати ще стільки записок, скільки каже налаштування. Нуль
+            // тут означає «повний», а не «невідомо».
+            int limitN = pdaN.OZ_Free() + mineN.Notes.Count();
 
             if (mineN.Notes.Count() >= limitN)
             {
@@ -748,7 +798,11 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 }
             }
 
-            c.OZ_WriteMarks(mj, ml.Items.Count());
+            if (!c.OZ_WriteMarks(mj, ml.Items.Count()))
+            {
+                error = "STR_OZ_ERR_CARRIER_FULL";
+                return "";
+            }
             ok = true;
             error = "";
             return "";
@@ -775,7 +829,11 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 }
             }
 
-            c.OZ_WriteNotes(nj, nb.Notes.Count());
+            if (!c.OZ_WriteNotes(nj, nb.Notes.Count()))
+            {
+                error = "STR_OZ_ERR_CARRIER_FULL";
+                return "";
+            }
             ok = true;
             error = "";
             return "";
@@ -869,7 +927,12 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         pda.GetNetworkID(netLow, netHigh);
         st.NetLow  = netLow;
         st.NetHigh = netHigh;
-        st.InHands = (player != null && player.GetItemInHands() == pda);
+        // Готове значення -- у поле; складену умову рахуємо окремо
+        // (вимір 2026-09-01, див. OZR_Page.Book).
+        bool inHands = false;
+        if (player)
+            inHands = (player.GetItemInHands() == pda);
+        st.InHands = inHands;
 
         // Чужому чи неініційованому пристрою -- лише ЙОГО власні вкладки:
         // пристрій і карта. Акаунтні сторінки все одно відіб'є гейт, а
@@ -877,12 +940,24 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         bool ownedAtAll = pda.OZ_HasAnySession();
         bool devFrozen  = OZ_PdaCapsule.IsFrozen(pda);
 
+        // ЧИЙ це пристрій -- саме за цим uid питаємо видимість вкладок.
+        // Порожньо в нічийного: у нього все одно лишиться сама лише
+        // сторінка «Пристрій», і питати про решту немає в кого.
+        string pageUid = pda.OZ_SessionUid();
+
         for (int i = 0; i < prof.Pages.Count(); i++)
         {
-            // На клієнт їдуть лише ті сторінки, які СПРАВДІ зареєстровані:
-            // намалювати вкладку, за якою нікого немає, гірше, ніж не
-            // намалювати її зовсім.
-            if (!OZ_PageRegistry.Has(prof.Pages[i]))
+            // На клієнт їдуть лише ті сторінки, які СПРАВДІ зареєстровані
+            // І ВИДИМІ ЦЬОМУ ГРАВЦЕВІ: намалювати вкладку, за якою нікого
+            // немає, гірше, ніж не намалювати її зовсім.
+            //
+            // Питає власника сторінки, а не вирішує сам: правило видимості --
+            // справа того, хто сторінку приніс. Так вкладка «Фракція» зникає
+            // в того, хто не в угрупованні (ТЗ-1 R4.3), а КПК про угруповання
+            // так і не дізнається.
+            //
+            // uid тут -- ВЛАСНИКА СЕСІЇ: пристрій говорить за господаря.
+            if (!OZ_PageRegistry.VisibleFor(prof.Pages[i], pageUid))
                 continue;
 
             if (prof.Pages[i] != OZ_PdaConst.PAGE_DEVICE)
@@ -919,7 +994,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             for (int e = 0; e < mspec.EnablesPages.Count(); e++)
             {
                 string extra = mspec.EnablesPages[e];
-                if (!OZ_PageRegistry.Has(extra))
+                if (!OZ_PageRegistry.VisibleFor(extra, pageUid))
                     continue;
                 if (st.Pages.Find(extra) != -1)
                     continue;
@@ -1026,7 +1101,8 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 // першого сейву, дешевше за будь-який дросель.
                 OZ_PdaSnapshot snap = new OZ_PdaSnapshot();
                 snap.Owner   = ownPd.Name;
-                snap.Faction = OZ_Factions.NameOf(OZ_Factions.OfUid(ownUid));
+                snap.Base    = OZ_Identity.Get().FactionName(OZ_Identity.Get().BaseOf(ownUid));
+                snap.Org     = OZ_Identity.Get().FactionName(OZ_Identity.Get().OrgOf(ownUid));
                 for (int sf = 0; sf < ownPd.Friends.Count(); sf++)
                 {
                     // Ім'я з ТОГО САМОГО персонажа, а не з акаунта: у капсулі
@@ -1459,6 +1535,29 @@ class OZ_PdaModule : CF_ModuleWorld
     {
         super.OnInit();
         EnableMissionStart();
+        EnableInvokeDisconnect();
+    }
+
+    // Гравець вийшов -- забуваємо, що йому востаннє посилали.
+    //
+    // Мапа підписів маячків (OZ_PdaHandlerMap.m_BeaconSig) ключується
+    // Steam64 і не чистилась ніколи: за довгий аптайм у ній осідав рядок на
+    // кожного, хто хоч раз зайшов. Гірше за пам'ять було інше -- гравець, що
+    // вийшов із порожнім списком і повернувся, мав у мапі "" й не отримував
+    // ПЕРШОГО порожнього пуша, тобто клієнт не діставав команди стерти
+    // маячки, які встиг намалювати за минулий сеанс.
+    override void OnInvokeDisconnect(Class sender, CF_EventArgs args)
+    {
+        super.OnInvokeDisconnect(sender, args);
+
+        if (!GetGame().IsServer())
+            return;
+
+        CF_EventPlayerDisconnectedArgs dArgs = CF_EventPlayerDisconnectedArgs.Cast(args);
+        if (!dArgs)
+            return;
+
+        OZ_PdaHandlerMap.ForgetBeacons(dArgs.UID);
     }
 
     override void OnMissionStart(Class sender, CF_EventArgs args)
@@ -1508,10 +1607,6 @@ class OZ_PdaModule : CF_ModuleWorld
                                  "set:oz_pda image:chat",
                                  new OZ_PdaHandlerChat());
 
-        OZ_PageRegistry.Register(OZ_PdaConst.PAGE_FACTION,
-                                 "#STR_OZ_PAGE_FACTION",
-                                 "set:oz_pda image:faction",
-                                 new OZ_PdaHandlerFaction());
 
         OZ_PageRegistry.Register(OZ_PdaConst.PAGE_NEWS,
                                  "#STR_OZ_PAGE_NEWS",
@@ -1524,7 +1619,9 @@ class OZ_PdaModule : CF_ModuleWorld
         // приймачів однаково питається на кожну пачку.
         OZ_BridgeClient.Subscribe("chat", new OZ_ChatSink());
         OZ_BridgeClient.Subscribe("news", new OZ_NewsSink());
-        OZ_RoleNotify.On().Insert(OZ_PdaRolePush.Changed);
+        // Штовхання ролей у КПК підписує СКЛЕЙКА (OZFP_Module): рядок називав
+        // одразу два класи мода фракцій, і через нього КПК не компілювався
+        // без нього взагалі.
         OZ_PdaModules.Register(new OZ_SpyAntennaBehaviour());
         OZ_BridgeClient.RegisterUidProvider(new OZ_PdaUidProvider());
 
@@ -1542,7 +1639,6 @@ class OZ_PdaModule : CF_ModuleWorld
         // на сорока гравцях це мінус десять запитів на секунду.
         m_BeaconTimer = new Timer(CALL_CATEGORY_SYSTEM);
         m_BeaconTimer.Run(OZ_PdaTune.BeaconPushSeconds(), this, "BeaconTick", NULL, true);
-        OZ_Factions.ServerLoad();
 
         // Ядро пускало всі сторінки, бо пристроїв не має. Тепер вирішує той,
         // хто їх приносить.
@@ -1553,7 +1649,6 @@ class OZ_PdaModule : CF_ModuleWorld
         string summary = "pda loaded: profiles=" + OZ_PdaProfiles.Count().ToString();
         summary += " pages=" + OZ_PageRegistry.Count().ToString();
         summary += " modules=" + OZ_PdaHardware.ModuleCount().ToString();
-        summary += " factions=" + OZ_Factions.Count().ToString();
         summary += " carriers=" + OZ_PdaHardware.CarrierCount().ToString();
         OZ_Log.Info(summary);
     }

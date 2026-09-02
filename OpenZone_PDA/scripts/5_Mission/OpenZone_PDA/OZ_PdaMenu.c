@@ -21,6 +21,10 @@ class OZ_PdaMenu : UIScriptedMenu
     private string m_Current = "";
     private bool m_Built = false;
 
+    // Чи був увімкнений ванільний інтерфейс до відкриття КПК. Повертаємо
+    // САМЕ ЦЕ, а не «увімкнено» -- див. OnShow/OnHide.
+    private bool m_HudWasShown = true;
+
     private ref Timer m_Refresh;
 
     // Введений код накопичується тут і НІКУДИ більше: на сервер їде рівно
@@ -102,15 +106,32 @@ class OZ_PdaMenu : UIScriptedMenu
         array<string> excludes = new array<string>();
         excludes.Insert("menu");
         GetGame().GetMission().AddActiveInputExcludes(excludes);
+
+        // ЗАПАМ'ЯТОВУЄМО, ЯК БУЛО, і повертаємо саме це.
+        //
+        // OnHide безумовно вмикав ванільний інтерфейс назад -- тобто гравець,
+        // який сам його сховав (клавіша HUD), після кожного закриття КПК
+        // отримував його назад і мусив ховати знову.
+        m_HudWasShown = HudWasShown();
         GetGame().GetMission().GetHud().Show(false);
 
         OZ_ClientState.BindListener(new OZ_PdaMenuListener(this));
 
         // Рушій може віддати ТОЙ САМИЙ примірник меню на наступному
-        // відкритті -- FindMenu перевіряється саме тому. Отже стан, що
-        // описує пристрій, а не вікно, треба скидати тут: у руках цілком
-        // може бути вже інший КПК.
+        // відкритті -- FindMenu перевіряється саме тому. Отже ВЕСЬ стан, що
+        // описує пристрій і незавершену дію, а не вікно, треба скидати тут: у
+        // руках цілком може бути вже інший КПК.
+        //
+        // Скидався сам лише m_Sealed. Половина набору піна лишалась від
+        // минулого відкриття: клавіатура поверталась у тому ж режимі, з тим
+        // же недобраним буфером, і перша ж цифра доводила його до кінця --
+        // на ІНШОМУ приладі.
         m_Sealed = false;
+        m_PinMode   = "";
+        m_PinStep   = 0;
+        m_PinBuffer = "";
+        m_PinOld    = "";
+        m_PinNew    = "";
 
         // Питаємо сервер, що в нас за пристрій. До відповіді стрічка порожня.
         OZ_Rpc.Request(OZ_PdaConst.PAGE_DEVICE, "status", "{}");
@@ -127,6 +148,10 @@ class OZ_PdaMenu : UIScriptedMenu
         if (m_Refresh)
             m_Refresh.Stop();
 
+        // Відкладене закриття могло не встигнути: вікно закрилось раніше
+        // іншим шляхом. Парність CallLater/Remove -- правило, а не обережність.
+        GetGame().GetCallQueue(CALL_CATEGORY_GUI).Remove(this.Close);
+
         // ДЕМОНТАЖ СТОРІНОК -- ТУТ, і це не прибирання заради прибирання.
         // Сторінка контактів відписується від статичного інвокера у своєму
         // Unlink() -- але той Unlink мусить хтось покликати. Ніхто не кликав:
@@ -134,27 +159,47 @@ class OZ_PdaMenu : UIScriptedMenu
         // відповіді, з мертвими віджетами в руках. Знайшов аудит, а не краш
         // -- крашем воно стало б у першого, хто відкриє КПК двічі й отримає
         // відповідь на роль.
-        if (m_Pages)
-        {
-            for (int i = 0; i < m_Pages.Count(); i++)
-            {
-                OZ_PdaPage page = m_Pages.GetElement(i);
-                if (page)
-                    page.Unlink();
-            }
-            m_Pages.Clear();
-        }
-        if (m_Tabs)
-            m_Tabs.Clear();
-        m_Current = "";
-        m_Built = false;
+        DropPages();
 
         OZ_ClientState.BindListener(null);
 
         array<string> excludes = new array<string>();
         excludes.Insert("menu");
         GetGame().GetMission().RemoveActiveInputExcludes(excludes, true);
-        GetGame().GetMission().GetHud().Show(true);
+        GetGame().GetMission().GetHud().Show(m_HudWasShown);
+    }
+
+    // Закритись НАСТУПНИМ КАДРОМ. Для тих, кого кличуть зсередини чужого
+    // обходу -- обробника відповіді, ітерації по сторінках, -- і кому не
+    // можна руйнувати себе під ногами в того, хто кличе.
+    private void CloseLater()
+    {
+        GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(this.Close, 0, false);
+    }
+
+    // Чи ванільний інтерфейс був увімкнений ДО того, як ми його сховали.
+    //
+    // Питаємо прапорці контексту, а не сам віджет: панель захована ззовні
+    // (клавіша HUD, непритомність, відкрите чуже вікно) саме через них, і
+    // IngameHud.Cast -- той самий шлях, яким до них ходить ваниль.
+    private bool HudWasShown()
+    {
+        IngameHud hud = IngameHud.Cast(GetGame().GetMission().GetHud());
+        if (!hud)
+            return true;
+
+        IngameHudVisibility vis = hud.GetHudVisibility();
+        if (!vis)
+            return true;
+
+        // По одній перевірці на рядок: умова `if` у Enforce мусить уміщатися
+        // в один рядок, перенесення дає "Expected ')', not a '||'".
+        if (vis.IsContextFlagActive(EHudContextFlags.HUD_HIDE))
+            return false;
+        if (vis.IsContextFlagActive(EHudContextFlags.HUD_DISABLE))
+            return false;
+
+        return true;
     }
 
     // Кеш для тикових рішень: коли востаннє питали і що бачили netsync.
@@ -166,6 +211,23 @@ class OZ_PdaMenu : UIScriptedMenu
 
     void RefreshTick()
     {
+        // ПРИЛАД ПІШОВ -- ЕКРАН ІДЕ ЗА НИМ.
+        //
+        // Меню жило далі: КПК можна було кинути на землю, віддати, втратити
+        // разом із тілом -- а відкрите вікно лишалось на екрані й далі
+        // питало сервер. Сервер, звісно, відмовляв (ворота дивляться на те,
+        // що в руках і в слоті), тож на екрані лишалась остання картинка
+        // чужого вже приладу, і гравець читав з неї те, чого більше не має.
+        //
+        // Питаємо ТОЙ САМИЙ Device(), яким користуються ворота: правило про
+        // «мій прилад» одне на весь мод.
+        if (!OZ_PdaHud.Device())
+        {
+            OZ_Log.Dbg("pda: the device left the player, closing the screen");
+            CloseLater();
+            return;
+        }
+
         // Годинник і заряд -- ЛОКАЛЬНІ: час світу і netsync-поле предмета.
         // Це й прибирає трафік, і чинить заморозку статус-бара на вкладках,
         // які статус не питають.
@@ -240,6 +302,8 @@ class OZ_PdaMenu : UIScriptedMenu
         // Стрічку будує ПЕРША ж відповідь про пристрій -- і тільки один раз.
         if (!m_Built && pageId == OZ_PdaConst.PAGE_DEVICE && op == "status" && ok)
             BuildFrom(json);
+        else if (m_Built && pageId == OZ_PdaConst.PAGE_DEVICE && op == "status" && ok)
+            RebuildIfPagesChanged(json);
 
         if (pageId == OZ_PdaConst.PAGE_DEVICE && op == "status")
         {
@@ -286,7 +350,15 @@ class OZ_PdaMenu : UIScriptedMenu
             {
                 // Стрічка вкладок разова, а в новій сесії їх більше:
                 // закриваємось, наступне відкриття збере повний набір.
-                Close();
+                //
+                // НАСТУПНИМ КАДРОМ, а не тут. Close() у UIScriptedMenu --
+                // proto native: він руйнує меню негайно, а нас саме зараз
+                // кличе OZ_ClientState зсередини свого розбору відповіді й
+                // після повернення звертається до себе далі. Знищувати
+                // об'єкт із його ж зворотного виклику -- звернення по
+                // мертвому вказівнику, і те, що воно досі не впало, нічого
+                // не обіцяє.
+                CloseLater();
             }
             return;
         }
@@ -324,6 +396,88 @@ class OZ_PdaMenu : UIScriptedMenu
         }
     }
 
+    // НАБІР СТОРІНОК МІНЯЄТЬСЯ ЗА ЖИТТЯ ВІКНА, і стрічка мусить за ним іти.
+    //
+    // Сторінку вмикає не лише профіль, а й ВСТАВЛЕНИЙ МОДУЛЬ: дістав рацію з
+    // відсіку -- вкладка рації мусить зникнути, вставив -- з'явитись. Стрічка
+    // ж будувалась рівно один раз, першою відповіддю, і після цього не
+    // мінялась ніколи: гравець міняв залізо, дивлячись на вкладки, яких у
+    // приладі вже немає. Натискання на таку вкладку йшло на сервер і чесно
+    // отримувало відмову, якої ніхто не пояснював.
+    //
+    // Прилад сам штовхає стан на кожне під'єднання й від'єднання
+    // (OZ_PDA_Base.EEItemAttached -> PushState), тож окремого опиту не треба.
+    private void RebuildIfPagesChanged(string json)
+    {
+        string err;
+        OZ_PdaDeviceStatus st;
+        if (!JsonFileLoader<OZ_PdaDeviceStatus>.LoadData(json, st, err))
+            return;
+        if (!st.Pages)
+            return;
+
+        // Порядок теж значущий: його задає профіль, і зміна порядку -- це
+        // інша стрічка.
+        bool same = st.Pages.Count() == m_PageOrder.Count();
+        if (same)
+        {
+            for (int i = 0; i < st.Pages.Count(); i++)
+            {
+                if (st.Pages[i] != m_PageOrder[i])
+                {
+                    same = false;
+                    break;
+                }
+            }
+        }
+
+        if (same)
+            return;
+
+        // Що було відкрито -- лишаємо відкритим, якщо воно ще є.
+        string keep = m_Current;
+
+        DropPages();
+        BuildFrom(json);
+
+        if (keep != "" && m_Pages.Contains(keep))
+            Select(keep);
+    }
+
+    // Знести сторінки й стрічку, лишивши вікно живим. Спільне для
+    // перезбирання й для закриття -- інакше друге місце неминуче забуде
+    // покликати Unlink, і сторінка лишиться підписаною з мертвими віджетами.
+    private void DropPages()
+    {
+        if (m_Pages)
+        {
+            for (int i = 0; i < m_Pages.Count(); i++)
+            {
+                OZ_PdaPage page = m_Pages.GetElement(i);
+                if (page)
+                    page.Unlink();
+            }
+            m_Pages.Clear();
+        }
+
+        if (m_Tabs)
+        {
+            for (int t = 0; t < m_Tabs.Count(); t++)
+            {
+                if (m_Tabs[t])
+                    m_Tabs[t].Unlink();
+            }
+            m_Tabs.Clear();
+        }
+
+        m_PageOrder.Clear();
+        m_Current = "";
+        m_Built = false;
+    }
+
+    // Стрічка, як її збудували: за нею й звіряємось.
+    private ref array<string> m_PageOrder = new array<string>();
+
     private void BuildFrom(string json)
     {
         string err;
@@ -334,7 +488,13 @@ class OZ_PdaMenu : UIScriptedMenu
             return;
         }
 
-        m_Built = true;
+        // ЗАЩІПКА СТАВИТЬСЯ В КІНЦІ, і лише коли стрічка справді з'явилась.
+        //
+        // Тут вона стояла на початку й безумовно. Профіль без сторінок (чи
+        // такий, жодну сторінку якого цей клієнт малювати не вміє) давав
+        // порожню стрічку -- і разом із нею глушив опит стану в RefreshTick,
+        // бо той працює рівно доти, доки m_Built == false. Вікно лишалось
+        // порожнім назавжди й перепитати вже не могло.
 
         // ФРАКЦІЯ ЖИВЕ В ОДНІЙ ВКЛАДЦІ З КОНТАКТАМИ (рішення власника
         // 2026-08-30): ліворуч люди, праворуч свої. Це те саме питання --
@@ -345,15 +505,41 @@ class OZ_PdaMenu : UIScriptedMenu
         // незалежні оновлення. Спільна в них тільки вкладка -- і рівно це
         // тут і зроблено, без злиття коду сторінок в одну купу.
         //
-        // Якщо профіль дав фракцію БЕЗ контактів, вона отримує власну
+        // Пару оголошує ТОЙ, ХТО ЇЇ УТВОРЮЄ (OZ_PdaPageFactory.Pair), а не
+        // це меню. Тут стояло ім'я фракційної сторінки -- тобто КПК знав про
+        // мод, якого може й не бути; після виносу фракцій окремим модом таке
+        // знання стало прямою залежністю на порожнє місце.
+        //
+        // Якщо профіль дав одну сторінку пари без другої, вона отримує власну
         // вкладку, як і раніше: приліпити її нема до чого.
         m_Companion = "";
-        if (st.Pages.Find(OZ_PdaConst.PAGE_CONTACTS) != -1 && st.Pages.Find(OZ_PdaConst.PAGE_FACTION) != -1)
-            m_Companion = OZ_PdaConst.PAGE_FACTION;
+        for (int c = 0; c < st.Pages.Count(); c++)
+        {
+            string mate = OZ_PdaPageFactory.CompanionOf(st.Pages[c]);
+            if (mate != "" && st.Pages.Find(mate) != -1)
+            {
+                m_Companion = mate;
+                break;
+            }
+        }
 
         // Порядок задає ПРОФІЛЬ, не реєстр: адмін вирішує, що йде першим.
+        m_PageOrder.Clear();
         for (int i = 0; i < st.Pages.Count(); i++)
+        {
             AddTab(st.Pages[i]);
+            m_PageOrder.Insert(st.Pages[i]);
+        }
+
+        // Жодної сторінки не вийшло -- нічого й не защіпаємо: хай опит іде
+        // далі, а в лозі лишається причина.
+        if (m_Pages.Count() == 0)
+        {
+            OZ_Log.Warn("pda: the device status brought no page this client can draw - the tab rail stays empty");
+            return;
+        }
+
+        m_Built = true;
 
         if (st.Pages.Count() > 0)
             Select(st.Pages[0]);
@@ -597,12 +783,42 @@ class OZ_PdaMenu : UIScriptedMenu
     // мати два джерела правди про те, чи воно взагалі відкрите.
     private void ShowInit(bool show)
     {
+        m_InitShown = show;
+        SyncPanels();
+    }
+
+    // ОДНА ТОЧКА, ЯКА ВИРІШУЄ ПРО ВСІ ЧОТИРИ ВІДЖЕТИ.
+    //
+    // Видимість панелі ініціалізації, екрана коду, поля сторінок і стрічки
+    // вкладок пов'язана: рівно одна з перших двох може бути на екрані, і поки
+    // хоч одна з них є -- сторінок бути не може. Це правило жило в трьох
+    // місцях по шматку (ShowInit, BeginPin, EndPin), і кожне знало лише
+    // частину: EndPin, наприклад, безумовно вмикав поле сторінок -- зокрема й
+    // поверх відкритої панелі ініціалізації.
+    //
+    // Стан описують ДВІ змінні, а малює їх ця функція. Хто міняє стан --
+    // кличе її й більше нічого не показує сам.
+    private bool m_InitShown = false;
+
+    private void SyncPanels()
+    {
+        bool pin = m_PinMode != "";
+
         if (m_InitPanel)
-            m_InitPanel.Show(show);
+            m_InitPanel.Show(m_InitShown);
+
+        if (m_LockPanel)
+            m_LockPanel.Show(pin);
+
+        // Сторінки ховаємо ОКРЕМО, а не покладаємось на те, що панель їх
+        // перекриє: 3D-прев'ю предмета малюється власним проходом рушія і
+        // проступає крізь будь-який 2D-віджет поверх нього. Виміряно на
+        // живому клієнті -- модель було видно просто крізь екран коду.
         if (m_PageHost)
-            m_PageHost.Show(!show && m_PinMode == "");
+            m_PageHost.Show(!m_InitShown && !pin);
+
         if (m_TabRail)
-            m_TabRail.Show(!show);
+            m_TabRail.Show(!m_InitShown);
     }
 
     void BeginPin(string mode)
@@ -622,14 +838,7 @@ class OZ_PdaMenu : UIScriptedMenu
         else
             m_PinStep = 0;
 
-        m_LockPanel.Show(true);
-
-        // Сторінки ховаємо ОКРЕМО, а не покладаємось на те, що панель їх
-        // перекриє: 3D-прев'ю предмета малюється власним проходом рушія і
-        // проступає крізь будь-який 2D-віджет поверх нього. Виміряно на
-        // живому клієнті -- модель було видно просто крізь екран коду.
-        if (m_PageHost)
-            m_PageHost.Show(false);
+        SyncPanels();
 
         PaintPinPrompt("");
         PaintPinDots();
@@ -761,8 +970,7 @@ class OZ_PdaMenu : UIScriptedMenu
         m_PinOld    = "";
         m_PinNew    = "";
 
-        if (m_LockPanel)
-            m_LockPanel.Show(false);
+        SyncPanels();
 
         // Панель вимкнули -- усе, що жило лише на ній, теж. Інакше кнопка
         // зламу лишалась би видимою на вже відкритому пристрої.
@@ -777,9 +985,6 @@ class OZ_PdaMenu : UIScriptedMenu
         Widget pad = layoutRoot.FindAnyWidget("LockPad");
         if (pad)
             pad.Show(true);
-
-        if (m_PageHost)
-            m_PageHost.Show(true);
     }
 
     bool PinPanelBusy()

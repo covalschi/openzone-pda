@@ -428,8 +428,16 @@ class OZ_PdaPageDevice : OZ_PdaPage
 
         if (!ok)
         {
-            SetText("TitleName", "#" + error);
-            SetText("TitleProfile", "");
+            // ЛИПКО Й У ВИДИМИЙ ВІДЖЕТ -- так само, як роблять решта
+            // сімнадцять місць на цій сторінці.
+            //
+            // Причина відмови писалась у TitleName, тобто в панель прев'ю
+            // предмета -- а вона на цьому екрані ПРИХОВАНА (PreviewPane
+            // show=0). Тобто спільний шлях відмови, крізь який проходить
+            // кожне «прилад вимкнено», «прилад замкнено», «немає доступу»,
+            // не показував нічого взагалі. А ще й не липко: перший же
+            // успішний status затер би його за частку секунди.
+            SetHintSticky("SessionText", "#" + error);
             return;
         }
 
@@ -874,8 +882,19 @@ class OZ_PdaPageDevice : OZ_PdaPage
                 if (JsonFileLoader<OZ_PdaSnapshot>.LoadData(st.Snapshot, snap, serr) && snap)
                 {
                     s += "\n#STR_OZ_DEV_SNAP_OWNER " + snap.Owner;
-                    if (snap.Faction != "")
-                        s += " (" + snap.Faction + ")";
+                    // ОБИДВІ осі в дужках, через кому: «(Сталкер, Долг)».
+                    // Показати саму лише організацію означало б, що одинак
+                    // у капсулі виглядає безіменним, хоча про нього відомо
+                    // рівно стільки ж, скільки про борговця.
+                    string who = snap.Base;
+                    if (snap.Org != "")
+                    {
+                        if (who != "")
+                            who += ", ";
+                        who += snap.Org;
+                    }
+                    if (who != "")
+                        s += " (" + who + ")";
                     if (snap.Contacts && snap.Contacts.Count() > 0)
                     {
                         s += "\n#STR_OZ_DEV_SNAP_CONTACTS " + snap.Contacts.Count().ToString() + ": ";

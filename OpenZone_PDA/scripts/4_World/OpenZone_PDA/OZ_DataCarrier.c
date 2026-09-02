@@ -255,6 +255,10 @@ class OZ_DataCarrier_Base : ItemBase
         ctx.Write("kv1");
         ctx.Write(m_Sections.Count());
 
+        // ПРИЛАД. Запис предмета трапляється не тоді, коли гравець щось
+        // натиснув, а через невизначений час після -- і саме тому «впало
+        // через кілька хвилин після дії» без цього рядка неможливо
+        // прив'язати ні до дії, ні до запису.
         for (int i = 0; i < m_Sections.Count(); i++)
         {
             OZ_CarrierSection s = m_Sections[i];

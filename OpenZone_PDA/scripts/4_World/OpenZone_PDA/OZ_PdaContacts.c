@@ -109,19 +109,30 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
 
         // Ким я є сам -- вирішує СЕРВЕР. Клієнт про свої права не здогадується
         // і намалює лідерські кнопки рівно тоді, коли йому тут скажуть.
-        string myFaction = OZ_Factions.OfUid(myUid);
-        list.MeLeader    = myFaction != "" && OZ_Roles.IsLeader(myUid);
+        // МОЄ УГРУПОВАННЯ. Саме воно вирішує і «я лідер», і «свій/чужий»:
+        // у базової фракції немає ні лідера, ні складу (ТЗ-1 §5).
+        string myFaction = OZ_Identity.Get().OrgOf(myUid);
+        // Складену логіку -- у локальну змінну, у поле кладемо готове
+        // значення. Причина -- вимір 2026-09-01: ланцюжок «&&», присвоєний
+        // прямо в поле об'єкта на купі, псує купу (див. OZR_Page.Book).
+        bool meLeader = false;
+        if (myFaction != "")
+            meLeader = OZ_Identity.Get().IsLeader(myUid);
+        list.MeLeader = meLeader;
 
         // Міст давно мовчить -- скажемо про це, а не покажемо порожнє. Гравець
         // мусить розуміти, що бачить останнє відоме, а не «нікого немає».
-        list.Stale = OZ_Identity.Stale();
+        list.Stale = OZ_Identity.Get().Stale();
 
-        // Чи хтось кличе мене у фракцію. Прострочене Pending прибирає само.
-        OZ_FactionInvite inv = OZ_FactionInvites.Pending(myUid);
-        if (inv)
+        // Чи хтось кличе мене у фракцію -- ЧЕРЕЗ СЛУЖБУ, а не через клас мода
+        // фракцій. Раніше тут стояв прямий OZ_FactionInvites.Pending, і КПК
+        // через нього не компілювався без того мода взагалі.
+        string invFaction;
+        string invFrom;
+        if (OZ_Identity.Get().PendingInvite(myUid, invFaction, invFrom))
         {
-            list.InviteFaction = OZ_Factions.NameOf(inv.Faction);
-            list.InviteFrom    = inv.FromName;
+            list.InviteFaction = OZ_Identity.Get().FactionName(invFaction);
+            list.InviteFrom    = invFrom;
         }
 
         // 1. Ті, хто на сервері. Себе -- завжди, друга -- завжди, решту --
@@ -179,7 +190,10 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
             e.Rel  = "";
             if (isFriend)
                 e.Rel = "friend";
-            e.Near = !isMe && WithinReach(mePlayer, players[i]);
+            bool near = false;
+            if (!isMe)
+                near = WithinReach(mePlayer, players[i]);
+            e.Near = near;
 
             // РОЛІ -- ЛИШЕ СВОЇМ. Хто він у Зоні -- фракція, звання, посади,
             // мітки -- видно тільки собі й контактам.
@@ -192,9 +206,10 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
 
             if (isMe || isFriend)
             {
-                string fid   = OZ_Factions.Of(PlayerBase.Cast(players[i]), uid);
-                e.Faction      = OZ_Factions.NameOf(fid);
-                e.FactionColor = OZ_Factions.ColorARGB(fid);
+                string fid = OZ_Identity.Get().OrgOfPlayer(PlayerBase.Cast(players[i]), uid);
+                e.Org      = OZ_Identity.Get().FactionName(fid);
+                e.OrgColor = OZ_Identity.Get().FactionColor(fid, 255);
+                e.Base     = OZ_Identity.Get().FactionName(OZ_Identity.Get().BaseOf(uid));
                 Identify(e, uid, myFaction);
             }
 
@@ -277,11 +292,16 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
                 // кого, лишається останнє відоме з його файлу. У замороженого
                 // це знімок його останнього дня.
                 string ofid = "";
+                string obase = "";
                 if (d)
-                    ofid = d.SeenFaction;
+                {
+                    ofid  = d.SeenOrg;
+                    obase = d.SeenBase;
+                }
 
-                e.Faction      = OZ_Factions.NameOf(ofid);
-                e.FactionColor = OZ_Factions.ColorARGB(ofid);
+                e.Org      = OZ_Identity.Get().FactionName(ofid);
+                e.OrgColor = OZ_Identity.Get().FactionColor(ofid, 255);
+                e.Base     = OZ_Identity.Get().FactionName(obase);
 
                 if (OZ_PlayerStore.IsLive(key))
                     IdentifySeen(e, uid, myFaction, ofid);
@@ -302,15 +322,20 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         if (!d)
             return;
 
-        e.Rank = OZ_RoleNames.Of(d.SeenRank);
+        // ЧЕРЕЗ СЛУЖБУ, а не через OZ_RoleNames мода фракцій: те саме джерело
+        // (Seen* читає той самий файл гравця), але без імені, якого без того
+        // мода не існує -- а через нього КПК не компілювався зовсім.
+        e.Rank = OZ_Identity.Get().SeenRankName(d.SteamId);
 
-        if (d.SeenTraits)
-        {
-            for (int i = 0; i < d.SeenTraits.Count(); i++)
-                e.Traits.Insert(OZ_RoleNames.Of(d.SeenTraits[i]));
-        }
+        array<string> traits = new array<string>();
+        OZ_Identity.Get().SeenTraitNames(d.SteamId, traits);
+        for (int i = 0; i < traits.Count(); i++)
+            e.Traits.Insert(traits[i]);
 
-        e.Mine = myFaction != "" && ofid == myFaction;
+        bool mine = false;
+        if (myFaction != "")
+            mine = (ofid == myFaction);
+        e.Mine = mine;
     }
 
     // Три осі, яких у списку не було: звання, посади, мітки.
@@ -319,17 +344,20 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
     // перекладати його мусив би кожен, хто малює.
     private void Identify(OZ_ContactEntry e, string uid, string myFaction)
     {
-        e.Rank = OZ_Identity.RankName(uid);
+        e.Rank = OZ_Identity.Get().RankName(uid);
 
         // ПОСАД НЕ ШЛЕМО. Хто у фракції лідер чи сержант -- справа тієї
         // фракції, і видно це в її половині вкладки (рішення власника
         // 2026-08-30). Не показуємо -- отже й не возимо: конверт, який
         // несе те, чого ніхто не малює, рано чи пізно десь намалюється.
-        OZ_Identity.TraitNames(uid, e.Traits);
+        OZ_Identity.Get().TraitNames(uid, e.Traits);
 
         // Порівнюємо СЛАГИ, а не назви: дві однакові назви -- право адміна, і
         // це не привід зарахувати чужого в свої.
-        e.Mine = myFaction != "" && OZ_Factions.OfUid(uid) == myFaction;
+        bool mine = false;
+        if (myFaction != "")
+            mine = OZ_Identity.Get().OrgOf(uid) == myFaction;
+        e.Mine = mine;
     }
 
     // Те саме для того, кого немає на сервері. Проекція ролей живе рівно
@@ -342,17 +370,22 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
     // так каже про це рядком угорі, коли міст мовчить.
     private void IdentifySeen(OZ_ContactEntry e, string uid, string myFaction, string ofid)
     {
-        e.Rank = OZ_Identity.SeenRankName(uid);
-        OZ_Identity.SeenTraitNames(uid, e.Traits);
+        e.Rank = OZ_Identity.Get().SeenRankName(uid);
+        OZ_Identity.Get().SeenTraitNames(uid, e.Traits);
 
-        e.Mine = myFaction != "" && ofid == myFaction;
+        bool mine = false;
+        if (myFaction != "")
+            mine = (ofid == myFaction);
+        e.Mine = mine;
     }
 
     private string RelOf(OZ_PlayerData me, string uid, bool isFriend)
     {
         if (isFriend)
             return "friend";
-        if (Has(me.FriendReq, uid))
+        // Вхідні пропозиції -- типізований список зі строком (OZ_FriendReq),
+        // тому не Has, а пошук за ключем.
+        if (OZ_PdaContactSwap.IndexOfReq(me.FriendReq, uid) != -1)
             return "got";
         if (SentTo(me.SteamId, uid))
             return "sent";
@@ -365,7 +398,7 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
     private bool SentTo(string myUid, string theirUid)
     {
         OZ_PlayerData them = OZ_PlayerStore.Load(theirUid);
-        return Has(them.FriendReq, myUid);
+        return OZ_PdaContactSwap.IndexOfReq(them.FriendReq, myUid) != -1;
     }
 
     private bool WithinReach(PlayerBase me, Man other)

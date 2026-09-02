@@ -131,9 +131,11 @@ class OZ_ChatColors
         if (!l || l.AUid == "")
             return;
 
-        string fac = OZ_Factions.OfUid(l.AUid);
+        // УГРУПОВАННЯ, а не базова (ТЗ-1 §5). Базова є в кожного, тож колір
+        // за нею пофарбував би весь чат в один відтінок і не сказав нічого.
+        string fac = OZ_Identity.Get().OrgOf(l.AUid);
         if (fac != "")
-            l.WhoColor = OZ_Factions.ColorARGB(fac);
+            l.WhoColor = OZ_Identity.Get().FactionColor(fac, 255);
         l.AUid = "";
     }
 }
@@ -389,9 +391,10 @@ class OZ_ChatSink : OZ_BridgeSink
 
         if (p.AUid != "")
         {
-            string pfac = OZ_Factions.OfUid(p.AUid);
+            // Те саме правило, що в Paint(): колір несе угруповання.
+            string pfac = OZ_Identity.Get().OrgOf(p.AUid);
             if (pfac != "")
-                p.WhoColor = OZ_Factions.ColorARGB(pfac);
+                p.WhoColor = OZ_Identity.Get().FactionColor(pfac, 255);
             p.AUid = "";
         }
 
@@ -422,7 +425,17 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         ok    = false;
         error = "STR_OZ_ERR_UNKNOWN_OP";
 
-        if (!OZ_BridgeClient.IsRunning())
+        // Alive(), А НЕ IsRunning() -- і це та сама помилка, яку вже ловили
+        // в OZ_Link.Gated.
+        //
+        // IsRunning() означає «опит увімкнено», і при мертвому боті лишається
+        // true назавжди. Тобто саме тоді, коли ці ворота потрібні, вони
+        // пропускали: сторінка йшла по дані до моста, якого немає, і гравець
+        // діставав порожній список замість відповіді «недоступно».
+        //
+        // Сторінка зобов'язана відрізняти «порожньо» від «не знаю» (ТЗ-2
+        // R4.1). Тут живе перше з двох місць, де ця різниця вимовляється.
+        if (!OZ_BridgeClient.Alive())
         {
             error = "STR_OZ_ERR_NO_BRIDGE";
             return "";
@@ -830,7 +843,15 @@ class OZ_PdaHandlerChat : OZ_PageHandler
     {
         ok = false;
 
-        OZ_PlayerData me = OZ_PlayerStore.Load(sender.GetPlainId());
+        // ЗАПИСНИК ВЛАСНИКА СЕСІЇ, а не того, хто тримає прилад.
+        //
+        // Тут стояв sender.GetPlainId(), і це розходилось із group_add на
+        // сусідньому екрані: перелік «кого можна покликати» будувався з
+        // контактів ТОГО, ХТО ТРИМАЄ, а покликати вдавалось лише контакта
+        // ВЛАСНИКА. На захопленому чужому терміналі (а він працює як термінал
+        // власника -- рішення власника 2026-08-28) список показував своїх
+        // друзів, і кожен вибір із нього повертав «не ваш контакт».
+        OZ_PlayerData me = OZ_PlayerStore.Load(m_Acc);
 
         OZ_ChatInvitees inv = new OZ_ChatInvitees();
         for (int i = 0; i < me.Friends.Count(); i++)

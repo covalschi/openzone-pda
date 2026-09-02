@@ -244,6 +244,7 @@ class OZ_PdaTune
         return OZ_PdaConst.NOTES_MAX;
     }
 
+
     static int NoteTitleMax()
     {
         OZ_PdaTuning t = OZ_PdaTuning.Get();

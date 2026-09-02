@@ -25,6 +25,14 @@ class OZ_PdaPageChat : OZ_PdaPage
     private EditBoxWidget m_Input;
     private ButtonWidget m_BtnSend;
 
+    // МІСТ ЛЕЖИТЬ -- ПИСАТИ НІКУДИ (ТЗ-2 R4.2).
+    //
+    // Дім чату -- бот, і поки він мовчить, рядок не має куди лягти. Черги
+    // тут немає навмисно: повідомлення, яке гравець вважає надісланим, не
+    // сміє загубитись мовчки, а черга без гарантії доставки -- це саме така
+    // втрата. Тому поле вводу гасне, і підказка каже чому.
+    private bool m_NoBridge;
+
     // «Сказати без імені». Живе лише в «Зоні»; стан тумблера скидається
     // при зміні розмови -- анонімність мусить бути свідомим рухом щоразу.
     private ButtonWidget m_BtnAnon;
@@ -258,7 +266,7 @@ class OZ_PdaPageChat : OZ_PdaPage
             return true;
         }
 
-        if (w && (w.GetUserID() == 6 || w.GetUserID() == 7))
+        if (w && (w.GetUserID() == 8 || w.GetUserID() == 9))
         {
             OZ_NoteRef ir = new OZ_NoteRef();
             ir.Id = w.GetName();
@@ -266,7 +274,7 @@ class OZ_PdaPageChat : OZ_PdaPage
             string ij;
             string ierr;
             string iop = "invite_accept";
-            if (w.GetUserID() == 7)
+            if (w.GetUserID() == 9)
                 iop = "invite_decline";
 
             if (JsonFileLoader<OZ_NoteRef>.MakeData(ir, ij, ierr, false))
@@ -472,9 +480,23 @@ class OZ_PdaPageChat : OZ_PdaPage
 
         if (!ok)
         {
+            // Відмова моста -- стан сторінки, а не одна невдала операція.
+            // Ловимо її ТУТ, бо сюди сходяться всі відмови, і перемальовуємо:
+            // саме перемальовування й гасить поле вводу.
+            if (error == "STR_OZ_ERR_NO_BRIDGE")
+            {
+                m_NoBridge = true;
+                PaintInput();
+            }
+
             SetText("ChatHint", "#" + error);
             return;
         }
+
+        // Відповідь дійшла -- отже міст живий. Знімаємо стан тут, а не за
+        // таймером: подія краща за опитування, і вона вже є.
+        m_NoBridge = false;
+        PaintInput();
 
         if (op == "list")
         {
@@ -693,17 +715,24 @@ class OZ_PdaPageChat : OZ_PdaPage
             f.SetText(Widget.TranslateString("#STR_OZ_CHAT_INV_FROM") + " " + inv.From);
 
         // Ім'я кнопки -- ключ групи, UserID відрізняє «так» від «ні».
+        //
+        // 8 і 9, а НЕ 6 і 7. Шістка вже належить рядкам чату (мітка з
+        // повідомлення), і гілка, що її ловить, стоїть у OnClick ВИЩЕ --
+        // тобто кнопка ПРИЙНЯТИ не доходила до свого обробника ЖОДНОГО разу.
+        // Натискання йшло в TakeMark(GetName().ToInt()), а ім'я в неї -- id
+        // групи, тобто ToInt() давав нуль, і мітка бралася з нульового рядка.
+        // ВІДХИЛИТИ працювало: сімка ні з чим не збігалась.
         Widget yes = w.FindAnyWidget("InvJoin");
         if (yes)
         {
             yes.SetName(inv.Id);
-            yes.SetUserID(6);
+            yes.SetUserID(8);
         }
         Widget no = w.FindAnyWidget("InvDecl");
         if (no)
         {
             no.SetName(inv.Id);
-            no.SetUserID(7);
+            no.SetUserID(9);
         }
     }
 
@@ -985,6 +1014,55 @@ class OZ_PdaPageChat : OZ_PdaPage
             sc.VScrollToPos01(0);
     }
 
+    // ЧИ Є КУДИ ПИСАТИ. Окремо від PaintView, і це не дрібниця.
+    //
+    // PaintView виходить першим рядком, коли розмова не відкрита, -- а
+    // «міст лежить» треба вимовити САМЕ тоді: гравець дивиться на список
+    // розмов, і поле вводу під ним пропонує писати в нікуди. Знайдено на
+    // стенді 2026-09-01: підказка вже казала «немає зв'язку», а поле й SEND
+    // лишались на екрані.
+    //
+    // ТРИ ПРИЧИНИ, ОДНА ПОВЕРХНЯ: пейджер (канал в один бік, приймач без
+    // передавача); заморожена капсула -- читальня; мертвий міст -- рядку
+    // немає куди лягти. Писати не можна в жодному з трьох, тож поле й SEND
+    // гаснуть однаково, а підказка каже, чому саме.
+    //
+    // «Розмову не відкрито» сюди НЕ входить навмисно. Поле там і до цієї
+    // роботи стояло видимим, і міняти вигляд сторінки в звичайному стані --
+    // не те, про що просили: ця правка про мертвий міст, а не про те, як
+    // виглядає список розмов.
+    private void PaintInput()
+    {
+        bool mute = m_NoBridge;
+        if (m_View && (m_View.Kind == "npc" || m_View.Frozen))
+            mute = true;
+
+        if (m_Input)
+            m_Input.Show(!mute);
+        if (m_BtnSend)
+            m_BtnSend.Show(!mute);
+
+        Widget inf = Wgt("ChatInputFrame");
+        if (inf)
+            inf.Show(!mute);
+        Widget infl = Wgt("ChatInputFill");
+        if (infl)
+            infl.Show(!mute);
+
+        // Причину називаємо в порядку спадання ваги: лежачий міст важить
+        // більше за все інше, бо він єдиний із трьох -- поломка, а не стан.
+        //
+        // ГІЛКА else ОБОВ'ЯЗКОВА. Без неї підказка залипає: міст ожив, список
+        // розмов повернувся, а під ним і далі стоїть «немає зв'язку». Видно
+        // на стенді 2026-09-01 -- саме так це й знайшлось.
+        if (m_NoBridge)
+            SetText("ChatHint", "#STR_OZ_ERR_NO_BRIDGE");
+        else if (m_View && (m_View.Kind == "npc" || m_View.Frozen))
+            SetText("ChatHint", "#STR_OZ_CHAT_PAGER_RO");
+        else
+            SetText("ChatHint", "");
+    }
+
     private void PaintView()
     {
         ClearLines();
@@ -1021,21 +1099,7 @@ class OZ_PdaPageChat : OZ_PdaPage
                 ml.SetText(ms);
         }
 
-        // Пейджер -- канал В ОДИН БІК: приймач без передавача. Поле вводу
-        // й SEND ховаються, а підказка чесно каже чому.
-        bool pager = (m_View.Kind == "npc") || m_View.Frozen;
-        if (m_Input)
-            m_Input.Show(!pager);
-        if (m_BtnSend)
-            m_BtnSend.Show(!pager);
-        Widget inf = Wgt("ChatInputFrame");
-        if (inf)
-            inf.Show(!pager);
-        Widget infl = Wgt("ChatInputFill");
-        if (infl)
-            infl.Show(!pager);
-        if (pager)
-            SetText("ChatHint", "#STR_OZ_CHAT_PAGER_RO");
+        PaintInput();
 
         // Кликати в розмову можна лише в групову: особиста розмова -- це рівно
         // двоє, і третій у ній не «запрошений», а зовсім інша розмова.

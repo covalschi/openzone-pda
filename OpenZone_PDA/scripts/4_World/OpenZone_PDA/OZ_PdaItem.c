@@ -67,6 +67,32 @@ class OZ_PDA_Base : ItemBase
     // Один на пристрій: вести дві нитки одночасно однаково нема кому.
     private string m_RouteJson = "";
 
+    // Розділи ЧУЖИХ МОДУЛІВ -- МАСИВОМ, а не одним JSON-документом.
+    //
+    // Документом воно й було, і саме це валило сервер. Корисне навантаження
+    // розділу -- САМЕ ПО СОБІ JSON; загорнувши його в поле іншого JSON, ми
+    // отримали JSON усередині JSON, тобто екранування при записі й
+    // розекранування при читанні. Розібрати те, що звідти поверталось,
+    // JsonFileLoader не міг: 2026-08-31 сервер помирав нативно ПРЯМО В
+    // LoadData -- лог обривався між «payload NNN bytes» і наступним рядком.
+    //
+    // Носій цієї помилки не мав ніколи: він пише Kind, Records і Payload
+    // ОКРЕМИМИ записами сховища й нічого ні в що не загортає. Тут тепер так
+    // само -- і розбирається лише те, що поклав сам власник роду.
+    private ref array<ref OZ_PdaSection> m_Sections;
+
+    // СКІЛЬКИ ЯЧЕЙОК ЗАЙНЯТО ВЛАСНИМИ РОДАМИ -- порахований раз і збережений.
+    //
+    // Число рахується розбором ОБОХ документів -- міток і записок, -- а
+    // питають його на кожну операцію будь-якої сторінки: стеля міток, стеля
+    // записок, вільне місце на екрані пристрою, кожен імпорт із чипа. Тобто
+    // два повні розбори JSON по сорок записів на КОЖЕН клік, і ще на кожен
+    // тік сторінки, і для кожного КПК на сервері.
+    //
+    // -1 означає «не рахували». Скидають його рівно ті три сеттери, що міняють
+    // документи, плюс робота з розділами чужих модулів і заводський скид.
+    private int m_OwnCells = -1;
+
     // --- запечатаний пристрій ---
     //
     // m_Seeded відповідає на одне питання: чи вже писали на цей пристрій те,
@@ -106,6 +132,8 @@ class OZ_PDA_Base : ItemBase
         RegisterNetSyncVariableBool("m_Unlocked");
         RegisterNetSyncVariableBool("m_HasPinS");
 
+        m_Sections  = new array<ref OZ_PdaSection>();
+
         m_FailUid   = new array<string>();
         m_FailCount = new array<int>();
         m_FailAt    = new array<int>();
@@ -117,16 +145,43 @@ class OZ_PDA_Base : ItemBase
 
     // --------------------------------------------------------------- модулі
 
-    // Предмет щойно з'явився у світі. САМЕ ТУТ пишеться те, що профіль велів
-    // покласти на нього -- і лише якщо його ще не писали: EEInit кличеться і
-    // при створенні, і при завантаженні зі збереження, а другий раз писати
-    // не можна.
+    // Предмет щойно з'явився у світі. Те, що профіль велів на нього покласти,
+    // пишеться НЕ ТУТ, а НАСТУПНИМ КАДРОМ -- і лише якщо його ще не писали.
+    //
+    // Причина в порядку подій. EEInit кличеться і при створенні, і при
+    // завантаженні зі збереження, але СХОВИЩЕ ЧИТАЄТЬСЯ ПІЗНІШЕ: на цю мить
+    // m_Seeded ще має значення за замовчуванням, тобто false, хоч на диску
+    // лежить true. Тобто захисна защіпка «рівно один раз за життя предмета»
+    // тут не працює взагалі й не може: вона питає поле, якого ще не читали.
+    //
+    // Досі це не було видно, бо КОЖНЕ поле, яке пише посів, лежить і в
+    // сховищі, тож наступний OnStoreLoad затирав зайву роботу правильними
+    // значеннями. Це збіг, а не захист: перше ж посіяне поле, яке не
+    // зберігається, почало б мовчки скидатись при кожному рестарті сервера.
+    //
+    // Відкладений виклик знімає збіг: наступного кадру сховище вже прочитане,
+    // і защіпка відповідає те, що написано на диску.
+    // Відкладений посів. ВЛАСНИЙ таймер, а не спільна черга виклику.
+    //
+    // Через чергу це вже спробували: `CallLater(this.OZ_SeedFromProfile, ...)`
+    // і зняття в деструкторі. Живий сервер відповів «Virtual Machine
+    // Exception / NULL pointer to instance» у TimerQueue.Tick тим самим
+    // кадром, яким предмет створився й одразу зник (спавн у повні руки).
+    // Деструктор для цього запізно: черга тримає виклик, а не власника.
+    //
+    // Таймер -- ref-поле предмета: він помирає РАЗОМ із ним і вистрелити по
+    // мертвому не може.
+    private ref Timer m_SeedTimer;
+
     override void EEInit()
     {
         super.EEInit();
 
-        if (GetGame().IsServer())
-            OZ_SeedFromProfile();
+        if (!GetGame().IsServer())
+            return;
+
+        m_SeedTimer = new Timer(CALL_CATEGORY_SYSTEM);
+        m_SeedTimer.Run(0.001, this, "OZ_SeedFromProfile", NULL, false);
     }
 
     override void EEItemAttached(EntityAI item, string slot_name)
@@ -514,7 +569,9 @@ class OZ_PDA_Base : ItemBase
     }
 
     // Записати на пристрій те, що профіль велів -- РІВНО ОДИН раз за життя
-    // предмета. Кличеться з EEInit сервера.
+    // предмета. Кличе таймер, заведений у EEInit сервера, наступним кадром
+    // (див. m_SeedTimer про те, чому не в самому EEInit), і заводський
+    // скид -- напряму. Метод НЕ приватний: Timer шукає його по імені.
     void OZ_SeedFromProfile()
     {
         if (!GetGame().IsServer() || m_Seeded)
@@ -543,7 +600,10 @@ class OZ_PDA_Base : ItemBase
             string json;
             string err;
             if (JsonFileLoader<OZ_MarkerList>.MakeData(list, json, err, false))
+            {
                 m_MarkersJson = json;
+                m_OwnCells    = -1;
+            }
         }
 
         if (prof.Sealed)
@@ -580,6 +640,7 @@ class OZ_PDA_Base : ItemBase
         if (!GetGame().IsServer())
             return;
         m_MarkersJson = json;
+        m_OwnCells = -1;
     }
 
     // ------------------------------------------------------------- записки
@@ -594,6 +655,7 @@ class OZ_PDA_Base : ItemBase
         if (!GetGame().IsServer())
             return;
         m_NotesJson = json;
+        m_OwnCells = -1;
     }
 
     // ------------------------------------------------------------- маршрут
@@ -608,6 +670,167 @@ class OZ_PDA_Base : ItemBase
         if (!GetGame().IsServer())
             return;
         m_RouteJson = json;
+        m_OwnCells = -1;
+    }
+
+    // ------------------------------------------------- розділи чужих модулів
+    //
+    // Те саме, що вміє носій, але НА САМОМУ ПРИЛАДІ й зі стелею НА КОЖЕН
+    // РОЗДІЛ окремо -- див. OZ_PdaSections про те, чому ці дві стелі різні.
+    //
+    // Модуль, який хоче тримати своє в пристрої, кличе три методи й більше
+    // нічого не знає ні про КПК, ні про його сховище.
+
+    private OZ_PdaSection KindFind(string kind)
+    {
+        if (!m_Sections)
+            return null;
+
+        for (int i = 0; i < m_Sections.Count(); i++)
+        {
+            if (m_Sections[i].Kind == kind)
+                return m_Sections[i];
+        }
+        return null;
+    }
+
+    string OZ_KindRead(string kind)
+    {
+        OZ_PdaSection s = KindFind(kind);
+        if (!s)
+            return "";
+        return s.Payload;
+    }
+
+    int OZ_KindRecords(string kind)
+    {
+        OZ_PdaSection s = KindFind(kind);
+        if (!s)
+            return 0;
+        return s.Records;
+    }
+
+    // ------------------------------------------------------- ЯЧЕЙКИ ПАМ'ЯТІ
+    //
+    // Одна стеля на весь прилад, і ціна однакова: мітка -- ячейка, нотатка --
+    // ячейка, частота -- ячейка, маршрут -- ячейка. Чому одна, а не по стелі
+    // на рід -- у коментарі до OZ_PdaLimits.
+    //
+    // Мітки, нотатки й маршрут лишились окремими полями (вони старші за цей
+    // механізм і читаються з тих самих позицій сховища), але РАХУЮТЬСЯ
+    // РАЗОМ із чужими розділами: пам'ять одна, і байдуже, хто її зайняв.
+
+    int OZ_Max()
+    {
+        OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(GetType());
+        if (prof && prof.Limits && prof.Limits.Memory > 0)
+            return prof.Limits.Memory;
+        return OZ_PdaConst.NOTES_MAX;
+    }
+
+    // Скільки ячеек коштують ВЛАСНІ розділи приладу. Рахуємо розбором, а не
+    // лічильником поруч: лічильник, який хтось забув оновити, бреше мовчки,
+    // а розбір не може розійтися з тим, що справді записано.
+    private int OwnCells()
+    {
+        // Порахували раніше й нічого відтоді не міняли -- віддаємо готове.
+        if (m_OwnCells >= 0)
+            return m_OwnCells;
+
+        int n = 0;
+
+        if (m_MarkersJson != "")
+        {
+            OZ_MarkerList marks;
+            string e1;
+            if (JsonFileLoader<OZ_MarkerList>.LoadData(m_MarkersJson, marks, e1) && marks && marks.Items)
+                n += marks.Items.Count();
+        }
+
+        if (m_NotesJson != "")
+        {
+            OZ_NoteBook book;
+            string e2;
+            if (JsonFileLoader<OZ_NoteBook>.LoadData(m_NotesJson, book, e2) && book && book.Notes)
+                n += book.Notes.Count();
+        }
+
+        // Маршрут -- ОДНА ячейка незалежно від довжини: він лише порядок
+        // зв'язків між мітками, а самі мітки вже пораховані вище. Тому
+        // перенести маршрут -- це перенести його мітки ПЛЮС його самого.
+        if (m_RouteJson != "")
+            n += 1;
+
+        m_OwnCells = n;
+        return n;
+    }
+
+    int OZ_Used()
+    {
+        int n = OwnCells();
+
+        if (m_Sections)
+        {
+            for (int i = 0; i < m_Sections.Count(); i++)
+                n += m_Sections[i].Records;
+        }
+
+        return n;
+    }
+
+    int OZ_Free()
+    {
+        int free = OZ_Max() - OZ_Used();
+        if (free < 0)
+            return 0;
+        return free;
+    }
+
+    // Скільки ячеек цей рід може зайняти ВСЬОГО: вільні плюс ті, що він
+    // тримає зараз. Інакше перезапис свого ж розділу рахувався б двічі.
+    int OZ_RoomFor(string kind)
+    {
+        return OZ_Free() + OZ_KindRecords(kind);
+    }
+
+    bool OZ_KindWrite(string kind, string json, int records)
+    {
+        if (!GetGame().IsServer() || kind == "")
+            return false;
+
+        if (records < 0)
+            records = 0;
+
+        int room = OZ_RoomFor(kind);
+        if (records > room)
+        {
+            string full = "pda memory: " + kind + " asks " + records.ToString();
+            full += " cell(s), room for " + room.ToString();
+            OZ_Log.Warn(full);
+            return false;
+        }
+
+        OZ_PdaSection s = KindFind(kind);
+
+        // Порожній запис -- це стирання розділу, а не розділ із порожнім
+        // текстом: інакше прилад накопичував би мертві роди.
+        if (json == "")
+        {
+            if (s)
+                m_Sections.RemoveItem(s);
+            return true;
+        }
+
+        if (!s)
+        {
+            s = new OZ_PdaSection();
+            s.Kind = kind;
+            m_Sections.Insert(s);
+        }
+
+        s.Payload = json;
+        s.Records = records;
+        return true;
     }
 
     // --------------------------------------------------------------- сесія
@@ -714,10 +937,19 @@ class OZ_PDA_Base : ItemBase
         m_MarkersJson = "";
         m_NotesJson   = "";
         m_RouteJson   = "";
+        m_Sections.Clear();
+        m_OwnCells    = -1;
         m_CrackUntil  = 0;
 
+        // ВСІ ТРИ, а не два з трьох.
+        //
+        // Масиви паралельні: один і той самий індекс означає uid, лічильник і
+        // час. Очищення двох лишало третій довшим, і перший же новий промах
+        // після скидання зсовував їх назавжди -- m_FailAt[i] починав читати
+        // час ЧУЖОГО запису, тобто вікно блокування питали не в того.
         m_FailUid.Clear();
         m_FailCount.Clear();
+        m_FailAt.Clear();
 
         // Заводські пресети -- заново: скинутий профільний прилад знову
         // несе свою фабричну начинку.
@@ -959,9 +1191,45 @@ class OZ_PDA_Base : ItemBase
         super.OnWorkStop();
         if (GetGame().IsServer())
         {
+            LogPowerLoss();
             PushState();
             StopModuleTicks();
         }
+    }
+
+    // ЧОМУ ПРИЛАД СТАВ. Один рядок рівнем Dbg.
+    //
+    // Рушій гасить пристрій із кількох різних причин -- сіла батарея, предмет
+    // зруйновано, предмет намок, живлення вимкнули, -- і робить це мовчки.
+    // Гравець і адмін бачать однакове POWERED DOWN, а в лозі не було нічого:
+    // 2026-09-01 на з'ясуванні того, що батарея просто порожня, пішла година
+    // (D131). Рядок нижче відповідає на це питання одразу.
+    private void LogPowerLoss()
+    {
+        ComponentEnergyManager em = GetCompEM();
+        if (!em)
+        {
+            OZ_Log.Dbg("pda power lost: no energy manager at all");
+            return;
+        }
+
+        string line = "pda power lost: " + GetType();
+        line += " switchedOn=" + em.IsSwitchedOn();
+        line += " ruined=" + IsRuined();
+        line += " wet=" + GetWet().ToString();
+
+        EntityAI b = OZ_Battery();
+        if (b && b.HasEnergyManager())
+        {
+            line += " batt=" + b.GetCompEM().GetEnergy().ToString();
+            line += "/" + b.GetCompEM().GetEnergyMax().ToString();
+        }
+        else
+        {
+            line += " batt=NONE";
+        }
+
+        OZ_Log.Dbg(line);
     }
 
     // Батарея у своєму гнізді. Питати про неї треба САМЕ так, а не через
@@ -1071,6 +1339,23 @@ class OZ_PDA_Base : ItemBase
         OZ_StoreBig.Write(ctx, m_NotesJson);
         // v5 -- знову В КІНЕЦЬ.
         OZ_StoreBig.Write(ctx, m_RouteJson);
+        // v6 -- знову В КІНЕЦЬ. Розділи чужих модулів (частоти рації й що
+        // завгодно далі), і живуть вони тут, а не на носії, з тієї ж причини,
+        // що нотатки й маршрут: носій -- знімне, чим переносять, а не те, де
+        // приладом користуються.
+        //
+        // ОКРЕМИМИ ЗАПИСАМИ, як у носія, а не одним JSON-документом. Корисне
+        // навантаження розділу саме по собі JSON, і загорнути його в поле
+        // іншого JSON означало покласти JSON усередину JSON -- на читанні
+        // назад воно валило сервер нативно, прямо в LoadData.
+        ctx.Write(m_Sections.Count());
+        for (int k = 0; k < m_Sections.Count(); k++)
+        {
+            OZ_PdaSection sec = m_Sections[k];
+            ctx.Write(sec.Kind);
+            ctx.Write(sec.Records);
+            OZ_StoreBig.Write(ctx, sec.Payload);
+        }
     }
 
     override bool CF_OnStoreLoad(CF_ModStorageMap storage)
@@ -1121,12 +1406,41 @@ class OZ_PDA_Base : ItemBase
                 return false;
         }
 
+        if (ctx.GetVersion() >= 6)
+        {
+            int secs;
+            if (!ctx.Read(secs))
+                return false;
+
+            m_Sections.Clear();
+            for (int k = 0; k < secs; k++)
+            {
+                OZ_PdaSection sec = new OZ_PdaSection();
+                if (!ctx.Read(sec.Kind))
+                    return false;
+                if (!ctx.Read(sec.Records))
+                    return false;
+                if (!OZ_StoreBig.Read(ctx, sec.Payload))
+                    return false;
+
+                // ЧУЖИЙ РІД ЗБЕРІГАЄТЬСЯ, навіть якщо мода, що його писав,
+                // на сервері більше немає: інакше пам'ять приладу мовчки
+                // втрачала б чуже при кожному завантаженні.
+                m_Sections.Insert(sec);
+            }
+        }
+
         // Замок після рестарту закритий: стан «відімкнено» навмисно не
         // зберігається. Пристрій, що пролежав у схроні через рестарт, має
         // питати код.
         m_Unlocked = false;
         m_LeftHandsAt = 0;
         m_HasPinS = (m_Pin != "");
+
+        // Документи щойно приїхали зі сховища повз сеттери -- лічильник
+        // ячейок перерахувати.
+        m_OwnCells = -1;
+
         SetSynchDirty();
 
         return true;

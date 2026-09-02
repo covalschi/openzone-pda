@@ -46,6 +46,13 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             s_Inst.PushBeaconsNow();
     }
 
+    // Забути підпис гравця, який вийшов. Кличе OZ_PdaModule з дисконекту.
+    static void ForgetBeacons(string uid)
+    {
+        if (s_Inst)
+            s_Inst.m_BeaconSig.Remove(uid);
+    }
+
     private void PushBeaconsNow()
     {
         array<Man> players = new array<Man>();
@@ -236,11 +243,26 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             }
         }
 
-        int limit = 0;
+        // ПРИЧИНА НАЗИВАЄТЬСЯ СВОЇМ ІМЕНЕМ. Клас без запису в профілях давав
+        // limit = 0, а нуль читався як «мітки скінчились»: гравець чистив
+        // карту, щоб звільнити місце, якого йому ніколи не бракувало.
         OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(pda.GetType());
-        if (prof)
-            limit = MarkerLimit(prof);
-        if (limit <= 0 || route.Items.Count() >= limit)
+        if (!prof)
+        {
+            error = "STR_OZ_ERR_NO_PROFILE";
+            return "";
+        }
+
+        // МАРШРУТ КОШТУЄ ОДНУ ЯЧЕЙКУ ЦІЛКОМ, скільки б точок у ньому не було
+        // (його мітки пораховані окремо -- див. OZ_PDA_Base.OwnCells). Тобто
+        // ячейку купує ПЕРША точка, а решта не коштує нічого.
+        //
+        // Тут стояла стеля МІТОК: довжина маршруту порівнювалась із тим, на
+        // скільки міток лишилось місця. Наслідків два, обидва неправильні --
+        // на повному приладі не додавалась навіть перша точка, хоч ячейка
+        // маршруту вже могла бути куплена, а на порожньому маршрут упирався в
+        // межу, якої в нього немає.
+        if (route.Items.Count() == 0 && pda.OZ_Free() < 1)
         {
             error = "STR_OZ_ERR_MARKERS_FULL";
             return "";
@@ -321,7 +343,16 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             return "";
         }
 
-        c.OZ_WriteRoute(outJson, route.Items.Count());
+        // УСПІХ РАПОРТУЄМО ЛИШЕ ПІСЛЯ ЗАПИСУ. OZ_Write ВІДМОВЛЯЄ, коли на
+        // носії немає місця (він не обрізає -- див. його коментар), і
+        // безумовне ok = true казало гравцеві «збережено» над чипом, на
+        // який нічого не лягло.
+        if (!c.OZ_WriteRoute(outJson, route.Items.Count()))
+        {
+            error = "STR_OZ_ERR_CARRIER_FULL";
+            return "";
+        }
+
         ok = true;
         error = "";
         return "";
@@ -358,11 +389,20 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             return "";
         }
 
-        int limit = 0;
+        // Та сама пара правил, що й у копіювання точки: причина відмови
+        // називається своїм іменем, а маршрут коштує ОДНУ ячейку цілком.
         OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(pda.GetType());
-        if (prof)
-            limit = MarkerLimit(prof);
-        if (limit <= 0 || incoming.Items.Count() > limit)
+        if (!prof)
+        {
+            error = "STR_OZ_ERR_NO_PROFILE";
+            return "";
+        }
+
+        // Прилад, у якого маршруту ще немає, купує під нього ячейку; той, у
+        // кого вже є, платить нуль -- імпорт замінює маршрут, а не додає
+        // другий. Порівнювати ДОВЖИНУ маршруту зі стелею МІТОК було подвійною
+        // помилкою: і рід не той, і ціна не та.
+        if (pda.OZ_RouteJson() == "" && pda.OZ_Free() < 1)
         {
             error = "STR_OZ_ERR_MARKERS_FULL";
             return "";
@@ -466,7 +506,12 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             return "";
         }
 
-        c.OZ_WriteMarks(outJson, carried.Items.Count());
+        // Успіх -- лише після запису: OZ_Write відмовляє, коли місця немає.
+        if (!c.OZ_WriteMarks(outJson, carried.Items.Count()))
+        {
+            error = "STR_OZ_ERR_CARRIER_FULL";
+            return "";
+        }
 
         ok = true;
         error = "";
@@ -538,7 +583,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
 
         OZ_MarkerList list = LoadMarkers(pda);
 
-        int limit = MarkerLimit(prof);
+        int limit = MarkerLimit(pda);
         if (list.Items.Count() >= limit)
         {
             error = "STR_OZ_ERR_MARKERS_FULL";
@@ -691,11 +736,17 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         m.Desc = OZ_Text.Clip(m.Desc, OZ_PdaTune.MarkerDescMax());
     }
 
-    private int MarkerLimit(OZ_PdaProfile prof)
+    // Стеля міток -- ПАМ'ЯТЬ ПРИЛАДУ, спільна з нотатками, маршрутом і
+    // розділами чужих модулів. Підпис лишився з профілем, бо всі виклики
+    // мають його під рукою, але число тепер не з профілю, а з пристрою.
+    private int MarkerLimit(OZ_PDA_Base pda)
     {
-        if (!prof.Limits || prof.Limits.Markers <= 0)
-            return 0;
-        return prof.Limits.Markers;
+        OZ_MarkerList list = LoadMarkers(pda);
+        int have = 0;
+        if (list && list.Items)
+            have = list.Items.Count();
+
+        return pda.OZ_Free() + have;
     }
 
     // Межі світу питаємо в рушія, а не вписуємо число: карти бувають різні,
@@ -743,7 +794,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
 
             OZ_PdaProfile prof = OZ_PdaProfiles.ForClass(pda.GetType());
             if (prof)
-                st.MarkerLimit = MarkerLimit(prof);
+                st.MarkerLimit = MarkerLimit(pda);
         }
 
         // Без антени слухати нема чим -- і це не порожній список, а окремий
@@ -852,12 +903,16 @@ class OZ_PdaHandlerMap : OZ_PageHandler
 
         if (them.TransponderMode == "faction")
         {
-            // Своїм по фракції. Одинакам цей режим не дає нічого, і це
-            // правильно: одинак -- не фракція, а її відсутність.
-            string theirs = OZ_Factions.Of(null, them.SteamId);
+            // Своїм по УГРУПОВАННЮ. Одинакам цей режим не дає нічого, і це
+            // правильно: одинак -- не угруповання, а його відсутність.
+            //
+            // Саме угруповання, а не базова (ТЗ-1 §5): базова є в кожного, і
+            // «свої по базовій» означало б увесь сервер -- режим "faction"
+            // став би режимом "public", мовчки.
+            string theirs = OZ_Identity.Get().OrgOfPlayer(null, them.SteamId);
             if (theirs == "")
                 return false;
-            return OZ_Factions.Of(null, toUid) == theirs;
+            return OZ_Identity.Get().OrgOfPlayer(null, toUid) == theirs;
         }
 
         // "off" і будь-що незнайоме -- нікому.

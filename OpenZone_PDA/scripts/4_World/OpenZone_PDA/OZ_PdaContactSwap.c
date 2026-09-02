@@ -12,24 +12,16 @@
 // СТРОК потрібен, бо в списку їх більше не видно. Пропозиція, яку ніхто не
 // бачить і яка не тухне, -- це пастка: підійшов через годину, тикнув один раз
 // і несподівано вже в контактах.
+//
+// СТРОК ЛЕЖИТЬ ПОРУЧ ІЗ ПРОПОЗИЦІЄЮ, у тому ж файлі (OZ_FriendReq.Until).
+// Раніше він жив у мапі в пам'яті сервера, і це ламало його двічі. Рестарт
+// стирав мапу, а список у файлі лишався -- і кожна збережена пропозиція
+// ставала «протухлою назавжди», тобто зустрічний тик після рестарту не
+// замикав обмін НІКОЛИ. А до того ключем була не пара, а сам отримувач, і
+// чужа пропозиція оживляла давно забуту.
 
 class OZ_PdaContactSwap
 {
-    // Скільки чекати зустрічного тику -- з Tuning.json: «поки ви стоїте
-    // поруч», а не «поки ви обидва на сервері».
-
-    // ПАРА «хто -> кому» -> коли пропозиція протухне.
-    //
-    // Ключем був сам отримувач, і це ламало строк рівно там, де він потрібен.
-    // Пропозиція A для B протухала за хвилину -- аж поки повз не проходив C і
-    // не тикав приладом у того ж B: його пропозиція клала НОВИЙ строк під той
-    // самий ключ, і разом із нею оживала стара, забута пропозиція A. B тикав
-    // у відповідь -- і опинявся в контактах у A, з яким розминувся годину тому.
-    //
-    // Пара -- те, чого строк насправді стосується. Список у файлі акаунта від
-    // цього не міняється; тут лише час.
-    private static ref map<string, int> s_Until;
-
     // from/to -- ЛЮДИ біля яких це відбувається (їм їдуть повідомлення);
     // myUid/theirUid -- АКАУНТИ, чиї пристрої потисли руки. Для власного
     // КПК це збігається; для чужого живого -- ні, і це навмисно: рішення
@@ -38,11 +30,27 @@ class OZ_PdaContactSwap
     {
         if (!GetGame().IsServer())
             return;
+
+        // МОВЧАЗНИХ ВИХОДІВ ТУТ БІЛЬШЕ НЕМАЄ.
+        //
+        // Обидва ці випадки просто поверталися: гравець тикав приладом,
+        // нічого не відбувалось, і жодного слова ні на екрані, ні в лозі.
+        // Решта відмов у цій же функції говорить -- ці мовчали.
         if (!from || !to)
+        {
+            OZ_Log.Warn("swap: one of the two identities is gone, the exchange is dropped");
+            Say(from, "STR_OZ_ERR_INTERNAL");
             return;
+        }
 
         if (myUid == theirUid)
+        {
+            // Один акаунт по обидва боки: два свої прилади в руках, або чужий
+            // живий прилад, сесію якого відкрив я ж сам.
+            OZ_Log.Dbg("swap: both devices belong to " + myUid + ", nothing to exchange");
+            Say(from, "STR_OZ_SWAP_SELF");
             return;
+        }
 
         OZ_PlayerData me   = OZ_PlayerStore.Load(myUid);
         OZ_PlayerData them = OZ_PlayerStore.Load(theirUid);
@@ -60,20 +68,17 @@ class OZ_PdaContactSwap
         }
 
         // ЗУСТРІЧНИЙ ТИК: він уже пропонував мені -- замикаємо.
-        if (Has(me.FriendReq, theirKey))
+        int at = IndexOfReq(me.FriendReq, theirKey);
+        if (at != -1)
         {
-            if (!Fresh(theirUid, myUid))
-            {
-                // Пропозиція протухла. Прибираємо й починаємо як з нуля --
-                // цей самий тик стає новою пропозицією з мого боку.
-                Drop(me.FriendReq, theirKey);
-                OZ_PlayerStore.MarkDirty(myUid);
-            }
-            else
-            {
-                Drop(me.FriendReq, theirKey);
-                Forget(theirUid, myUid);
+            bool fresh = Fresh(me.FriendReq[at]);
+            me.FriendReq.Remove(at);
+            OZ_PlayerStore.MarkDirty(myUid);
 
+            // Протухла -- починаємо як з нуля: цей самий тик стає новою
+            // пропозицією з мого боку, тобто провалюємось нижче.
+            if (fresh)
+            {
                 // Пишемо ОБОМ. Контакт взаємний, і однобокий запис зробив би
                 // його видимим лише з одного боку -- тобто зламаним там, де
                 // це найважче помітити.
@@ -82,7 +87,6 @@ class OZ_PdaContactSwap
                 if (!Has(them.Friends, myKey))
                     them.Friends.Insert(myKey);
 
-                OZ_PlayerStore.MarkDirty(myUid);
                 OZ_PlayerStore.MarkDirty(theirUid);
 
                 // Руки потиснуто знову -- заморожена колись розмова
@@ -104,14 +108,21 @@ class OZ_PdaContactSwap
         // їдуть із ним у кожне збереження.
         Prune(them);
 
-        // ПЕРШИЙ ТИК: лишаємо пропозицію в нього.
-        if (!Has(them.FriendReq, myKey))
+        // ПЕРШИЙ ТИК: лишаємо пропозицію в нього. Повторний тик у ту саму
+        // людину ОНОВЛЮЄ строк -- він знову стоїть поруч, знову тикає.
+        int mine = IndexOfReq(them.FriendReq, myKey);
+        if (mine == -1)
         {
-            them.FriendReq.Insert(myKey);
-            OZ_PlayerStore.MarkDirty(theirUid);
+            OZ_FriendReq req = new OZ_FriendReq();
+            req.Key   = myKey;
+            req.Until = OZ_Time.InUtc(OZ_PdaTune.SwapOfferTtlMs() / 1000);
+            them.FriendReq.Insert(req);
         }
-
-        Remember(myUid, theirUid);
+        else
+        {
+            them.FriendReq[mine].Until = OZ_Time.InUtc(OZ_PdaTune.SwapOfferTtlMs() / 1000);
+        }
+        OZ_PlayerStore.MarkDirty(theirUid);
 
         Say(from, "STR_OZ_SWAP_OFFERED");
         Say(to,   "STR_OZ_SWAP_ASKED");
@@ -119,38 +130,29 @@ class OZ_PdaContactSwap
 
     // ------------------------------------------------------------- строк
 
-    private static string Pair(string fromUid, string toUid)
+    static int IndexOfReq(array<ref OZ_FriendReq> list, string key)
     {
-        return fromUid + ">" + toUid;
+        if (!list)
+            return -1;
+
+        for (int i = 0; i < list.Count(); i++)
+        {
+            if (list[i] && list[i].Key == key)
+                return i;
+        }
+        return -1;
     }
 
-    private static void Remember(string fromUid, string toUid)
+    // Порожній строк -- пропозиція старого зразка, з часів, коли строк жив у
+    // пам'яті сервера. Вважаємо протухлою: тримати в силі те, про що ми не
+    // пам'ятаємо, коли воно було зроблене, -- це і є пастка, від якої строк
+    // узагалі заведено.
+    private static bool Fresh(OZ_FriendReq req)
     {
-        if (!s_Until)
-            s_Until = new map<string, int>();
-        s_Until.Set(Pair(fromUid, toUid), GetGame().GetTime() + OZ_PdaTune.SwapOfferTtlMs());
-    }
-
-    private static void Forget(string fromUid, string toUid)
-    {
-        string k = Pair(fromUid, toUid);
-        if (s_Until && s_Until.Contains(k))
-            s_Until.Remove(k);
-    }
-
-    // Строку немає -- пропозиція пережила перезапуск сервера. Вважаємо
-    // протухлою: тримати в силі те, про що ми не пам'ятаємо, коли воно було
-    // зроблене, -- це і є пастка, від якої строк узагалі заведено.
-    private static bool Fresh(string fromUid, string toUid)
-    {
-        if (!s_Until)
+        if (!req || req.Until == "")
             return false;
 
-        int until;
-        if (!s_Until.Find(Pair(fromUid, toUid), until))
-            return false;
-
-        return GetGame().GetTime() < until;
+        return OZ_Time.Before(OZ_Time.NowUtc(), req.Until);
     }
 
     // Викинути з його списку все, чий строк вийшов. Дешево: список короткий,
@@ -164,16 +166,9 @@ class OZ_PdaContactSwap
 
         for (int i = them.FriendReq.Count() - 1; i >= 0; i--)
         {
-            // У списку -- КЛЮЧІ ПЕРСОНАЖІВ, а строк живе за акаунтами:
-            // пропозицію робить людина, а не її покоління. Без цього
-            // переведення жодна пропозиція не вважалась би свіжою, і
-            // зустрічний тик перестав би замикатись узагалі.
-            string who = OZ_PlayerStore.UidOfKey(them.FriendReq[i]);
-
-            if (Fresh(who, them.SteamId))
+            if (Fresh(them.FriendReq[i]))
                 continue;
 
-            Forget(who, them.SteamId);
             them.FriendReq.Remove(i);
             touched = true;
         }
@@ -189,16 +184,6 @@ class OZ_PdaContactSwap
         if (!list)
             return false;
         return list.Find(uid) != -1;
-    }
-
-    private static void Drop(array<string> list, string uid)
-    {
-        if (!list)
-            return;
-
-        int at = list.Find(uid);
-        if (at != -1)
-            list.Remove(at);
     }
 
     // Кажемо ОБОМ і в тому ж каналі, що й решта відповідей КПК: обмін --

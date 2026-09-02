@@ -24,7 +24,6 @@ class OZ_PdaPageFactory
         Add(OZ_PdaConst.PAGE_NOTES, OZ_PdaPageNotes);
         Add(OZ_PdaConst.PAGE_MAP, OZ_PdaPageMap);
         Add(OZ_PdaConst.PAGE_CHAT, OZ_PdaPageChat);
-        Add(OZ_PdaConst.PAGE_FACTION, OZ_PdaPageFaction);
         Add(OZ_PdaConst.PAGE_NEWS, OZ_PdaPageNews);
     }
 
@@ -32,6 +31,69 @@ class OZ_PdaPageFactory
     {
         Ensure();
         s_Map.Set(pageId, pageClass);
+    }
+
+    // ЛІТЕРА ВКЛАДКИ -- ТЕЖ РЕЄСТР, а не сходи if-ів.
+    //
+    // Тут стояв перелік, у якому серед сторінок КПК лежав рядок "radio" --
+    // тобто КПК знав ім'я сторінки чужого мода, якого може й не бути. Із
+    // виносом фракцій таких чужих сторінок стало дві, і перелік перетворився
+    // б на список усієї серії. Тепер кожен підписує свою вкладку сам.
+    private static ref map<string, string> s_Glyph;
+
+    // ВБУДОВАНІ ЛІТЕРИ СІЮТЬСЯ ЖАДІБНО, при першому дотику до реєстру -- хоч
+    // з боку читача, хоч з боку того, хто дописує свою.
+    //
+    // Раніше вони сіялись усередині Glyph(), і тільки коли мапи ще немає. Тож
+    // варто було чужому модові покликати Letter() ПЕРШИМ -- а він і кличе, з
+    // OnMissionStart, який трапляється раніше за перший показ меню, -- мапа
+    // ставала непорожньою, і вбудовані літери не потрапляли в неї НІКОЛИ.
+    // Наслідок видно з першого погляду: на стрічці вкладок усі сім вбудованих
+    // сторінок малювались знаком «?». Саме так це й виглядало на стенді
+    // 2026-09-01, коли поруч став мод фракцій зі своєю літерою.
+    private static void SeedGlyphs()
+    {
+        if (s_Glyph)
+            return;
+
+        s_Glyph = new map<string, string>();
+        s_Glyph.Set(OZ_PdaConst.PAGE_DEVICE,   "D");
+        s_Glyph.Set(OZ_PdaConst.PAGE_QUESTS,   "J");
+        s_Glyph.Set(OZ_PdaConst.PAGE_MAP,      "M");
+        s_Glyph.Set(OZ_PdaConst.PAGE_CONTACTS, "C");
+        s_Glyph.Set(OZ_PdaConst.PAGE_CHAT,     "@");
+        s_Glyph.Set(OZ_PdaConst.PAGE_NOTES,    "N");
+        s_Glyph.Set(OZ_PdaConst.PAGE_NEWS,     "i");
+    }
+
+    static void Letter(string pageId, string glyph)
+    {
+        SeedGlyphs();
+        s_Glyph.Set(pageId, glyph);
+    }
+
+    // ПАРА СТОРІНОК, що ділять одну вкладку: ліворуч одна, праворуч друга.
+    //
+    // Оголошує її ТОЙ, ХТО ЇЇ УТВОРЮЄ. Раніше пару «контакти + фракція» знало
+    // меню КПК -- і це означало, що КПК мусить знати ім'я фракційної сторінки
+    // навіть тоді, коли мода фракцій немає.
+    private static ref map<string, string> s_Pair;
+
+    static void Pair(string pageId, string companion)
+    {
+        if (!s_Pair)
+            s_Pair = new map<string, string>();
+
+        s_Pair.Set(pageId, companion);
+    }
+
+    // Із ким ця сторінка ділить вкладку, або порожньо.
+    static string CompanionOf(string pageId)
+    {
+        if (!s_Pair || !s_Pair.Contains(pageId))
+            return "";
+
+        return s_Pair.Get(pageId);
     }
 
     static bool Has(string pageId)
@@ -64,16 +126,12 @@ class OZ_PdaPageFactory
     // Одна літера для стрічки вкладок, поки немає власного imageset.
     static string Glyph(string pageId)
     {
-        if (pageId == OZ_PdaConst.PAGE_DEVICE) return "D";
-        if (pageId == OZ_PdaConst.PAGE_QUESTS) return "J";
-        if (pageId == OZ_PdaConst.PAGE_MAP) return "M";
-        if (pageId == OZ_PdaConst.PAGE_CONTACTS) return "C";
-        if (pageId == OZ_PdaConst.PAGE_CHAT) return "@";
-        if (pageId == OZ_PdaConst.PAGE_FACTION) return "F";
-        if (pageId == "radio")    return "R";
-        if (pageId == OZ_PdaConst.PAGE_NOTES) return "N";
-        if (pageId == OZ_PdaConst.PAGE_NEWS) return "i";
-        return "?";
+        SeedGlyphs();
+
+        if (!s_Glyph.Contains(pageId))
+            return "?";
+
+        return s_Glyph.Get(pageId);
     }
 }
 
