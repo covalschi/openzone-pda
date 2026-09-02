@@ -73,7 +73,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             string sig = "";
             OZ_BeaconPush push = new OZ_BeaconPush();
 
-            if (pda && pda.OZ_IsOn() && pda.OZ_IsUnlocked())
+            if (pda && pda.OZ_IsOn() && pda.OZ_IsUnlocked() && !OZ_PdaCapsule.IsFrozen(pda))
             {
                 float range = AntennaRange(pda);
                 if (range > 0)
@@ -774,11 +774,25 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             return "";
         }
 
-        string myUid = sender.GetPlainId();
+        // РАХУНОК ВЛАСНИКА СЕСІЇ, а не того, хто тримає (ТЗ-4 R-B2.1, R-B2.1d):
+        // транспондер, коло глядачів і ім'я -- власника; від держателя --
+        // лише координати. Без сесії власник -- сам держатель (R-B2.1c).
+        // Контакти читають той самий рахунок (m_Acc) -- розбіжності немає.
+        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
+        string myUid = AccountOf(sender, pda);
         OZ_PlayerData mine = OZ_PlayerStore.Load(myUid);
 
         OZ_MapState st = new OZ_MapState();
-        st.SelfPos         = me.GetPosition().ToString(false);
+        st.Frozen = OZ_PdaCapsule.IsFrozen(pda);
+
+        // Де я -- знає лише прилад із GPS (ТЗ-4 R-B2.2); віртуальний термінал
+        // знає завжди, бо купувати йому нічого. Капсула живої позиції не
+        // показує (R-B1.1).
+        st.HasGps = true;
+        if (pda)
+            st.HasGps = pda.OZ_HasModuleKind(OZ_PdaConst.MOD_GPS);
+        if (st.HasGps && !st.Frozen)
+            st.SelfPos = me.GetPosition().ToString(false);
         if (mine.TransponderSet)
         {
             for (int ts = 0; ts < mine.TransponderSet.Count(); ts++)
@@ -786,7 +800,6 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         }
         st.FactionsPresent = OZ_Identity.Present();
 
-        OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
         float range = 0;
         if (pda)
         {
@@ -809,7 +822,9 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             return Serialise(st, ok, error);
         }
 
-        FillBeacons(sender, me, pda, range, st.Beacons);
+        // Капсула живих маячків не показує (R-B1.1): світ у ній зупинився.
+        if (!st.Frozen)
+            FillBeacons(sender, me, pda, range, st.Beacons);
 
         return Serialise(st, ok, error);
     }
@@ -818,7 +833,10 @@ class OZ_PdaHandlerMap : OZ_PageHandler
     // пуша: антена, шпигунська плата і приватність рахуються однаково.
     private void FillBeacons(PlayerIdentity sender, PlayerBase me, OZ_PDA_Base pda, float range, array<ref OZ_MapBeacon> outBeacons)
     {
-        string myUid = sender.GetPlainId();
+        // Глядач -- рахунок власника сесії (R-B2.1d): прилад показує те, що
+        // йому налаштували, хто б його не тримав; відповідь жертви на крадіжку
+        // -- logout_others, після якого прилад стає капсулою.
+        string myUid = AccountOf(sender, pda);
 
         array<Man> near = new array<Man>();
         OZ_Spatial.PlayersInRadius(me.GetPosition(), range, near);
@@ -838,8 +856,22 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             if (!oid)
                 continue;
 
+            // 1. ПРИЛАД ПРИ ГРАВЦЕВІ (руки або слот носіння) -- і не капсула:
+            // капсула нічого не веде (R-B1.1, R-B2.1b).
+            OZ_PDA_Base theirs = OZ_PdaLookup.HeldBy(oid);
+            if (!theirs)
+                continue;
+            if (OZ_PdaCapsule.IsFrozen(theirs))
+                continue;
+
+            // Налаштування, коло глядачів та ім'я -- ВЛАСНИКА СЕСІЇ приладу,
+            // координати -- того, хто його несе (ТЗ-4 R-B2.1). Украдений
+            // КПК іде там, де йде злодій, під ім'ям жертви й у її колі.
             string otherUid = oid.GetPlainId();
-            OZ_PlayerData od = OZ_PlayerStore.Load(otherUid);
+            string ownerUid = otherUid;
+            if (theirs.OZ_SessionUid() != "")
+                ownerUid = theirs.OZ_SessionUid();
+            OZ_PlayerData od = OZ_PlayerStore.Load(ownerUid);
 
             if (!Broadcasts(od, myUid))
             {
@@ -849,13 +881,6 @@ class OZ_PdaHandlerMap : OZ_PageHandler
                 if (!spyEye || silent)
                     continue;
             }
-
-            // Вести маячок теж потрібна АНТЕНА, і саме в того, хто веде.
-            // Інакше вийшло б, що чужий пристрій світить позицію тим, чим
-            // світити не може.
-            OZ_PDA_Base theirs = OZ_PdaLookup.HeldBy(oid);
-            if (!theirs)
-                continue;
 
             // 2. ПРИЛАД УВІМКНЕНИЙ (ТЗ-4 R-A2.1--R-A2.4). Перевіряється в того,
             // КОГО видно, а не в того, хто дивиться: вимкнений екран досі
@@ -869,8 +894,16 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             if (AntennaRange(theirs) <= 0)
                 continue;
 
+            // 4. GPS (ТЗ-4 R-A2.4 п. 4, R-B2.2): прилад, який не знає, де він,
+            // не може сказати цього нікому.
+            if (!theirs.OZ_HasModuleKind(OZ_PdaConst.MOD_GPS))
+                continue;
+
+            // Ім'я -- власника сесії, координати -- держателя (R-B2.1a).
             OZ_MapBeacon b = new OZ_MapBeacon();
             b.Name = oid.GetName();
+            if (ownerUid != otherUid && od.Name != "")
+                b.Name = od.Name;
             b.Pos  = other.GetPosition().ToString(false);
             outBeacons.Insert(b);
         }
@@ -897,6 +930,15 @@ class OZ_PdaHandlerMap : OZ_PageHandler
                 return true;
         }
         return false;
+    }
+
+    // Чий рахунок стоїть за приладом: власника сесії, а без сесії -- того, хто
+    // тримає (ТЗ-4 R-B2.1c). Те саме правило, що в контактів (m_Acc).
+    private string AccountOf(PlayerIdentity who, OZ_PDA_Base pda)
+    {
+        if (pda && pda.OZ_SessionUid() != "")
+            return pda.OZ_SessionUid();
+        return who.GetPlainId();
     }
 
     // Кому цей гравець показує свою позицію. Режим -- НАБІР (ТЗ-4 R-A3.1):
@@ -1014,7 +1056,9 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             return "";
         }
 
-        string uid = sender.GetPlainId();
+        // Пишемо в рахунок ВЛАСНИКА сесії (R-B2.1d): обидві сторінки читають і
+        // пишуть один рахунок, і той -- власника.
+        string uid = AccountOf(sender, OZ_PdaLookup.HeldBy(sender));
         OZ_PlayerData d = OZ_PlayerStore.Load(uid);
         if (!d.TransponderSet)
             d.TransponderSet = new array<string>();

@@ -37,6 +37,8 @@ class OZ_PdaConst
     static const string MOD_RADIOMETER = "radiometer";
     static const string MOD_DECRYPTOR  = "decryptor";
     static const string MOD_DOSIMETER  = "dosimeter";
+    // Приймач GPS (ТЗ-4 R-B2.2): без нього прилад не знає, де він.
+    static const string MOD_GPS        = "gps";
 
     // Id меню для EnterScriptedMenu.
     //

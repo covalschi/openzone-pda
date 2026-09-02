@@ -131,7 +131,7 @@ class CfgMods
         // 3: the "already seeded" flag for sealed devices, appended after the
         // markers. Preset content must be written exactly once, and the flag
         // is what remembers that it was.
-        storageVersion = 6;
+        storageVersion = 7;
         dependencies[] = {"Game", "World", "Mission"};
         defines[] = {"OPENZONE_PDA"};
 
@@ -334,6 +334,15 @@ class CfgVehicles
         scope = 2;
         displayName = "$STR_OZ_MOD_ANTENNA";
         descriptionShort = "$STR_OZ_MOD_ANTENNA_DESC";
+    };
+
+    // GPS receiver: the device learns where it is. Without it the map still
+    // shows marks and routes, but no "you" and no distances (TZ-4 R-B2.2).
+    class OZ_Module_GPS : OZ_Module_Base
+    {
+        scope = 2;
+        displayName = "$STR_OZ_MOD_GPS";
+        descriptionShort = "$STR_OZ_MOD_GPS_DESC";
     };
 
     // The spy variant: sees every transponder that is switched on at all,

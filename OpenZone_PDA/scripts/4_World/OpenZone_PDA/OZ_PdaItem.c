@@ -34,6 +34,10 @@ class OZ_PDA_Base : ItemBase
     // їде ніколи, а от факт його існування мусить бути видно без RPC --
     // від нього гаснуть худ і дія обміну на замкненому пристрої.
     private bool   m_HasPinS = false;
+    // Зламаний квестовий прилад лишається зламаним назавжди (ТЗ-4 R-B3.2):
+    // повторної печатки не буває, хоч би який код на нього потім ставили.
+    // Зберігається (v7), інакше рестарт «запечатував» би його знову.
+    private bool   m_Cracked = false;
     private bool   m_AutoLock   = true;   // можна вимкнути власником сесії
     private int    m_LeftHandsAt = 0;     // GetGame().GetTime() у мс, 0 = в руках
 
@@ -450,7 +454,9 @@ class OZ_PDA_Base : ItemBase
         // Профіль каже «запечатаний», але зламаний пристрій уже не такий.
         // Ознака зламаності -- відсутність коду: код у нього ставив сервер, і
         // прибрати його могло лише зламування.
-        return m_Pin != "";
+        // З 2026-09-02 ознака зламаності -- окремий прапорець (ТЗ-4 R-B3.2):
+        // власний код, поставлений після зламу, печаткою не є.
+        return m_Pin != "" && !m_Cracked;
     }
 
     bool OZ_IsCracking()
@@ -541,6 +547,7 @@ class OZ_PDA_Base : ItemBase
         m_Pin        = "";
         m_HasPinS    = false;
         m_Unlocked   = true;
+        m_Cracked    = true;
         SetSynchDirty();
 
         // Дешифратор ОДНОРАЗОВИЙ: успішний злам спалює плату (рішення
@@ -920,6 +927,13 @@ class OZ_PDA_Base : ItemBase
     {
         if (!GetGame().IsServer())
             return "STR_OZ_ERR_INTERNAL";
+
+        // Квестовий прилад до заводських не скидається -- ні запечатаний, ні
+        // зламаний (ТЗ-4 R-B3.1): скидання посіяло б новий код, якого немає в
+        // жодній голові, і прилад ставав би цеглиною.
+        OZ_PdaProfile qprof = OZ_PdaProfiles.ForClass(GetType());
+        if (qprof && qprof.Sealed)
+            return "STR_OZ_ERR_QUEST_RESET";
 
         if (OZ_IsSealed())
             return "STR_OZ_ERR_SEALED";
@@ -1356,6 +1370,9 @@ class OZ_PDA_Base : ItemBase
             ctx.Write(sec.Records);
             OZ_StoreBig.Write(ctx, sec.Payload);
         }
+
+        // v7 -- знову В КІНЕЦЬ: зламаність квестового приладу (ТЗ-4 R-B3.2).
+        ctx.Write(m_Cracked);
     }
 
     override bool CF_OnStoreLoad(CF_ModStorageMap storage)
@@ -1428,6 +1445,12 @@ class OZ_PDA_Base : ItemBase
                 // втрачала б чуже при кожному завантаженні.
                 m_Sections.Insert(sec);
             }
+        }
+
+        if (ctx.GetVersion() >= 7)
+        {
+            if (!ctx.Read(m_Cracked))
+                return false;
         }
 
         // Замок після рестарту закритий: стан «відімкнено» навмисно не

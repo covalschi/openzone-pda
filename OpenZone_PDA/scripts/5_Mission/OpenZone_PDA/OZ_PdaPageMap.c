@@ -657,7 +657,7 @@ class OZ_PdaPageMap : OZ_PdaPage
                 int pz = Math.Round(p[2]);
 
                 string wtxt = px.ToString() + " " + pz.ToString();
-                if (mePl)
+                if (mePl && GpsKnows())
                 {
                     int dm = Math.Round(vector.Distance(Vector(meAt[0], 0, meAt[2]), Vector(p[0], 0, p[2])));
                     wtxt += "  " + dm.ToString() + " m";
@@ -882,7 +882,7 @@ class OZ_PdaPageMap : OZ_PdaPage
             // показав би як «you», тут вилізло б на карту як
             // #STR_OZ_MAP_YOU. Розгортаємо самі -- саме для цього
             // Widget.TranslateString і є.
-            if (selfPos != "")
+            if (selfPos != "" && GpsKnows())
                 m_Map.AddUserMark(selfPos.ToVector(), Widget.TranslateString("#STR_OZ_MAP_YOU"), ARGB(255, 255, 122, 26), ICON_SELF);
 
             for (int i = 0; m_State.Beacons && i < m_State.Beacons.Count(); i++)
@@ -932,10 +932,30 @@ class OZ_PdaPageMap : OZ_PdaPage
     // антена є, хтось є -- скільки саме.
     private string Hint()
     {
+        // Капсула: світ у ній зупинився (ТЗ-4 R-B1) -- ні живих маячків, ні
+        // «ти тут»; є лише записане на приладі.
+        if (m_State.Frozen)
+        {
+            string cap = Marks();
+            cap += "   ";
+            cap += "#STR_OZ_MAP_CAPSULE";
+            return cap;
+        }
+
+        // Без GPS прилад не знає, де він (R-B2.4): карта є, мітки й маршрут
+        // є, а «ти тут» і відстаней немає -- і про це кажуть словом.
+        string gps = "";
+        if (!m_State.HasGps)
+        {
+            gps = "#STR_OZ_MAP_NO_GPS";
+            gps += "   ";
+        }
+
         if (!m_State.HasAntenna)
         {
             string noAnt = Marks();
             noAnt += "   ";
+            noAnt += gps;
             noAnt += "#STR_OZ_MAP_NO_ANTENNA";
             return noAnt;
         }
@@ -948,6 +968,7 @@ class OZ_PdaPageMap : OZ_PdaPage
 
         string s = Marks();
         s += "   ";
+        s += gps;
         s += "#STR_OZ_MAP_RANGE";
         s += "  " + km.ToString() + " m";
 
@@ -962,6 +983,15 @@ class OZ_PdaPageMap : OZ_PdaPage
         s += "#STR_OZ_MAP_BEACONS";
         s += "  " + n.ToString();
         return s;
+    }
+
+    // «Ти тут» і відстані -- лише коли прилад знає, де він (GPS), і не є
+    // капсулою (ТЗ-4 R-B1.1, R-B2.2).
+    private bool GpsKnows()
+    {
+        if (!m_State)
+            return false;
+        return m_State.HasGps && !m_State.Frozen;
     }
 
     private string Marks()

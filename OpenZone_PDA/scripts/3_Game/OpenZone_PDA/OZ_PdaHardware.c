@@ -118,6 +118,17 @@ class OZ_PdaHardwareConfig : OZ_ConfigBase
         ant.EnablesPages = new array<string>();
         Modules.Insert(ant);
 
+        // GPS. Без нього прилад НЕ ЗНАЄ, де він (ТЗ-4 R-B2.2): мітки й маршрут
+        // працюють, а «ти тут» і відстані -- ні. Окремий модуль через той самий
+        // договір, що й решта (R-B2.3), а не окремий механізм.
+        OZ_ModuleSpec gps = new OZ_ModuleSpec();
+        gps.ClassName    = "OZ_Module_GPS";
+        gps.DisplayName  = "#STR_OZ_MOD_GPS";
+        gps.Kind         = "gps";
+        gps.PowerFactor  = 1.2;
+        gps.EnablesPages = new array<string>();
+        Modules.Insert(gps);
+
         // Дешифратор. Відкриває запечатані КПК -- і тільки їх; на звичайному
         // пристрої він просто займає відсік. Їсть багато: він рахує.
         OZ_ModuleSpec dec = new OZ_ModuleSpec();
