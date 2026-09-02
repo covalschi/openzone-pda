@@ -22,6 +22,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
     // 2026-08-30). Дві кнопки «запросити» на одному екрані -- це два різні
     // місця для однієї думки, і одне з них завжди застаріває.
     private ButtonWidget m_BtnHide;
+    private ButtonWidget m_BtnHideContacts;
     private ButtonWidget m_BtnFriend;
     private ButtonWidget m_BtnMsg;
 
@@ -51,6 +52,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
         m_List       = Wgt("ContactList");
         m_Rows       = new array<Widget>();
         m_BtnHide    = ButtonWidget.Cast(Wgt("BtnHide"));
+        m_BtnHideContacts = ButtonWidget.Cast(Wgt("BtnHideContacts"));
         m_BtnFriend  = ButtonWidget.Cast(Wgt("BtnFriend"));
         m_BtnMsg     = ButtonWidget.Cast(Wgt("BtnMsg"));
 
@@ -125,11 +127,17 @@ class OZ_PdaPageContacts : OZ_PdaPage
             return true;
         }
 
-        if (w == m_BtnHide)
+        // Два вимикачі, кожен про своє (ТЗ-4 R-A1.1, R-A1.2): кнопка
+        // називає рівно те, що робить, і жодна не обіцяє невидимості на
+        // карті -- за неї відповідає транспондер.
+        if (w == m_BtnHide || w == m_BtnHideContacts)
         {
+            bool zone = (w == m_BtnHide);
             bool want = true;
-            if (m_Data)
-                want = !m_Data.MeHidden;
+            if (m_Data && zone)
+                want = !m_Data.MeHiddenZone;
+            if (m_Data && !zone)
+                want = !m_Data.MeHiddenContacts;
 
             OZ_PdaFlagOp op = new OZ_PdaFlagOp();
             op.Value = want;
@@ -137,7 +145,12 @@ class OZ_PdaPageContacts : OZ_PdaPage
             string json;
             string err;
             if (JsonFileLoader<OZ_PdaFlagOp>.MakeData(op, json, err, false))
-                OZ_Rpc.Request(OZ_PdaConst.PAGE_CONTACTS, "hide", json);
+            {
+                if (zone)
+                    OZ_Rpc.Request(OZ_PdaConst.PAGE_CONTACTS, "hide_zone", json);
+                else
+                    OZ_Rpc.Request(OZ_PdaConst.PAGE_CONTACTS, "hide_contacts", json);
+            }
             return true;
         }
 
@@ -306,11 +319,18 @@ class OZ_PdaPageContacts : OZ_PdaPage
         // вмикають і не вимикають.
         if (m_BtnHide)
             m_BtnHide.Show(!m_Data.Frozen);
+        if (m_BtnHideContacts)
+            m_BtnHideContacts.Show(!m_Data.Frozen);
 
-        if (m_Data.MeHidden)
+        if (m_Data.MeHiddenZone)
             SetText("BtnHideText", "#STR_OZ_CONTACTS_SHOW_ME");
         else
             SetText("BtnHideText", "#STR_OZ_CONTACTS_HIDE_ME");
+
+        if (m_Data.MeHiddenContacts)
+            SetText("BtnHideContactsText", "#STR_OZ_CONTACTS_SHOW_BOOKS");
+        else
+            SetText("BtnHideContactsText", "#STR_OZ_CONTACTS_HIDE_BOOKS");
 
         bool stillThere = false;
 
@@ -397,8 +417,12 @@ class OZ_PdaPageContacts : OZ_PdaPage
             name += "   (you";
             // Невидимка бачить сама себе -- і мусить бачити, що вона
             // невидимка, інакше стан не видно ніде.
-            if (m_Data.MeHidden)
-                name += ", hidden";
+            if (m_Data.MeHiddenZone && m_Data.MeHiddenContacts)
+                name += ", hidden from zone and contacts";
+            else if (m_Data.MeHiddenZone)
+                name += ", hidden from zone";
+            else if (m_Data.MeHiddenContacts)
+                name += ", hidden from contacts";
             name += ")";
         }
         Put(w, "RowName", name);

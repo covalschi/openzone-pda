@@ -50,8 +50,12 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         if (op == "list")
             return List(sender, ok, error);
 
-        if (op == "hide")
-            return Hide(json, sender, ok, error);
+        // Два вимикачі -- дві операції (ТЗ-4 R-A1.1).
+        if (op == "hide_zone")
+            return Hide(json, sender, true, ok, error);
+
+        if (op == "hide_contacts")
+            return Hide(json, sender, false, ok, error);
 
         // ask / accept / decline ЗНЯТІ. Обмін відбувається в світі -- дією з
         // приладом у руках, наведеною на людину (OZ_ActionExchangeContacts),
@@ -105,7 +109,8 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         PlayerBase mePlayer = OZ_PdaLookup.PlayerOf(sender);
 
         OZ_ContactList list = new OZ_ContactList();
-        list.MeHidden = me.PresenceHidden;
+        list.MeHiddenZone     = me.HiddenFromZone;
+        list.MeHiddenContacts = me.HiddenFromContacts;
 
         // Ким я є сам -- вирішує СЕРВЕР. Клієнт про свої права не здогадується
         // і намалює лідерські кнопки рівно тоді, коли йому тут скажуть.
@@ -166,7 +171,16 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
             if (!isMe)
             {
                 OZ_PlayerData d = OZ_PlayerStore.Load(uid);
-                if (d.PresenceHidden)
+
+                // Від ЗАПИСНИКІВ -- геть зовсім: ключ у seen, і AddOffline
+                // його теж пропустить. Від ЗОНИ -- лише вниз, у офлайн
+                // (ТЗ-4 R-A1.1: два вимикачі, кожен про своє).
+                if (d.HiddenFromContacts)
+                {
+                    seen.Insert(charKey);
+                    continue;
+                }
+                if (d.HiddenFromZone)
                     continue;
             }
 
@@ -266,6 +280,10 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
 
             // Живий запис або заморожений знімок -- ByKey знає, який саме.
             OZ_PlayerData d = OZ_PlayerStore.ByKey(key);
+
+            // Схований від записників -- його немає й тут (R-A1.1).
+            if (d && d.HiddenFromContacts)
+                continue;
 
             OZ_ContactEntry e = new OZ_ContactEntry();
             // Ім'я з кешу: гравця немає на сервері, спитати нема в кого.
@@ -433,7 +451,8 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
 
     // ----------------------------------------------------------- невидимка
 
-    private string Hide(string json, PlayerIdentity sender, out bool ok, out string error)
+    // zone=true -- вимикач «від Зони», інакше -- «від записників».
+    private string Hide(string json, PlayerIdentity sender, bool zone, out bool ok, out string error)
     {
         ok = false;
 
@@ -447,7 +466,10 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
 
         string uid = m_Acc;
         OZ_PlayerData d = OZ_PlayerStore.Load(uid);
-        d.PresenceHidden = flag.Value;
+        if (zone)
+            d.HiddenFromZone = flag.Value;
+        else
+            d.HiddenFromContacts = flag.Value;
         OZ_PlayerStore.MarkDirty(uid);
 
         ok = true;

@@ -779,7 +779,12 @@ class OZ_PdaHandlerMap : OZ_PageHandler
 
         OZ_MapState st = new OZ_MapState();
         st.SelfPos         = me.GetPosition().ToString(false);
-        st.TransponderMode = mine.TransponderMode;
+        if (mine.TransponderSet)
+        {
+            for (int ts = 0; ts < mine.TransponderSet.Count(); ts++)
+                st.TransponderSet.Insert(mine.TransponderSet[ts]);
+        }
+        st.FactionsPresent = OZ_Identity.Present();
 
         OZ_PDA_Base pda = OZ_PdaLookup.HeldBy(sender);
         float range = 0;
@@ -838,7 +843,10 @@ class OZ_PdaHandlerMap : OZ_PageHandler
 
             if (!Broadcasts(od, myUid))
             {
-                if (!spyEye || od.TransponderMode == "off" || od.TransponderMode == "")
+                bool silent = true;
+                if (od.TransponderSet && od.TransponderSet.Count() > 0)
+                    silent = false;
+                if (!spyEye || silent)
                     continue;
             }
 
@@ -846,7 +854,19 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             // Інакше вийшло б, що чужий пристрій світить позицію тим, чим
             // світити не може.
             OZ_PDA_Base theirs = OZ_PdaLookup.HeldBy(oid);
-            if (!theirs || AntennaRange(theirs) <= 0)
+            if (!theirs)
+                continue;
+
+            // 2. ПРИЛАД УВІМКНЕНИЙ (ТЗ-4 R-A2.1--R-A2.4). Перевіряється в того,
+            // КОГО видно, а не в того, хто дивиться: вимкнений екран досі
+            // лишав гравця на чужих картах, знімала лише вийнята антена.
+            // Живлення головніше за антену: нема живлення -- нема вещання,
+            // хай що стоїть у відсіках. Ступінь 4 (GPS) з'явиться разом із
+            // модулем GPS (R-B2.2); поки його немає, її нема чого перевіряти.
+            if (!theirs.OZ_IsOn())
+                continue;
+
+            if (AntennaRange(theirs) <= 0)
                 continue;
 
             OZ_MapBeacon b = new OZ_MapBeacon();
@@ -879,43 +899,37 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         return false;
     }
 
-    // Кому цей гравець показує свою позицію.
+    // Кому цей гравець показує свою позицію. Режим -- НАБІР (ТЗ-4 R-A3.1):
+    // порожній -- нікому; "public" -- усім; "contacts" і/або "faction" --
+    // записнику і/або своїм по угрупованню, і досить будь-якого одного.
     private bool Broadcasts(OZ_PlayerData them, string toUid)
     {
-        if (them.TransponderMode == "public")
+        if (!them.TransponderSet || them.TransponderSet.Count() == 0)
+            return false;
+
+        if (them.TransponderSet.Find("public") != -1)
             return true;
 
-        if (them.TransponderMode == "contacts")
+        // Записник тримає КЛЮЧІ ПЕРСОНАЖІВ: маячок, дозволений колишньому
+        // життю цього акаунта, новому не дістається.
+        if (them.TransponderSet.Find("contacts") != -1 && them.Friends)
         {
-            if (!them.TransponderTo)
-                return false;
-            // Списки тримають КЛЮЧІ ПЕРСОНАЖІВ: маячок, дозволений колишньому
-            // життю цього акаунта, новому не дістається.
-            return them.TransponderTo.Find(OZ_PlayerStore.KeyOf(toUid)) != -1;
+            if (them.Friends.Find(OZ_PlayerStore.KeyOf(toUid)) != -1)
+                return true;
         }
 
-        if (them.TransponderMode == "friends")
+        // Своїм по УГРУПОВАННЮ. Одинакам цей режим не дає нічого, і це
+        // правильно: одинак -- не угруповання, а його відсутність. Саме
+        // угруповання, а не базова (ТЗ-1 §5): базова є в кожного, і «свої по
+        // базовій» означало б увесь сервер. Без мода фракцій слаг "faction"
+        // у наборі не буває (R-A3.4): його знімає завантаження файлу.
+        if (them.TransponderSet.Find("faction") != -1)
         {
-            if (!them.Friends)
-                return false;
-            return them.Friends.Find(OZ_PlayerStore.KeyOf(toUid)) != -1;
-        }
-
-        if (them.TransponderMode == "faction")
-        {
-            // Своїм по УГРУПОВАННЮ. Одинакам цей режим не дає нічого, і це
-            // правильно: одинак -- не угруповання, а його відсутність.
-            //
-            // Саме угруповання, а не базова (ТЗ-1 §5): базова є в кожного, і
-            // «свої по базовій» означало б увесь сервер -- режим "faction"
-            // став би режимом "public", мовчки.
             string theirs = OZ_Identity.Get().OrgOfPlayer(null, them.SteamId);
-            if (theirs == "")
-                return false;
-            return OZ_Identity.Get().OrgOfPlayer(null, toUid) == theirs;
+            if (theirs != "" && OZ_Identity.Get().OrgOfPlayer(null, toUid) == theirs)
+                return true;
         }
 
-        // "off" і будь-що незнайоме -- нікому.
         return false;
     }
 
@@ -965,20 +979,48 @@ class OZ_PdaHandlerMap : OZ_PageHandler
             return "";
         }
 
-        // Перелік режимів закритий. Чуже слово в TransponderMode згодом
-        // прочитав би Broadcasts() і не впізнав -- тобто маячок мовчав би, а
-        // гравець вважав би, що веде.
-        // "contacts" не приймається, поки список TransponderTo нічим вести:
-        // див. NextMode() на сторінці карти.
-        if (t.Mode != "off" && t.Mode != "public" && t.Mode != "friends" && t.Mode != "faction")
+        // Перелік слагів закритий (ТЗ-4 R-A3.1): чуже слово згодом прочитав
+        // би Broadcasts() і не впізнав -- маячок мовчав би, а гравець вважав
+        // би, що веде. "public" поглинає решту: «усім» і так включає своїх.
+        array<string> want = new array<string>();
+        bool isPublic = false;
+        for (int i = 0; t.Set && i < t.Set.Count(); i++)
         {
-            error = "STR_OZ_ERR_REFUSED";
+            string slug = t.Set[i];
+            if (slug == "public")
+            {
+                isPublic = true;
+                continue;
+            }
+            if (slug != "faction" && slug != "contacts")
+            {
+                error = "STR_OZ_ERR_REFUSED";
+                return "";
+            }
+            if (want.Find(slug) == -1)
+                want.Insert(slug);
+        }
+        if (isPublic)
+        {
+            want.Clear();
+            want.Insert("public");
+        }
+
+        // R-A3.4: без мода фракцій режиму "faction" не існує -- ВІДМОВА з
+        // причиною, а не мовчазне «прийняв і не роблю».
+        if (want.Find("faction") != -1 && !OZ_Identity.Present())
+        {
+            error = "STR_OZ_ERR_NO_FACTIONS";
             return "";
         }
 
         string uid = sender.GetPlainId();
         OZ_PlayerData d = OZ_PlayerStore.Load(uid);
-        d.TransponderMode = t.Mode;
+        if (!d.TransponderSet)
+            d.TransponderSet = new array<string>();
+        d.TransponderSet.Clear();
+        for (int w = 0; w < want.Count(); w++)
+            d.TransponderSet.Insert(want[w]);
         OZ_PlayerStore.MarkDirty(uid);
 
         ok = true;

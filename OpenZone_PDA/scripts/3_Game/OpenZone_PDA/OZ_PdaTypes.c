@@ -239,7 +239,9 @@ class OZ_ContactEntry
 // будь-яке інше число підказало б, що когось приховано.
 class OZ_ContactList
 {
-    bool MeHidden = false;
+    // Два вимикачі (ТЗ-4 R-A1.1): від Зони і від записників контактів.
+    bool MeHiddenZone     = false;
+    bool MeHiddenContacts = false;
 
     // Чи я лідер своєї фракції -- від цього залежить, чи малювати лідерські
     // кнопки взагалі. Рішення сервера: клієнт про свої права не здогадується.
@@ -310,8 +312,13 @@ class OZ_MapState
     bool  HasAntenna    = false;
     float AntennaRangeM = 0;
 
-    // Свій режим транспондера: off | public | friends | contacts.
-    string TransponderMode = "off";
+    // Свій транспондер -- НАБІР (ТЗ-4 R-A3.2): [] | ["public"] | будь-яка
+    // комбінація "faction" / "contacts".
+    ref array<string> TransponderSet;
+
+    // Чи є на сервері мод фракцій: без нього перемикача "faction" на клієнті
+    // не існує (R-A3.4). Рішення сервера.
+    bool FactionsPresent = false;
 
     ref array<ref OZ_MapBeacon> Beacons;
 
@@ -326,6 +333,7 @@ class OZ_MapState
 
     void OZ_MapState()
     {
+        TransponderSet = new array<string>();
         Beacons = new array<ref OZ_MapBeacon>();
         Markers = new array<ref OZ_MapMarker>();
         Route   = new array<ref OZ_MapMarker>();
@@ -334,7 +342,13 @@ class OZ_MapState
 
 class OZ_TransponderOp
 {
-    string Mode = "off";
+    // Набір слагів, як у файлі гравця (ТЗ-4 R-A3.2). Порожній -- вимкнути.
+    ref array<string> Set;
+
+    void OZ_TransponderOp()
+    {
+        Set = new array<string>();
+    }
 }
 
 // Посилання на людину ІМЕНЕМ, а не Steam64. Клієнт чужого id не бачить і не

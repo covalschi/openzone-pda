@@ -378,7 +378,7 @@ class OZ_PdaPageMap : OZ_PdaPage
         if (w == m_BtnMode)
         {
             OZ_TransponderOp op = new OZ_TransponderOp();
-            op.Mode = NextMode();
+            NextSet(op.Set);
 
             string json;
             string err;
@@ -390,26 +390,67 @@ class OZ_PdaPageMap : OZ_PdaPage
         return false;
     }
 
-    // Коло off -> public -> friends -> contacts -> off. Порядок навмисно від
-    // найтихішого до найгучнішого: випадкове натискання підвищує гучність на
-    // один крок, а не вмикає одразу «всім».
-    private string NextMode()
+    // Коло від найтихішого до найгучнішого (ТЗ-4 R-A3.1, R-A3.2):
+    //   off -> contacts -> faction -> faction+contacts -> public -> off.
+    // Випадкове натискання підвищує гучність на один крок, а не вмикає одразу
+    // «всім». Кроки з "faction" існують лише тоді, коли сервер сказав, що
+    // мод фракцій є (R-A3.4): без нього перемикача немає, а не «не працює».
+    private string SetKey(array<string> s)
+    {
+        if (!s || s.Count() == 0)
+            return "off";
+        if (s.Find("public") != -1)
+            return "public";
+        bool f = s.Find("faction") != -1;
+        bool c = s.Find("contacts") != -1;
+        if (f && c)
+            return "both";
+        if (f)
+            return "faction";
+        if (c)
+            return "contacts";
+        return "off";
+    }
+
+    private void NextSet(array<string> outSet)
     {
         string cur = "off";
+        bool factions = false;
         if (m_State)
-            cur = m_State.TransponderMode;
+        {
+            cur = SetKey(m_State.TransponderSet);
+            factions = m_State.FactionsPresent;
+        }
+
+        outSet.Clear();
 
         if (cur == "off")
-            return "public";
-        if (cur == "public")
-            return "friends";
-        if (cur == "friends")
-            return "faction";
-        // "contacts" тут НЕМАЄ навмисно: режим обіцяє список TransponderTo,
-        // а вести той список поки нічим -- жоден код його не пише. Режим,
-        // який мовчки транслює НІКОМУ, гірший за відсутній. Повернеться
-        // разом з інтерфейсом ведення списку.
-        return "off";
+        {
+            outSet.Insert("contacts");
+            return;
+        }
+        if (cur == "contacts")
+        {
+            if (factions)
+            {
+                outSet.Insert("faction");
+                return;
+            }
+            outSet.Insert("public");
+            return;
+        }
+        if (cur == "faction")
+        {
+            outSet.Insert("faction");
+            outSet.Insert("contacts");
+            return;
+        }
+        if (cur == "both")
+        {
+            outSet.Insert("public");
+            return;
+        }
+        // "public" -> off: порожній набір.
     }
 
     // Куди клікнули у світових координатах, і що там уже стоїть.
@@ -827,7 +868,7 @@ class OZ_PdaPageMap : OZ_PdaPage
 
     private void Paint()
     {
-        SetText("BtnModeText", ModeLabel(m_State.TransponderMode));
+        SetText("BtnModeText", ModeLabel(SetKey(m_State.TransponderSet)));
         string selfPos = LocalSelfPos();
 
         if (m_Map)
@@ -939,12 +980,12 @@ class OZ_PdaPageMap : OZ_PdaPage
     {
         if (mode == "public")
             return "#STR_OZ_TRANS_PUBLIC";
-        if (mode == "friends")
-            return "#STR_OZ_TRANS_FRIENDS";
         if (mode == "contacts")
             return "#STR_OZ_TRANS_CONTACTS";
         if (mode == "faction")
             return "#STR_OZ_TRANS_FACTION";
+        if (mode == "both")
+            return "#STR_OZ_TRANS_BOTH";
         return "#STR_OZ_TRANS_OFF";
     }
 }

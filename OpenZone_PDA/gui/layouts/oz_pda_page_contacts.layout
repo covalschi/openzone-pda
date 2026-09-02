@@ -38,8 +38,8 @@ FrameWidgetClass OZ_PageContacts {
   // віджетів, і напис усередині зникає.
   ButtonWidgetClass BtnHide {
    visible 1
-   position 420 14
-   size 200 30
+   position 220 14
+   size 195 30
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -52,7 +52,7 @@ FrameWidgetClass OZ_PageContacts {
      ignorepointer 1
      color 0.145 0.145 0.161 1
      position 0 0
-     size 200 30
+     size 195 30
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -64,7 +64,52 @@ FrameWidgetClass OZ_PageContacts {
      visible 1
      ignorepointer 1
      position 0 0
-     size 200 30
+     size 195 30
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     color 1 0.478 0.102 1
+     text ""
+     font "gui/fonts/sdf_MetronBook24"
+     "exact text" 1
+     "exact text size" 13
+     "text halign" center
+     "text valign" center
+     priority 2
+    }
+   }
+  }
+
+  ButtonWidgetClass BtnHideContacts {
+   visible 1
+   position 425 14
+   size 195 30
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   text ""
+   priority 3
+   {
+    PanelWidgetClass BtnHideContactsBg {
+     visible 1
+     ignorepointer 1
+     color 0.145 0.145 0.161 1
+     position 0 0
+     size 195 30
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     priority 1
+     style rover_sim_colorable
+    }
+    TextWidgetClass BtnHideContactsText {
+     visible 1
+     ignorepointer 1
+     position 0 0
+     size 195 30
      hexactpos 1
      vexactpos 1
      hexactsize 1
