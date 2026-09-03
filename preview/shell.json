@@ -1,0 +1,13 @@
+{
+  "note": "Six tabs in the rail, as the script creates them for a device profile with every page.",
+  "ops": [
+    {"op": "add", "layout": "OpenZone_PDA/gui/layouts/oz_pda_tab.layout", "into": "TabRail", "count": 6},
+    {"op": "text", "name": "TabGlyph", "nth": 1, "text": "D"},
+    {"op": "text", "name": "TabGlyph", "nth": 2, "text": "M"},
+    {"op": "text", "name": "TabGlyph", "nth": 3, "text": "C"},
+    {"op": "text", "name": "TabGlyph", "nth": 4, "text": "N"},
+    {"op": "text", "name": "TabGlyph", "nth": 5, "text": "T"},
+    {"op": "text", "name": "TabGlyph", "nth": 6, "text": "Q"},
+    {"op": "show", "name": "TabActive", "nth": 1}
+  ]
+}

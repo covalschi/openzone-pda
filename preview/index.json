@@ -1,0 +1,28 @@
+{
+  "note": "Preview gallery for ui_gallery: every layout of the PDA as the engine draws it. Hosts are the size of the container a layout normally lives in (layout units); rows use their own root size.",
+  "entries": [
+    {"name": "shell", "layout": "OpenZone_PDA/gui/layouts/oz_pda_menu.layout", "fixture": "preview/shell.json",
+     "note": "the device shell with six tabs in the rail; pages are looked at separately"},
+    {"name": "tab", "layout": "OpenZone_PDA/gui/layouts/oz_pda_tab.layout", "host": "60 52"},
+    {"name": "page-device", "layout": "OpenZone_PDA/gui/layouts/oz_pda_page_device.layout", "host": "1306 518"},
+    {"name": "page-map", "layout": "OpenZone_PDA/gui/layouts/oz_pda_page_map.layout", "host": "1306 518"},
+    {"name": "page-contacts", "layout": "OpenZone_PDA/gui/layouts/oz_pda_page_contacts.layout", "host": "640 518", "fixture": "preview/contacts.json",
+     "note": "half-width page; the faction page is its satellite"},
+    {"name": "page-notes", "layout": "OpenZone_PDA/gui/layouts/oz_pda_page_notes.layout", "host": "1306 518"},
+    {"name": "page-chat", "layout": "OpenZone_PDA/gui/layouts/oz_pda_page_chat.layout", "host": "1306 518",
+     "note": "chat rows are placed by script into a plain panel; the live preview shows them"},
+    {"name": "page-news", "layout": "OpenZone_PDA/gui/layouts/oz_pda_page_news.layout", "host": "1306 518", "fixture": "preview/news.json"},
+    {"name": "page-quests", "layout": "OpenZone_PDA/gui/layouts/oz_pda_page_quests.layout", "host": "1306 518"},
+    {"name": "row-contact", "layout": "OpenZone_PDA/gui/layouts/oz_pda_contact_row.layout", "host": "600 55"},
+    {"name": "row-chat-line", "layout": "OpenZone_PDA/gui/layouts/oz_pda_chat_line.layout", "host": "871 72"},
+    {"name": "row-chat-head", "layout": "OpenZone_PDA/gui/layouts/oz_pda_chat_head.layout", "host": "375 50"},
+    {"name": "row-chat-invite", "layout": "OpenZone_PDA/gui/layouts/oz_pda_chat_invite.layout", "host": "375 48"},
+    {"name": "row-news", "layout": "OpenZone_PDA/gui/layouts/oz_pda_news_row.layout", "host": "400 50"},
+    {"name": "row-marker", "layout": "OpenZone_PDA/gui/layouts/oz_pda_marker_row.layout", "host": "315 42"},
+    {"name": "row-note", "layout": "OpenZone_PDA/gui/layouts/oz_pda_note_row.layout", "host": "425 32"},
+    {"name": "row-faction", "layout": "OpenZone_PDA/gui/layouts/oz_pda_faction_row.layout", "host": "616 32"},
+    {"name": "hud", "layout": "OpenZone_PDA/gui/layouts/oz_pda_hud.layout"},
+    {"name": "hud-edit", "layout": "OpenZone_PDA/gui/layouts/oz_pda_hud_edit.layout"},
+    {"name": "vpp-pane", "layout": "OpenZone_PDA_VPP/gui/layouts/oz_pda_vpp_pane.layout", "host": "1000 620"}
+  ]
+}

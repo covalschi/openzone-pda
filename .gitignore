@@ -4,8 +4,8 @@ keys/*.biprivatekey
 
 # build output
 build/out/
-@OpenZone_Core/
-@OpenZone_PDA/
+# every built mod folder, the file-patching junction inside it included
+@OpenZone_*/
 *.pbo
 *.bisign
 *.log

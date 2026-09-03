@@ -62,3 +62,9 @@ modules  = 4
 # цей профіль читає рядок КПК ("pda loaded"), де такого числа немає взагалі
 # -- очікування, яке не може справдитись ніколи.
 carriers = 3
+
+[client]
+# The client runs with -filePatching and mod_build keeps @<Mod>/<Mod> as a junction
+# to the source tree, so an edited .layout is read without repacking (the stand
+# config already carries allowFilePatching = 1).
+file_patching = true

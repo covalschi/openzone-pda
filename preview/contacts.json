@@ -1,0 +1,6 @@
+{
+  "note": "Three contact rows in the list, as OZ_PdaPageContacts creates them.",
+  "ops": [
+    {"op": "add", "layout": "OpenZone_PDA/gui/layouts/oz_pda_contact_row.layout", "into": "ContactList", "count": 3}
+  ]
+}
