@@ -19,8 +19,8 @@
           "children": [
             {"panel": {"name": "InvBg", "at": [0, 0], "w": "fill", "h": 45, "color": "$raised"}},
             {"chip":  {"name": "InvEdge", "hidden": false, "color": "$alert"}},
-            {"label": {"name": "InvTitle", "at": [12, 2], "w": 225, "h": 20, "font": "body", "color": "$text"}},
-            {"label": {"name": "InvFrom", "at": [12, 24], "w": 225, "h": 18, "font": "small", "color": "$muted"}},
+            {"label": {"name": "InvTitle", "at": [12, 2], "w": 225, "h": 22, "font": "body", "color": "$text"}},
+            {"label": {"name": "InvFrom", "at": [12, 24], "w": 225, "h": 20, "font": "small", "color": "$muted"}},
             {"button": {"name": "InvJoin", "anchor": "right", "at": [70, 9], "size": [60, 28], "text": "#STR_OZ_CHAT_INV_JOIN", "font": "small", "edge": false}},
             {"button": {"name": "InvDecl", "anchor": "right", "at": [5, 9], "size": [60, 28], "text": "#STR_OZ_CHAT_INV_DECL", "font": "small", "edge": false}}
           ]}}
