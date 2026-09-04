@@ -361,7 +361,7 @@ class OZ_PdaHud
             if (s_ToastWho)
             {
                 s_ToastWho.SetText(Widget.TranslateString("#STR_OZ_TOAST_NEWS") + "  " + np.Who);
-                s_ToastWho.SetColor(ARGB(255, 255, 122, 26));
+                s_ToastWho.SetColor(ARGB(255, 79, 181, 232));
             }
             if (s_ToastText)
                 s_ToastText.SetText(np.Title);
@@ -442,7 +442,7 @@ class OZ_PdaHud
             if (p.WhoColor != 0)
                 s_ToastWho.SetColor(p.WhoColor);
             else
-                s_ToastWho.SetColor(ARGB(255, 255, 122, 26));
+                s_ToastWho.SetColor(ARGB(255, 79, 181, 232));
         }
         if (s_ToastText)
             s_ToastText.SetText(p.Text);
