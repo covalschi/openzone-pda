@@ -2,7 +2,7 @@
   "note": "Seven tabs in the rail, as the script creates them for a device profile with every page; the fifth tab (chat) carries an unread badge.",
   "ops": [
     {"op": "add", "layout": "OpenZone_PDA/gui/layouts/oz_pda_tab.layout", "into": "TabRail", "count": 7},
-    {"op": "text", "name": "TabLabel", "nth": 1, "text": "ПРИСТРІЙ"},
+    {"op": "text", "name": "TabLabel", "nth": 1, "text": "ПРИСТРIЙ"},
     {"op": "text", "name": "TabLabel", "nth": 2, "text": "ЖУРНАЛ"},
     {"op": "text", "name": "TabLabel", "nth": 3, "text": "КАРТА"},
     {"op": "text", "name": "TabLabel", "nth": 4, "text": "КОНТАКТИ"},
