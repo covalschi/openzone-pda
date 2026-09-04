@@ -107,7 +107,7 @@ class OZ_PdaPageChat : OZ_PdaPage
         m_BtnGCancel   = ButtonWidget.Cast(Wgt("BtnGCancel"));
 
         SetText("BtnGroupEditText", "#STR_OZ_CHAT_EDIT_GROUP");
-        SetText("InviteHead", "#STR_OZ_CHAT_PICK");
+        SetText("InviteHead", "#STR_OZ_CHAT_TAP_INVITE");
         SetText("BtnInvCancelText", "#STR_OZ_CHAT_CANCEL");
         SetText("BtnGSaveText", "#STR_OZ_CHAT_SAVE");
         SetText("BtnGCancelText", "#STR_OZ_CHAT_CANCEL");
