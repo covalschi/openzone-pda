@@ -6,14 +6,17 @@
     {"vbox": {"w": 400, "gap": "$space.tight", "children": [
       {"header": {"icon": "tab_news", "h": "$size.header", "title": {"name": "NewsHead", "text": "#STR_OZ_PAGE_NEWS"}}},
       {"list": {"name": "NewsScroll", "stack": "NewsRows", "h": "fill", "rows": {
-        "oz_pda_news_row": {"row": {"name": "OZ_NewsRow", "h": 70, "click": true,
-          "note": "Один заголовок стрічки: назва переноситься на два рядки й обрізається, під нею джерело й дата.",
+        "oz_pda_news_row": {"row": {"name": "OZ_NewsRow", "stack": true,
+          "note": "Один заголовок стрічки: висоту дає рушій -- заголовок росте й переноситься без обрізання, стопка складає (як oz_pda_chat_line). WrapSpacer-корінь не вміє накладати дітей одне на одного, тому суцільного тла під змінною висотою більше нема (RowBg прибрано -- воно рятувало лише від black-flash ButtonWidget, якого в цього кореня вже нема); RowPick -- смужка поруч із датою (як LineMine в чаті), а не підсвітка всього рядка. click:true генератор ігнорує разом зі stack:true (_build_row), тому клік ловить скрипт через RegisterOnMouseButtonDown (OZ_PdaPageNews.c, OnRowDown) -- так само як репліка чату.",
           "children": [
-            {"panel": {"name": "RowBg", "size": "fill", "color": "$panel"}},
-            {"panel": {"name": "RowPick", "size": "fill", "color": "$pick", "hidden": true}},
-            {"text":  {"name": "RowTitle", "at": [12, 4], "w": "fill", "h": 44, "grow": false, "plain": true, "font": "header", "color": "$text"}},
-            {"label": {"name": "RowMeta", "at": [12, 50], "w": "fill", "h": 18, "font": "small", "color": "$faint"}},
-            {"rule":  {"name": "RowLine", "anchor": "bottom", "at": [12, 0], "w": 366}}
+            {"gap":   {"h": "$space.tight"}},
+            {"text":  {"name": "RowTitle", "plain": true, "font": "header", "color": "$text"}},
+            {"hrow":  {"h": 22, "children": [
+              {"panel": {"name": "RowPick", "w": 2, "h": 16, "color": "$accent", "hidden": true}},
+              {"gap":   {"w": 8}},
+              {"label": {"name": "RowMeta", "w": "auto", "font": "small", "color": "$faint"}}
+            ]}},
+            {"rule":  {"name": "RowLine"}}
           ]}}
       }}}
     ]}},

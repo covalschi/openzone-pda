@@ -119,6 +119,18 @@ class OZ_PdaPageNews : OZ_PdaPage
         return false;
     }
 
+    // Mouse press on a headline row: the row is a self-growing WrapSpacer
+    // (see the layout's note), so OnClick never reaches it -- this is where
+    // its click arrives instead (see the RegisterOnMouseButtonDown call in
+    // Repaint). Left button only; the rest is not ours.
+    bool OnRowDown(Widget w, int x, int y, int button)
+    {
+        if (button != MouseState.LEFT)
+            return false;
+        OZ_Log.Dbg("pda news: row pressed " + w.GetName());
+        return OnPageClick(w, x, y);
+    }
+
     override void OnResponse(string op, bool ok, string json, string error)
     {
         if (!ok)
@@ -294,7 +306,13 @@ class OZ_PdaPageNews : OZ_PdaPage
         for (int r = 0; r < m_RowWgts.Count(); r++)
         {
             if (m_RowWgts[r])
+            {
+                // The press handler was registered on the singleton in the
+                // loop below: dropping the row without dropping the entry
+                // leaves a stale widget key in the handler's map.
+                WidgetEventHandler.GetInstance().UnregisterWidget(m_RowWgts[r]);
                 m_RowWgts[r].Unlink();
+            }
         }
         m_RowWgts.Clear();
 
@@ -320,6 +338,11 @@ class OZ_PdaPageNews : OZ_PdaPage
             Widget row = GetGame().GetWorkspace().CreateWidgets("OpenZone_PDA/gui/layouts/oz_pda_news_row.layout", m_Rows);
             if (!row)
                 break;
+
+            // A self-growing row is a WrapSpacer, not a Button, and OnClick
+            // does not reach it: the press is caught here and routed the
+            // same way as a chat line (OZ_PdaPageChat.LineRow).
+            WidgetEventHandler.GetInstance().RegisterOnMouseButtonDown(row, this, "OnRowDown");
 
             row.SetName(it.Id);
             row.SetUserID(7);
