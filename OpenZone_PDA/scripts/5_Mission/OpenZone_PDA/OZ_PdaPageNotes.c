@@ -13,7 +13,6 @@ class OZ_PdaPageNotes : OZ_PdaPage
 {
     private Widget m_Canvas;
     private ref array<Widget> m_NoteRows = new array<Widget>();
-    private int m_NotesY = 0;
     private EditBoxWidget m_Title;
     private MultilineEditBoxWidget m_Body;
     private ButtonWidget m_BtnNew;
@@ -310,7 +309,8 @@ class OZ_PdaPageNotes : OZ_PdaPage
                 m_NoteRows[r].Unlink();
         }
         m_NoteRows.Clear();
-        m_NotesY = 0;
+        if (m_Canvas)
+            m_Canvas.Update();
 
         if (!m_Book.Notes)
             return;
@@ -329,8 +329,6 @@ class OZ_PdaPageNotes : OZ_PdaPage
 
             w.SetUserID(7);
             w.SetName(i.ToString());
-            w.SetPos(0, m_NotesY);
-            m_NotesY += 32;
 
             TextWidget tw = TextWidget.Cast(w.FindAnyWidget("RowTitle"));
             if (tw)
@@ -346,9 +344,7 @@ class OZ_PdaPageNotes : OZ_PdaPage
         }
 
         if (m_Canvas)
-        {
-            m_Canvas.SetSize(425, m_NotesY);
-        }
+            m_Canvas.Update();
 
         PaintPicks();
 
