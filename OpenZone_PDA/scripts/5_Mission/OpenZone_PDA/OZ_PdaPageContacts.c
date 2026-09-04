@@ -352,6 +352,11 @@ class OZ_PdaPageContacts : OZ_PdaPage
                 stillThere = true;
         }
 
+        // The spacer measures itself only on Update(): rows added or removed
+        // without it keep the old height until the next relayout.
+        if (m_List)
+            m_List.Update();
+
         // Виділення переживає перемальовку. Інакше вибір злітав би щосекунди,
         // і натиснути кнопку встигав би лише дуже швидкий гравець.
         if (!stillThere)
@@ -396,6 +401,11 @@ class OZ_PdaPageContacts : OZ_PdaPage
                 m_Rows[i].Unlink();
         }
         m_Rows.Clear();
+
+        // The spacer measures itself only on Update(): rows added or removed
+        // without it keep the old height until the next relayout.
+        if (m_List)
+            m_List.Update();
     }
 
     // Один рядок. Повертає true, якщо це саме обраний -- так виділення

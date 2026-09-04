@@ -13,7 +13,7 @@
      "note": "chat rows are placed by script into a plain panel; the live preview shows them"},
     {"name": "page-news", "layout": "OpenZone_PDA/gui/layouts/oz_pda_page_news.layout", "host": "1306 518", "fixture": "preview/news.json"},
     {"name": "page-quests", "layout": "OpenZone_PDA/gui/layouts/oz_pda_page_quests.layout", "host": "1306 518"},
-    {"name": "row-contact", "layout": "OpenZone_PDA/gui/layouts/oz_pda_contact_row.layout", "host": "600 55"},
+    {"name": "row-contact", "layout": "OpenZone_PDA/gui/layouts/oz_pda_contact_row.layout", "host": "590 55"},
     {"name": "row-chat-line", "layout": "OpenZone_PDA/gui/layouts/oz_pda_chat_line.layout", "host": "871 72"},
     {"name": "row-chat-head", "layout": "OpenZone_PDA/gui/layouts/oz_pda_chat_head.layout", "host": "375 50"},
     {"name": "row-chat-invite", "layout": "OpenZone_PDA/gui/layouts/oz_pda_chat_invite.layout", "host": "375 48"},
