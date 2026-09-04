@@ -538,6 +538,11 @@ class OZ_PdaMenu : UIScriptedMenu
             m_PageOrder.Insert(st.Pages[i]);
         }
 
+        // Рельс -- WrapSpacerWidgetClass, що міряє себе сам: щойно останню
+        // вкладку вставлено, він мусить перерахувати свою висоту.
+        if (m_TabRail)
+            m_TabRail.Update();
+
         // Жодної сторінки не вийшло -- нічого й не защіпаємо: хай опит іде
         // далі, а в лозі лишається причина.
         if (m_Pages.Count() == 0)
@@ -580,9 +585,13 @@ class OZ_PdaMenu : UIScriptedMenu
             tab.SetName(pageId);
             tab.SetUserID(1);         // так OnClick відрізняє вкладку від решти
 
-            TextWidget glyph = TextWidget.Cast(tab.FindAnyWidget("TabGlyph"));
-            if (glyph)
-                glyph.SetText(OZ_PdaPageFactory.Glyph(pageId));
+            ImageWidget icon = ImageWidget.Cast(tab.FindAnyWidget("TabIcon"));
+            if (icon)
+                icon.LoadImageFile(0, "set:oz_pda_icons image:" + OZ_PdaPageFactory.Icon(pageId));
+
+            TextWidget label = TextWidget.Cast(tab.FindAnyWidget("TabLabel"));
+            if (label)
+                label.SetText(OZ_PdaPageFactory.Title(pageId));
 
             m_Tabs.Insert(tab);
         }
@@ -675,17 +684,30 @@ class OZ_PdaMenu : UIScriptedMenu
             Widget t = m_Tabs[i];
             bool active = (t.GetName() == m_Current);
 
-            Widget mark = t.FindAnyWidget("TabActive");
+            Widget pick = t.FindAnyWidget("TabActive");
+            if (pick)
+                pick.Show(active);
+
+            Widget mark = t.FindAnyWidget("TabMark");
             if (mark)
                 mark.Show(active);
 
-            TextWidget glyph = TextWidget.Cast(t.FindAnyWidget("TabGlyph"));
-            if (glyph)
+            ImageWidget icon = ImageWidget.Cast(t.FindAnyWidget("TabIcon"));
+            if (icon)
             {
                 if (active)
-                    glyph.SetColor(ARGB(255, 13, 13, 15));
+                    icon.SetColor(ARGB(255, 79, 181, 232));
                 else
-                    glyph.SetColor(ARGB(255, 93, 93, 99));
+                    icon.SetColor(ARGB(255, 148, 166, 181));
+            }
+
+            TextWidget label = TextWidget.Cast(t.FindAnyWidget("TabLabel"));
+            if (label)
+            {
+                if (active)
+                    label.SetColor(ARGB(255, 79, 181, 232));
+                else
+                    label.SetColor(ARGB(255, 148, 166, 181));
             }
         }
     }

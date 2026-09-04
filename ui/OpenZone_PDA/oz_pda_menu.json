@@ -1,0 +1,44 @@
+{
+  "layout": "oz_pda_menu",
+  "note": "Корпус КПК поверх приглушеного світу. Пристрій -- 1403x590 точних одиниць по центру екрана (2:1, як текстура рамки 2048x1024), екран 1367x546 у вирізі рамки; рельс вкладок ліворуч, сторінки в PageHost, статус знизу. Імена читає OZ_PdaMenu.c.",
+  "root": {"frame": {"name": "OZ_PdaRoot", "size": "screen", "priority": 2,
+    "note": "Пріоритет 2, не 990: ItemPreviewWidget мовчки не малює модель, якщо пріоритет його або предка вище 256 (виміряно: 256 малює, 300 ні).",
+    "children": [
+      {"panel": {"name": "Backdrop", "size": "fill", "color": "$dim", "priority": 1, "note": "Світ лишається видимим і приглушеним: пристрій тримають у руках."}},
+      {"frame": {"name": "Device", "anchor": "center", "size": "$device.shell", "priority": 2, "children": [
+        {"panel": {"name": "Screen", "at": [18, 18], "size": "$device.screen", "color": "$screen", "priority": 1, "click": true, "children": [
+          {"panel": {"name": "TabRailBg", "size": [60, 546], "color": "$rail", "priority": 1}},
+          {"stack": {"name": "TabRail", "w": 60, "priority": 2, "note": "Вкладки кладе скрипт (oz_pda_tab.layout), по одній на сторінку; спейсер міряє себе на Update()."}},
+          {"panel": {"name": "TabRailEdge", "at": [60, 0], "size": [1, 546], "color": "$edge", "priority": 2}},
+          {"frame": {"name": "PageHost", "at": [61, 0], "size": "$device.page", "priority": 3}},
+          {"panel": {"name": "StatusBar", "at": [61, 518], "size": [1306, 28], "color": "$rail", "priority": 4, "children": [
+            {"label": {"name": "StatusLeft", "at": [12, 0], "size": [340, 28], "font": "small", "color": "$muted"}},
+            {"label": {"name": "StatusMid", "anchor": "center", "size": [360, 28], "font": "small", "color": "$muted", "align": "center"}},
+            {"icon":  {"name": "StatusSignal", "anchor": "right", "at": [332, 6], "size": [16, 16], "image": "st_signal", "color": "$muted"}},
+            {"icon":  {"name": "StatusBattery", "anchor": "right", "at": [312, 6], "size": [16, 16], "image": "st_battery", "color": "$muted"}},
+            {"label": {"name": "StatusRight", "at": [12, 0], "anchor": "right", "size": [290, 28], "font": "small", "color": "$muted", "align": "right"}}
+          ]}},
+          {"panel": {"name": "InitPanel", "size": "$device.page", "color": "$screen", "priority": 7, "click": true, "hidden": true, "children": [
+            {"label":  {"name": "InitTitle", "anchor": "center", "at": [0, -60], "size": [600, 24], "font": "header", "color": "$accent", "align": "center"}},
+            {"label":  {"name": "InitHint", "anchor": "center", "at": [0, -25], "size": [700, 36], "font": "hint", "color": "$muted", "align": "center"}},
+            {"button": {"name": "BtnInitBig", "anchor": "center", "at": [0, 30], "size": [260, 32], "font": "small"}}
+          ]}},
+          {"panel": {"name": "LockPanel", "size": "$device.screen", "color": "$screen", "priority": 9, "click": true, "hidden": true, "children": [
+            {"label":  {"name": "LockLabel", "anchor": "center", "at": [0, -120], "size": [700, 30], "font": "header", "color": "$accent", "align": "center"}},
+            {"label":  {"name": "LockDots", "anchor": "center", "at": [0, -72], "size": [400, 48], "font": "title", "color": "$text", "align": "center"}},
+            {"keypad": {"name": "LockPad", "anchor": "center", "at": [0, 40], "size": [184, 154], "cols": 3, "rows": 4, "gap": 8, "font": "header", "priority": 4,
+              "keys": [{"name": "Key1", "glyph": "1"}, {"name": "Key2", "glyph": "2"}, {"name": "Key3", "glyph": "3"},
+                       {"name": "Key4", "glyph": "4"}, {"name": "Key5", "glyph": "5"}, {"name": "Key6", "glyph": "6"},
+                       {"name": "Key7", "glyph": "7"}, {"name": "Key8", "glyph": "8"}, {"name": "Key9", "glyph": "9"},
+                       {"name": "KeyBack", "glyph": "<"}, {"name": "Key0", "glyph": "0"}, {"name": "KeyOk", "glyph": "OK"}]}},
+            {"button": {"name": "BtnFactory", "anchor": "center", "at": [0, 145], "size": [240, 26], "font": "small", "priority": 3, "hidden": true}},
+            {"button": {"name": "BtnCrack", "anchor": "center", "at": [0, -160], "size": [240, 30], "font": "small", "priority": 5, "hidden": true}},
+            {"label":  {"name": "LockHint", "anchor": "bottom-center", "at": [0, 18], "size": [800, 24], "font": "hint", "color": "$faint", "align": "center"}}
+          ]}}
+        ]}},
+        {"image":  {"name": "Bezel", "size": "$device.shell", "file": "OpenZone_PDA/gui/textures/oz_pda_bezel_ca.paa", "color": "$bezel", "priority": 5,
+          "note": "color МНОЖИТЬ текстуру, і рушій виводить її світлішою за файл (виміряно 2026-08-24): 0.38 дає графіт, як задумано."}},
+        {"button": {"name": "BtnClose", "anchor": "right", "at": [18, 14], "size": [34, 34], "text": "X", "font": "header", "glyph": true, "priority": 6}}
+      ]}}
+    ]}}
+}

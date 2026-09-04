@@ -2,8 +2,8 @@
   "note": "Preview gallery for ui_gallery: every layout of the PDA as the engine draws it. Page hosts are the container a layout lives in (layout units); migrated rows use the list width minus 10 (the scrollbar), hand-written rows their own root size. A fixture travels to the bridge as one JSON string of at most ~1000 bytes on the wire.",
   "entries": [
     {"name": "shell", "layout": "OpenZone_PDA/gui/layouts/oz_pda_menu.layout", "fixture": "preview/shell.json",
-     "note": "the device shell with six tabs in the rail; pages are looked at separately"},
-    {"name": "tab", "layout": "OpenZone_PDA/gui/layouts/oz_pda_tab.layout", "host": "60 52"},
+     "note": "the device shell with seven tabs in the rail; pages are looked at separately"},
+    {"name": "tab", "layout": "OpenZone_PDA/gui/layouts/oz_pda_tab.layout", "host": "60 60"},
     {"name": "page-device", "layout": "OpenZone_PDA/gui/layouts/oz_pda_page_device.layout", "host": "1306 518"},
     {"name": "page-map", "layout": "OpenZone_PDA/gui/layouts/oz_pda_page_map.layout", "host": "1306 518"},
     {"name": "page-contacts", "layout": "OpenZone_PDA/gui/layouts/oz_pda_page_contacts.layout", "host": "640 518", "fixture": "preview/contacts.json",

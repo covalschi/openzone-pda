@@ -72,6 +72,37 @@ class OZ_PdaPageFactory
         s_Glyph.Set(pageId, glyph);
     }
 
+    // Спрайт вкладки з набору oz_pda_icons. Сторінки склейок (фракція, рація)
+    // реєструють лише гліф і отримують загальний спрайт, доки не принесуть свій.
+    static string Icon(string pageId)
+    {
+        if (pageId == OZ_PdaConst.PAGE_DEVICE)   return "tab_device";
+        if (pageId == OZ_PdaConst.PAGE_QUESTS)   return "tab_journal";
+        if (pageId == OZ_PdaConst.PAGE_MAP)      return "tab_map";
+        if (pageId == OZ_PdaConst.PAGE_CONTACTS) return "tab_contacts";
+        if (pageId == OZ_PdaConst.PAGE_CHAT)     return "tab_chat";
+        if (pageId == OZ_PdaConst.PAGE_NOTES)    return "tab_notes";
+        if (pageId == OZ_PdaConst.PAGE_NEWS)     return "tab_news";
+        return "tab_page";
+    }
+
+    // Підпис вкладки: рядок сторінки КПК, або зареєстрований гліф для чужої.
+    //
+    // По одній перевірці на рядок, а не один if з || на кілька сторінок:
+    // умова if у Enforce мусить уміщатися в один рядок, перенесення дає
+    // "Expected ')', not a '||'" (та сама пастка, що й у HudWasShown).
+    static string Title(string pageId)
+    {
+        if (pageId == OZ_PdaConst.PAGE_DEVICE)   return "#STR_OZ_PAGE_DEVICE";
+        if (pageId == OZ_PdaConst.PAGE_QUESTS)   return "#STR_OZ_PAGE_QUESTS";
+        if (pageId == OZ_PdaConst.PAGE_MAP)      return "#STR_OZ_PAGE_MAP";
+        if (pageId == OZ_PdaConst.PAGE_CONTACTS) return "#STR_OZ_PAGE_CONTACTS";
+        if (pageId == OZ_PdaConst.PAGE_CHAT)     return "#STR_OZ_PAGE_CHAT";
+        if (pageId == OZ_PdaConst.PAGE_NOTES)    return "#STR_OZ_PAGE_NOTES";
+        if (pageId == OZ_PdaConst.PAGE_NEWS)     return "#STR_OZ_PAGE_NEWS";
+        return Glyph(pageId);
+    }
+
     // ПАРА СТОРІНОК, що ділять одну вкладку: ліворуч одна, праворуч друга.
     //
     // Оголошує її ТОЙ, ХТО ЇЇ УТВОРЮЄ. Раніше пару «контакти + фракція» знало
