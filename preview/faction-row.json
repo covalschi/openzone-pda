@@ -1,7 +1,0 @@
-{
-  "note": "One faction row, name and rank as a future OZ_PdaPageFaction would fill it.",
-  "ops": [
-    {"op": "text", "name": "FRowName", "nth": 1, "text": "Гвинт"},
-    {"op": "text", "name": "FRowRank", "nth": 1, "text": "Ветеран"}
-  ]
-}

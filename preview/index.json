@@ -22,7 +22,6 @@
     {"name": "row-marker", "layout": "OpenZone_PDA/gui/layouts/oz_pda_marker_row.layout", "host": "323 42", "fixture": "preview/marker-row.json",
      "note": "323 = the map page's MarkerScroll (333) minus the scrollbar; the row moved into that list with task 35"},
     {"name": "row-note", "layout": "OpenZone_PDA/gui/layouts/oz_pda_note_row.layout", "host": "415 32"},
-    {"name": "row-faction", "layout": "OpenZone_PDA/gui/layouts/oz_pda_faction_row.layout", "host": "616 32", "fixture": "preview/faction-row.json"},
     {"name": "hud", "layout": "OpenZone_PDA/gui/layouts/oz_pda_hud.layout"},
     {"name": "hud-edit", "layout": "OpenZone_PDA/gui/layouts/oz_pda_hud_edit.layout"},
     {"name": "vpp-pane", "layout": "OpenZone_PDA_VPP/gui/layouts/oz_pda_vpp_pane.layout", "host": "1000 620"},
