@@ -225,6 +225,6 @@ class OZ_PdaContactSwap
     {
         if (!who)
             return;
-        OZ_Rpc.RoleRespond(who, "swap", true, key);
+        OZ_Rpc.Notice(who, "swap", true, key);
     }
 }

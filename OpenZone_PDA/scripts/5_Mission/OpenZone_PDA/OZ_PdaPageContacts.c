@@ -47,7 +47,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
         // не казала гравцеві НІЧОГО: сервер чесно відповідав, ядро чесно
         // роздавало, і не було кому взяти. «Не вдалося, бо мосту немає»
         // виглядало точно так само, як «готово».
-        OZ_RoleNotice.OnAnswer.Insert(OnRoleAnswer);
+        OZ_Notice.OnAnswer.Insert(OnRoleAnswer);
 
         m_List       = Wgt("ContactList");
         m_Rows       = new array<Widget>();
@@ -64,7 +64,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
     // передачі лідерства він змінився.
     void OnRoleAnswer(string op, bool ok, string why)
     {
-        SetHintSticky("ContactsHint", OZ_RoleNotice.Text());
+        SetHintSticky("ContactsHint", OZ_Notice.Text());
         Request();
     }
 
@@ -76,7 +76,7 @@ class OZ_PdaPageContacts : OZ_PdaPage
     // смерті з відкритими воротами.
     override void Unlink()
     {
-        OZ_RoleNotice.OnAnswer.Remove(OnRoleAnswer);
+        OZ_Notice.OnAnswer.Remove(OnRoleAnswer);
         super.Unlink();
     }
 

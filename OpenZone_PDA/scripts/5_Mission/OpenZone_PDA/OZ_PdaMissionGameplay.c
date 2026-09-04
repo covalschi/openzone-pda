@@ -45,7 +45,7 @@ modded class MissionGameplay
         //
         // Тут -- місія, вона жива завжди. Показуємо тим самим сповіщенням,
         // яким гра говорить про все інше.
-        OZ_RoleNotice.OnAnswer.Insert(OZ_PdaNotice);
+        OZ_Notice.OnAnswer.Insert(OZ_PdaNotice);
 
         OZ_PdaMenuGate.Bind(new OZ_PdaMenuOpener());
         OZ_PdaInput.Init();
@@ -78,7 +78,7 @@ modded class MissionGameplay
         // місію, а місія -- ні. Слухач, що пережив свою місію, отримує
         // наступну подію вже з мертвими руками.
         OZ_Show.OnShow.Remove(OZ_PdaShow);
-        OZ_RoleNotice.OnAnswer.Remove(OZ_PdaNotice);
+        OZ_Notice.OnAnswer.Remove(OZ_PdaNotice);
         OZ_ClientState.SyncWatch().Remove(OZ_PdaSync);
 
         OZ_PdaHud.Teardown();
@@ -93,7 +93,7 @@ modded class MissionGameplay
         if (op != "swap")
             return;
 
-        NotificationSystem.AddNotificationExtended(4, "#STR_OZ_PDA_NAME", OZ_RoleNotice.Text(), "");
+        NotificationSystem.AddNotificationExtended(4, "#STR_OZ_PDA_NAME", OZ_Notice.Text(), "");
     }
 
     void OZ_PdaShow(string what)
