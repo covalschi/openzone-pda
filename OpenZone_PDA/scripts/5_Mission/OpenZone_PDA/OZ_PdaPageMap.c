@@ -52,9 +52,9 @@ class OZ_PdaPageMap : OZ_PdaPage
     private float m_MapW;
     private float m_MapH;
 
-    // Скільки ширини лишається карті при відкритому списку: 773 з 1045
-    // одиниць розкладки -- панель починається на 785.
-    private static const float LIST_SQUEEZE = 0.7397;
+    // Скільки ширини лишається карті при відкритому списку: 960 з 1306
+    // одиниць розкладки -- панель шириною 345 починається на 961.
+    private static const float LIST_SQUEEZE = 0.7351;
 
     // АДМІНСЬКИХ КНОПОК ТУТ БІЛЬШЕ НЕМАЄ.
     //
@@ -609,6 +609,7 @@ class OZ_PdaPageMap : OZ_PdaPage
                 m_RowWgts[r].Unlink();
         }
         m_RowWgts.Clear();
+        m_Rows.Update();
 
         int n = 0;
         int limit = 0;
@@ -618,7 +619,7 @@ class OZ_PdaPageMap : OZ_PdaPage
                 n = m_State.Markers.Count();
             limit = m_State.MarkerLimit;
         }
-        SetText("MarkerHead", Widget.TranslateString("#STR_OZ_MAP_LIST") + "  " + n.ToString() + "/" + limit.ToString());
+        SetText("SecMarksLbl", Widget.TranslateString("#STR_OZ_MAP_LIST") + "  " + n.ToString() + "/" + limit.ToString());
 
         // Гравець, від якого міряються відстані. Дистанція в списку --
         // знімок на мить перемальовування; ЖИВА цифра веденої мітки живе
@@ -628,7 +629,6 @@ class OZ_PdaPageMap : OZ_PdaPage
         if (mePl)
             meAt = mePl.GetPosition();
 
-        int rowY = 0;
         for (int k = 0; k < n; k++)
         {
             OZ_MapMarker mrk = m_State.Markers[k];
@@ -636,12 +636,6 @@ class OZ_PdaPageMap : OZ_PdaPage
             Widget row = GetGame().GetWorkspace().CreateWidgets("OpenZone_PDA/gui/layouts/oz_pda_marker_row.layout", m_Rows);
             if (!row)
                 break;
-
-            // Стек РУКАМИ: WrapSpacer намотує власний розмір (зміряно
-            // 105 613 юнітів на розмовах) і ламає скрол -- тому контейнер
-            // дурна панель, а рядки лягають за лічильником.
-            row.SetPos(0, rowY);
-            rowY += 42;
 
             // Ім'я віджета -- Id мітки: саме його читає OnClick.
             row.SetName(mrk.Id);
@@ -688,8 +682,13 @@ class OZ_PdaPageMap : OZ_PdaPage
                 pick.Show(mrk.Id == m_PickedId);
         }
 
-        // Полотно рівно під вміст -- скрол чесний, без намотаної порожнечі.
-        m_Rows.SetSize(315, rowY);
+        // Стопка складається САМА: MarkerRows -- WrapSpacer із «Size To
+        // Content V» 1, рядки в ньому пропорційні (size 1 42), і після
+        // Update() його висота дорівнює сумі рядків. Ні SetPos, ні SetSize
+        // тут більше немає. Старий коментар звинувачував спейсер у намотці
+        // власного розміру (нібито 105 613 юнітів); зміряно наново на стенді
+        // 2026-09-04 -- 30 рядків дають рівно 30 x 42, а скрол прокручує.
+        m_Rows.Update();
 
         if (m_BtnTrack)
         {

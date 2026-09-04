@@ -1,7 +1,8 @@
 {
-  "note": "One marker row, as OZ_PdaPageMap's RebuildRows fills it (name, then distance right-aligned, then description below).",
+  "note": "One marker row as OZ_PdaPageMap's RebuildRows fills it: name on the first line, description and the coordinates with the distance on the second one -- the '>>' prefix marks the tracked marker.",
   "ops": [
-    {"op": "text", "name": "RowName", "nth": 1, "text": "Схрон біля Агропрому"},
-    {"op": "text", "name": "RowWhere", "nth": 1, "text": "1,2 км"}
+    {"op": "text", "name": "RowName", "nth": 1, "text": "Схрон біля Агропрому за трубами"},
+    {"op": "text", "name": "RowDesc", "nth": 1, "text": "два ящики"},
+    {"op": "text", "name": "RowWhere", "nth": 1, "text": ">> 1509 3373  842 m"}
   ]
 }
