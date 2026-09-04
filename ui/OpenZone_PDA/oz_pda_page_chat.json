@@ -38,7 +38,7 @@
         {"button": {"name": "BtnOlder", "hidden": true, "h": 22, "font": "small", "edge": false, "bg": "$panel", "note": "Довантажити старіше; показується, коли є що, ховається в NPC-розмові."}},
         {"list": {"name": "ChatScroll", "stack": "ChatLines", "h": "fill", "rows": {
           "oz_pda_chat_line": {"row": {"name": "OZ_ChatLine", "stack": true,
-            "note": "Одна репліка. Висоту дає рушій: RichText переносить текст і міряє себе, стопка складає. Своє позначаємо смужкою LineMine і кольором імені.",
+            "note": "Одна репліка. Висоту дає рушій: багаторядковий текст переносить рядки і міряє себе, стопка складає. Своє позначаємо смужкою LineMine і кольором імені.",
             "children": [
               {"hrow": {"h": 22, "children": [
                 {"panel": {"name": "LineMine", "w": 2, "h": 16, "color": "$accent", "hidden": true}},
