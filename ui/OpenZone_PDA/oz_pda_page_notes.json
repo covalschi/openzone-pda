@@ -1,0 +1,35 @@
+{
+  "layout": "oz_pda_page_notes",
+  "note": "Сторінка «Нотатки»: ліворуч перелік (рядки кладе скрипт у NotesCanvas), праворуч редактор. WrapRuler -- невидима лінійка тим самим шрифтом, що й тіло: нею OZ_Unwrap міряє текст. Імена читає OZ_PdaPageNotes.c.",
+  "root": {"frame": {"name": "OZ_PageNotes", "size": "$device.page", "inset": "$space.page", "children": [
+    {"label": {"name": "WrapRuler", "size": [12, 12], "font": "field", "color": "$none", "hidden": true}}
+  ]}},
+  "body": {"hbox": {"gap": "$space.column", "children": [
+    {"vbox": {"w": 425, "gap": "$space.tight", "children": [
+      {"header": {"icon": "tab_notes", "title": {"name": "NotesHead", "text": "#STR_OZ_PAGE_NOTES"}}},
+      {"list": {"name": "NotesScroll", "stack": "NotesCanvas", "h": "fill", "rows": {
+        "oz_pda_note_row": {"row": {"name": "OZ_NoteRow", "h": 32, "click": true,
+          "note": "Одна нотатка: назва й дата; смужка ліворуч -- обрана.",
+          "children": [
+            {"panel": {"name": "RowPick", "at": [0, 4], "size": [2, 25], "color": "$accent", "hidden": true}},
+            {"label": {"name": "RowTitle", "at": [10, 0], "w": 285, "h": 32, "font": "body", "color": "$text"}},
+            {"label": {"name": "RowDate", "anchor": "right", "at": [12, 0], "w": "auto", "h": 32, "font": "small", "color": "$faint", "align": "right"}}
+          ]}}
+      }}},
+      {"label":  {"name": "NotesHint", "h": "$size.hint", "font": "hint", "color": "$faint"}},
+      {"button": {"name": "BtnNew", "h": 32, "font": "small"}}
+    ]}},
+    {"panel": {"name": "EditorPane", "w": "fill", "color": "$panel", "inset": 12, "click": true, "children": [
+      {"vbox": {"gap": "$space.gap", "children": [
+        {"field": {"name": "NoteTitle", "h": 32}},
+        {"field": {"name": "NoteBody", "h": "fill", "lines": 15}},
+        {"hbox": {"h": 32, "gap": "$space.gap", "children": [
+          {"button": {"name": "BtnSave", "w": 200, "font": "small"}},
+          {"button": {"name": "BtnDelete", "w": 200, "font": "small"}},
+          {"gap":    {"w": "fill"}},
+          {"button": {"name": "BtnNoteToCar", "w": 188, "font": "small"}}
+        ]}}
+      ]}}
+    ]}}
+  ]}}
+}

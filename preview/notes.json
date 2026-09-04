@@ -1,0 +1,8 @@
+{
+  "note": "Five notes in the list, as OZ_PdaPageNotes creates them; the first carries a title and a date to check the row layout.",
+  "ops": [
+    {"op": "add", "layout": "OpenZone_PDA/gui/layouts/oz_pda_note_row.layout", "into": "NotesCanvas", "count": 5},
+    {"op": "text", "name": "RowTitle", "nth": 1, "text": "Перша нотатка"},
+    {"op": "text", "name": "RowDate", "nth": 1, "text": "04.09"}
+  ]
+}
