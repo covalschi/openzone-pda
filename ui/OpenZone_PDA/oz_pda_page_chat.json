@@ -4,7 +4,7 @@
   "root": {"frame": {"name": "OZ_PageChat", "size": "$device.page", "inset": "$space.page"}},
   "body": {"hbox": {"gap": "$space.column", "children": [
     {"vbox": {"w": 375, "gap": "$space.gap", "children": [
-      {"header": {"icon": "tab_chat", "h": "$size.header", "title": {"name": "ChatListHead", "text": "#STR_OZ_CHAT_LIST", "font": "header"}}},
+      {"header": {"icon": "tab_chat", "h": "$size.header", "title": {"name": "ChatListHead", "text": "#STR_OZ_CHAT_LIST"}}},
       {"list": {"name": "ChatListScroll", "stack": "ChatList", "h": "fill", "rows": {
         "oz_pda_chat_head": {"row": {"name": "OZ_ChatHead", "h": "$size.chatHead", "click": true,
           "note": "Одна бесіда. Ім'я кореня скрипт ставить в Id бесіди, SetUserID(3).",
@@ -30,7 +30,7 @@
     ]}},
     {"frame": {"name": "ChatRight", "w": "fill", "children": [
       {"vbox": {"gap": "$space.tight", "children": [
-        {"header": {"h": "$size.header", "title": {"name": "ChatTitle", "font": "header"}, "actions": [
+        {"header": {"h": "$size.header", "title": {"name": "ChatTitle"}, "actions": [
           {"button": {"name": "BtnMembers", "w": 138, "font": "small", "hidden": true}},
           {"button": {"name": "BtnGroupEdit", "w": 172, "font": "small", "hidden": true}},
           {"button": {"name": "BtnInvite", "w": 225, "font": "small", "hidden": true}}
@@ -59,11 +59,11 @@
         {"label": {"name": "ChatHint", "h": 30, "font": "hint", "color": "$faint"}}
       ]}},
       {"panel": {"name": "MembersPanel", "at": [0, 40], "w": "fill", "h": 370, "color": "$panel", "hidden": true, "priority": 5, "inset": 10, "click": true, "children": [
-        {"label": {"name": "MembersHead", "w": 625, "h": 20, "font": "small", "color": "$accent"}},
+        {"label": {"name": "MembersHead", "w": "fill", "h": 20, "font": "header", "color": "$accent"}},
         {"text":  {"name": "MembersList", "at": [0, 25], "w": "fill", "h": 320, "grow": false, "plain": true, "font": "field", "color": "$muted"}}
       ]}},
       {"panel": {"name": "GroupPanel", "at": [0, 40], "w": "fill", "h": 370, "color": "$panel", "hidden": true, "priority": 6, "inset": 10, "click": true, "children": [
-        {"label":  {"name": "GroupHead", "w": 625, "h": 20, "font": "header", "color": "$accent"}},
+        {"label":  {"name": "GroupHead", "w": "fill", "h": 20, "font": "header", "color": "$accent"}},
         {"field":  {"name": "GName", "at": [0, 40], "size": [525, 32]}},
         {"field":  {"name": "GDesc", "at": [0, 95], "w": "fill", "h": 32}},
         {"button": {"name": "BtnGDel", "anchor": "bottom", "at": [0, 0], "size": [162, 28], "font": "small"}},
@@ -71,7 +71,7 @@
         {"button": {"name": "BtnGCancel", "anchor": "bottom-right", "at": [0, 0], "size": [130, 28], "font": "small"}}
       ]}},
       {"panel": {"name": "InvitePanel", "at": [0, 40], "w": "fill", "h": 370, "color": "$panel", "hidden": true, "priority": 6, "inset": 10, "click": true, "children": [
-        {"label":   {"name": "InviteHead", "w": 625, "h": 20, "font": "header", "color": "$accent"}},
+        {"label":   {"name": "InviteHead", "w": "fill", "h": 20, "font": "header", "color": "$accent"}},
         {"listbox": {"name": "InviteList", "at": [0, 27], "w": "fill", "h": 295, "font": "hint",
                      "props": {"style": "NoScrollBar", "title visible": 0, "highlight row": 1, "lines": 14}}},
         {"button":  {"name": "BtnInvCancel", "anchor": "bottom-right", "at": [0, 0], "size": [130, 28], "font": "small"}}

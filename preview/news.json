@@ -4,7 +4,7 @@
     {"op": "add", "layout": "OpenZone_PDA/gui/layouts/oz_pda_news_row.layout", "into": "NewsRows", "count": 3},
     {"op": "text", "name": "RowTitle", "nth": 1, "text": "Sidorovych sells detectors again"},
     {"op": "text", "name": "RowMeta", "nth": 1, "text": "Sidorovych, 12:40"},
-    {"op": "text", "name": "RowTitle", "nth": 2, "text": "A very long headline that should wrap or be cut, not run under the neighbouring column"},
+    {"op": "text", "name": "RowTitle", "nth": 2, "text": "Дуже довгий заголовок, який має переноситися, а не залазити під сусідню колонку"},
     {"op": "text", "name": "RowMeta", "nth": 2, "text": "Barman, 09:15"},
     {"op": "text", "name": "RowTitle", "nth": 3, "text": "Short"},
     {"op": "text", "name": "RowMeta", "nth": 3, "text": "Survivor, 08:00"}

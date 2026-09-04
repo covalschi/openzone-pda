@@ -38,7 +38,7 @@ FrameWidgetClass OZ_PageChat {
    text "#STR_OZ_CHAT_LIST"
    font "gui/fonts/sdf_MetronBook24"
    "exact text" 1
-   "exact text size" 16
+   "exact text size" 18
    "text halign" left
    "text valign" center
   }
@@ -150,7 +150,7 @@ FrameWidgetClass OZ_PageChat {
      text ""
      font "gui/fonts/sdf_MetronBook24"
      "exact text" 1
-     "exact text size" 16
+     "exact text size" 18
      "text halign" left
      "text valign" center
     }
@@ -588,7 +588,7 @@ FrameWidgetClass OZ_PageChat {
        visible 1
        ignorepointer 1
        position 10 10
-       size 625 20
+       size 851 20
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -598,7 +598,7 @@ FrameWidgetClass OZ_PageChat {
        text ""
        font "gui/fonts/sdf_MetronBook24"
        "exact text" 1
-       "exact text size" 13
+       "exact text size" 16
        "text halign" left
        "text valign" center
       }
@@ -640,7 +640,7 @@ FrameWidgetClass OZ_PageChat {
        visible 1
        ignorepointer 1
        position 10 10
-       size 625 20
+       size 851 20
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -932,7 +932,7 @@ FrameWidgetClass OZ_PageChat {
        visible 1
        ignorepointer 1
        position 10 10
-       size 625 20
+       size 851 20
        hexactpos 1
        vexactpos 1
        hexactsize 1

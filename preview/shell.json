@@ -1,5 +1,5 @@
 {
-  "note": "Seven tabs in the rail, as the script creates them for a device profile with every page; the fifth tab (chat) carries an unread badge.",
+  "note": "Seven tabs in the rail, as the script creates them for a device profile with every page; the fifth tab shows the TabBadge fixture ahead of the unread counter phase B2 will wire.",
   "ops": [
     {"op": "add", "layout": "OpenZone_PDA/gui/layouts/oz_pda_tab.layout", "into": "TabRail", "count": 7},
     {"op": "text", "name": "TabLabel", "nth": 1, "text": "ПРИСТРIЙ"},

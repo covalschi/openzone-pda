@@ -1,6 +1,6 @@
 {
   "layout": "oz_pda_tab",
-  "note": "Одна вкладка рельса: іконка, підпис, смуга активної, лічильник. Скрипт ставить ім'я сторінки (SetName), SetUserID(1), вантажить іконку в TabIcon і текст у TabLabel; TabActive/TabHover/TabMark/TabBadge вмикає сам.",
+  "note": "Одна вкладка рельса: іконка, підпис, смуга активної, лічильник. Скрипт ставить ім'я сторінки (SetName), SetUserID(1), вантажить іконку в TabIcon і текст у TabLabel; TabActive/TabHover/TabMark вмикає сам. TabBadge намальований наперед лічильника непрочитаного, який підключить фаза B2 -- поки що його нічого не вмикає.",
   "root": {"button": {"name": "OZ_PdaTab", "size": [60, "$size.tab"], "children": [
     {"panel": {"name": "TabActive", "size": "fill", "color": "$pick", "hidden": true, "priority": 1}},
     {"panel": {"name": "TabHover", "size": "fill", "color": "$hover", "hidden": true, "priority": 2}},
