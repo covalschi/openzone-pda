@@ -10,7 +10,7 @@
           "children": [
             {"panel": {"name": "RowBg", "size": "fill", "color": "$panel"}},
             {"panel": {"name": "HeadPick", "size": "fill", "color": "$pick", "hidden": true}},
-            {"label": {"name": "HeadTitle", "at": [15, 4], "w": "fill", "h": 22, "font": "header", "color": "$text"}},
+            {"label": {"name": "HeadTitle", "at": [15, 4], "w": "fill", "h": 23, "font": "header", "color": "$text"}},
             {"label": {"name": "HeadKind", "at": [15, 27], "w": "fill", "h": 19, "font": "small", "color": "$muted"}},
             {"rule":  {"name": "HeadLine", "anchor": "bottom", "at": [15, 0], "w": "fill"}}
           ]}},
@@ -19,8 +19,8 @@
           "children": [
             {"panel": {"name": "InvBg", "at": [0, 0], "w": "fill", "h": 45, "color": "$raised"}},
             {"chip":  {"name": "InvEdge", "hidden": false, "color": "$alert"}},
-            {"label": {"name": "InvTitle", "at": [12, 2], "w": 225, "h": 22, "font": "body", "color": "$text"}},
-            {"label": {"name": "InvFrom", "at": [12, 24], "w": 225, "h": 20, "font": "small", "color": "$muted"}},
+            {"label": {"name": "InvTitle", "at": [12, 2], "w": 215, "h": 22, "font": "body", "color": "$text"}},
+            {"label": {"name": "InvFrom", "at": [12, 24], "w": 215, "h": 20, "font": "small", "color": "$muted"}},
             {"button": {"name": "InvJoin", "anchor": "right", "at": [70, 9], "size": [60, 28], "text": "#STR_OZ_CHAT_INV_JOIN", "font": "small", "edge": false}},
             {"button": {"name": "InvDecl", "anchor": "right", "at": [5, 9], "size": [60, 28], "text": "#STR_OZ_CHAT_INV_DECL", "font": "small", "edge": false}}
           ]}}

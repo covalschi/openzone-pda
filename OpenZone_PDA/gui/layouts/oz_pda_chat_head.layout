@@ -40,7 +40,7 @@ ButtonWidgetClass OZ_ChatHead {
    visible 1
    ignorepointer 1
    position 15 4
-   size 350 22
+   size 350 23
    hexactpos 1
    vexactpos 1
    hexactsize 1
