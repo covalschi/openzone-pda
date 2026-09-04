@@ -499,7 +499,7 @@ FrameWidgetClass OZ_PageDevice {
          vexactsize 1
          color 0.31 0.71 0.91 1
          priority 1
-         text "SYSTEM"
+         text "#STR_OZ_DEV_SEC_SYSTEM"
          font "gui/fonts/sdf_MetronBook24"
          "exact text" 1
          "exact text size" 16
@@ -616,7 +616,7 @@ FrameWidgetClass OZ_PageDevice {
          vexactsize 1
          color 0.31 0.71 0.91 1
          priority 1
-         text "HARDWARE"
+         text "#STR_OZ_DEV_SEC_HARDWARE"
          font "gui/fonts/sdf_MetronBook24"
          "exact text" 1
          "exact text size" 16
@@ -1003,7 +1003,7 @@ FrameWidgetClass OZ_PageDevice {
          vexactsize 1
          color 0.31 0.71 0.91 1
          priority 1
-         text "SECURITY"
+         text "#STR_OZ_DEV_SEC_SECURITY"
          font "gui/fonts/sdf_MetronBook24"
          "exact text" 1
          "exact text size" 16
@@ -1380,7 +1380,7 @@ FrameWidgetClass OZ_PageDevice {
          vexactsize 1
          color 0.31 0.71 0.91 1
          priority 1
-         text "POWER"
+         text "#STR_OZ_DEV_SEC_POWER"
          font "gui/fonts/sdf_MetronBook24"
          "exact text" 1
          "exact text size" 16
@@ -1516,8 +1516,9 @@ FrameWidgetClass OZ_PageDevice {
         }
        }
       }
+      // Прихований рішенням огляду задачі 34: той самий «ЗАРЯД 39 %» уже стоїть у смузі стану оболонки. Скрипт пише сюди й далі (SetHint) -- напис живий, просто не видний.
       TextWidgetClass ChargeLabel {
-       visible 1
+       visible 0
        ignorepointer 1
        position 0 276
        size 623 22

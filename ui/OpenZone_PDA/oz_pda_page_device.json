@@ -38,12 +38,12 @@
   ]}},
   "body": {"hbox": {"name": "StatePane", "gap": "$space.column", "priority": 2, "children": [
     {"vbox": {"name": "ColSys", "w": "fill", "gap": "$space.tight", "children": [
-      {"section": {"name": "SecSys", "text": "SYSTEM"}},
+      {"section": {"name": "SecSys", "text": "#STR_OZ_DEV_SEC_SYSTEM"}},
       {"text":  {"name": "SessionText", "h": 44, "plain": true, "grow": false, "font": "body", "color": "$ok",
                  "note": "Переноситься: «БЕЗ ЗВ'ЯЗКУ - оновлення не надходять» плюс ім'я власника довше за один рядок."}},
       {"label": {"name": "LinkText", "h": 22, "font": "small", "color": "$muted"}},
       {"text":  {"name": "SnapshotText", "h": 70, "plain": true, "grow": false, "font": "hint", "color": "$muted"}},
-      {"section": {"name": "SecHw", "text": "HARDWARE"}},
+      {"section": {"name": "SecHw", "text": "#STR_OZ_DEV_SEC_HARDWARE"}},
       {"label": {"name": "BaysLabel", "h": 22, "text": "#STR_OZ_DEV_BAYS", "font": "small", "color": "$muted"}},
       {"label": {"name": "BayText0", "h": 24, "font": "body", "color": "$text"}},
       {"label": {"name": "BayText1", "h": 24, "font": "body", "color": "$text"}},
@@ -59,7 +59,7 @@
     {"vbox": {"name": "ColSec", "w": "fill", "gap": "$space.tight",
       "note": "Кнопки стоять однією вертикаллю праворуч, як у старому файлі; підпис ліворуч бере решту рядка. Кнопка 240, а не 190 як у старому файлі: «ВИМКНУТИ АВТОБЛОКУВАННЯ» міряється 312 px у 281 px коробці на 3840x1600 (зміряно живим обходом 2026-09-04).",
       "children": [
-      {"section": {"name": "SecSec", "text": "SECURITY"}},
+      {"section": {"name": "SecSec", "text": "#STR_OZ_DEV_SEC_SECURITY"}},
       {"hbox": {"h": "$size.field", "gap": "$space.gap", "children": [
         {"label":  {"name": "PinText", "w": "fill", "font": "body", "color": "$text"}},
         {"button": {"name": "BtnPin", "w": 240, "font": "small"}}
@@ -80,13 +80,14 @@
         {"gap":    {"w": "fill"}},
         {"button": {"name": "BtnHudEdit", "w": 240, "font": "small"}}
       ]}},
-      {"section": {"name": "SecDev", "text": "POWER"}},
+      {"section": {"name": "SecDev", "text": "#STR_OZ_DEV_SEC_POWER"}},
       {"hbox": {"h": "$size.field", "gap": "$space.gap", "children": [
         {"button": {"name": "BtnInit", "w": 240, "font": "small", "hidden": true}},
         {"gap":    {"w": "fill"}},
         {"button": {"name": "BtnPower", "w": 240, "font": "small"}}
       ]}},
-      {"label": {"name": "ChargeLabel", "h": 22, "font": "small", "color": "$muted"}},
+      {"label": {"name": "ChargeLabel", "h": 22, "font": "small", "color": "$muted", "hidden": true,
+                 "note": "Прихований рішенням огляду задачі 34: той самий «ЗАРЯД 39 %» уже стоїть у смузі стану оболонки. Скрипт пише сюди й далі (SetHint) -- напис живий, просто не видний."}},
       {"bar":   {"name": "ChargeBar", "w": "fill", "track": "$rule", "fill": "$accent",
                  "note": "Порожня доріжка: ChargeBarFill розтягує PaintCharge часткою заряду."}},
       {"text":  {"name": "RadText", "h": 44, "plain": true, "grow": false, "font": "hint", "color": "$bad",
