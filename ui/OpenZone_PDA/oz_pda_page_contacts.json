@@ -3,8 +3,7 @@
   "note": "Сторінка «Контакти»: хто зараз у Зоні. Ліва половина вкладки (640x518), права належить сторінці фракції. Імена читає OZ_PdaPageContacts.c: ContactsHeader, ContactList, ContactsHint, BtnHide, BtnHideContacts, BtnMsg, BtnFriend та їхні *Text; у рядку -- RowChip, RowPick, RowName, RowFaction, RowWhere, RowDetail.",
   "root": {"frame": {"name": "OZ_PageContacts", "size": "$device.half", "inset": "$space.page"}},
   "body": {"vbox": {"gap": "$space.tight", "children": [
-    {"hbox": {"h": "$size.header", "gap": "$space.gap", "children": [
-      {"label":  {"name": "ContactsHeader", "w": "fill", "font": "title", "color": "$accent"}},
+    {"header": {"icon": "tab_contacts", "h": "$size.header", "title": {"name": "ContactsHeader"}, "actions": [
       {"button": {"name": "BtnHide", "w": 195, "font": "small"}},
       {"button": {"name": "BtnHideContacts", "w": 195, "font": "small"}}
     ]}},

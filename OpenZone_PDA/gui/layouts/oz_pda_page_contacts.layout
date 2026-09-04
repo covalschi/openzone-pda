@@ -9,17 +9,32 @@ FrameWidgetClass OZ_PageContacts {
  hexactsize 1
  vexactsize 1
  {
-  TextWidgetClass ContactsHeader {
+  ImageWidgetClass ContactsHeaderIcon {
    visible 1
    ignorepointer 1
-   position 20 20
-   size 190 34
+   position 20 26
+   size 22 22
    hexactpos 1
    vexactpos 1
    hexactsize 1
    vexactsize 1
    color 0.31 0.71 0.91 1
    priority 0
+   image0 "set:oz_pda_icons image:tab_contacts"
+   mode blend
+   "src alpha" 1
+  }
+  TextWidgetClass ContactsHeader {
+   visible 1
+   ignorepointer 1
+   position 52 20
+   size 158 34
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   color 0.31 0.71 0.91 1
+   priority 1
    text ""
    font "gui/fonts/sdf_MetronBook24"
    "exact text" 1
@@ -36,7 +51,7 @@ FrameWidgetClass OZ_PageContacts {
    hexactsize 1
    vexactsize 1
    text ""
-   priority 1
+   priority 2
    {
     PanelWidgetClass BtnHideEdge {
      visible 1
@@ -93,7 +108,7 @@ FrameWidgetClass OZ_PageContacts {
    hexactsize 1
    vexactsize 1
    text ""
-   priority 2
+   priority 3
    {
     PanelWidgetClass BtnHideContactsEdge {
      visible 1
