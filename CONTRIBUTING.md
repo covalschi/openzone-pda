@@ -27,7 +27,14 @@ cannot be accepted. **GPL code in particular cannot go in.**
 - **Do not invent DayZ API.** Every engine call must be checked against the
   unpacked game scripts. If you are not sure, unpack the PBO and look.
 - **No text in code.** Every user-facing string goes through the stringtable.
-  English is the base language.
+  `original` is Ukrainian, `english` is English, and the twelve remaining vanilla
+  columns repeat `original`; the capital Ukrainian `І` is stored as the Latin `I`
+  because no Metron font draws U+0406.
+- **`OpenZone_PDA/gui/layouts/*.layout` files are generated, never hand-edited.**
+  They come from `ui/OpenZone_PDA/*.json` plus `ui/tokens.json`; regenerate with
+  the MCP's `layout_build`, or `python -m dayz_mcp.layoutgen <root> OpenZone_PDA`
+  from the generator repo. Run the gallery at two sizes and in two languages
+  before calling a UI change done.
 - **No hard dependency beyond Community Framework.** Anything else is an optional
   provider behind an `#ifdef` plus a runtime probe, with a working fallback.
 - **Never identify an item by inheritance from our own class.** Item classnames come

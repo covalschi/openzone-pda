@@ -38,7 +38,7 @@ Early development. Nothing is published to the Workshop yet, and the items are n
 the central economy — an admin has to spawn them.
 
 Working and exercised on a test server: the device itself (battery, power, PIN, lazy
-auto-lock), sealed quest devices opened with a decryptor on a countdown, the six-page
+auto-lock), sealed quest devices opened with a decryptor on a countdown, the seven-page
 shell with a tab strip built from the device's own profile, per-device map markers,
 the contacts list with proximity-gated friend requests, notes, and the hardware
 contract that lets another mod add its own module, tab and page.
