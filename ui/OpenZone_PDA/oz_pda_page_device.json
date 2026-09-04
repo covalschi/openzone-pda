@@ -86,8 +86,8 @@
         {"gap":    {"w": "fill"}},
         {"button": {"name": "BtnPower", "w": 240, "font": "small"}}
       ]}},
-      {"label": {"name": "ChargeLabel", "h": 22, "font": "small", "color": "$muted", "hidden": true,
-                 "note": "Прихований рішенням огляду задачі 34: той самий «ЗАРЯД 39 %» уже стоїть у смузі стану оболонки. Скрипт пише сюди й далі (SetHint) -- напис живий, просто не видний."}},
+      {"label": {"name": "ChargeLabel", "h": 22, "font": "small", "color": "$muted",
+                 "note": "Порожній рядок відмови: відсоток заряду живе у смузі стану оболонки, а сюди пише лише SetHintSticky -- «немає живлення», «немає батареї» (OZ_PdaPageDevice.c, op power). У звичайному малюванні PaintCharge ставить сюди порожній рядок, і липка відмова тримається свої секунди. Ховати не можна: іншого місця в тієї відмови немає."}},
       {"bar":   {"name": "ChargeBar", "w": "fill", "track": "$rule", "fill": "$accent",
                  "note": "Порожня доріжка: ChargeBarFill розтягує PaintCharge часткою заряду."}},
       {"text":  {"name": "RadText", "h": 44, "plain": true, "grow": false, "font": "hint", "color": "$bad",

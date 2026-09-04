@@ -531,16 +531,13 @@ class OZ_PdaPageDevice : OZ_PdaPage
 
     private void PaintCharge(OZ_PdaDeviceStatus st)
     {
-        string label;
-        if (!st.Powered)
-            label = "#STR_OZ_DEV_OFF";
-        else
-        {
-            int pct = Math.Round(st.Charge01 * 100);
-            label = "#STR_OZ_DEV_POWER";
-            label += "  " + pct.ToString() + "%";
-        }
-        SetHint("ChargeLabel", label);
+        // ChargeLabel НЕ пише відсоток: те саме «ЖИВЛЕННЯ 39 %» уже стоїть у
+        // смузі стану оболонки, і два написи про одне -- це другий шрифт для
+        // тієї самої правди. Рядок лишається за відмовами: SetHintSticky
+        // кладе сюди «немає живлення» / «немає батареї» (OnOpResult, op
+        // power), а звичайне малювання поступається липкій підказці, поки та
+        // тримається (OZ_PdaPage.SetHint), і чистить рядок, коли вийшла.
+        SetHint("ChargeLabel", "");
 
         // Напис на кнопці -- це те, що станеться після натискання, а не те,
         // що є зараз. Без батареї вмикати нічого, і кнопка про це й пише.
