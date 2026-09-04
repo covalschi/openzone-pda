@@ -63,11 +63,11 @@ FrameWidgetClass OZ_PageMap {
       }
      }
     }
-    // Порожні кінці замість inset: hbox не має відступу, а $space.gap на краю плюс власний проміжок рядка дають ті самі 20 одиниць поля, що й у решти сторінок. Ширина 981 -- рівно до лівого краю панелі позначок (1306 - 325): відкритий список не має накривати кнопку нової позначки.
+    // Порожні кінці замість inset: hbox не має відступу, а $space.gap на краю плюс власний проміжок рядка дають ті самі 20 одиниць поля, що й у решти сторінок. Ширина 957 -- рівно до лівого краю панелі позначок (1282 - 325): відкритий список не має накривати кнопку нової позначки.
     FrameWidgetClass MapBar {
      visible 1
      position 0 472
-     size 981 32
+     size 957 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -248,7 +248,7 @@ FrameWidgetClass OZ_PageMap {
       PanelWidgetClass MarkNameFrame {
        visible 1
        position 557 0
-       size 244 32
+       size 220 32
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -261,7 +261,7 @@ FrameWidgetClass OZ_PageMap {
          visible 1
          ignorepointer 1
          position 1 1
-         size 242 30
+         size 218 30
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -273,7 +273,7 @@ FrameWidgetClass OZ_PageMap {
         EditBoxWidgetClass MarkName {
          visible 1
          position 6 0
-         size 232 32
+         size 208 32
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -289,7 +289,7 @@ FrameWidgetClass OZ_PageMap {
       }
       ButtonWidgetClass BtnMark {
        visible 1
-       position 811 0
+       position 787 0
        size 150 32
        hexactpos 1
        vexactpos 1
@@ -366,7 +366,7 @@ FrameWidgetClass OZ_PageMap {
    "text halign" left
    "text valign" center
   }
-  // Список позначок стоїть ПОРУЧ із мапою, а не над нею: мапа малює себе поверх усього. Ширина 325 -- зі специфікації; сервер ріже назву позначки на 32 байтах (OZ_PdaTuning.MarkerNameMaxBytes), тобто 16 українських літер, і ширшої панелі під довші назви не треба -- таких назв не буває. LIST_SQUEEZE у скрипті: 1306 * 0.7397 = 966, панель починається на 981, між ними 15 одиниць. click: true -- панель ловить кліки сама, щоб вони не провалювались на мапу під нею.
+  // Список позначок стоїть ПОРУЧ із мапою, а не над нею: мапа малює себе поверх усього. Ширина 325 -- зі специфікації; сервер ріже назву позначки на 32 байтах (OZ_PdaTuning.MarkerNameMaxBytes), тобто 16 українських літер, і ширшої панелі під довші назви не треба -- таких назв не буває. LIST_SQUEEZE у скрипті: 1282 * 0.7397 = 948, панель починається на 957, між ними 15 одиниць. click: true -- панель ловить кліки сама, щоб вони не провалювались на мапу під нею.
   PanelWidgetClass MarkerPanel {
    visible 0
    halign right_ref
