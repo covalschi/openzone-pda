@@ -63,11 +63,11 @@ FrameWidgetClass OZ_PageMap {
       }
      }
     }
-    // Порожні кінці замість inset: hbox не має відступу, а $space.gap на краю плюс власний проміжок рядка дають ті самі 20 одиниць поля, що й у решти сторінок. Ширина 961 -- рівно до лівого краю панелі позначок (1306 - 345): відкритий список не має накривати кнопку нової позначки.
+    // Порожні кінці замість inset: hbox не має відступу, а $space.gap на краю плюс власний проміжок рядка дають ті самі 20 одиниць поля, що й у решти сторінок. Ширина 981 -- рівно до лівого краю панелі позначок (1306 - 325): відкритий список не має накривати кнопку нової позначки.
     FrameWidgetClass MapBar {
      visible 1
      position 0 472
-     size 961 32
+     size 981 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -248,7 +248,7 @@ FrameWidgetClass OZ_PageMap {
       PanelWidgetClass MarkNameFrame {
        visible 1
        position 557 0
-       size 224 32
+       size 244 32
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -261,7 +261,7 @@ FrameWidgetClass OZ_PageMap {
          visible 1
          ignorepointer 1
          position 1 1
-         size 222 30
+         size 242 30
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -273,7 +273,7 @@ FrameWidgetClass OZ_PageMap {
         EditBoxWidgetClass MarkName {
          visible 1
          position 6 0
-         size 212 32
+         size 232 32
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -289,7 +289,7 @@ FrameWidgetClass OZ_PageMap {
       }
       ButtonWidgetClass BtnMark {
        visible 1
-       position 791 0
+       position 811 0
        size 150 32
        hexactpos 1
        vexactpos 1
@@ -366,12 +366,12 @@ FrameWidgetClass OZ_PageMap {
    "text halign" left
    "text valign" center
   }
-  // Список позначок стоїть ПОРУЧ із мапою, а не над нею: мапа малює себе поверх усього. Ширина 345 -- від найдовшої назви позначки: 281 одиниця рядка проти зміряних 271 на «Схрон біля Агропрому за трубами». LIST_SQUEEZE у скрипті йде за нею: 1306 * 0.7351 = 960, панель починається на 961. click: true -- панель ловить кліки сама, щоб вони не провалювались на мапу під нею.
+  // Список позначок стоїть ПОРУЧ із мапою, а не над нею: мапа малює себе поверх усього. Ширина 325 -- зі специфікації; сервер ріже назву позначки на 32 байтах (OZ_PdaTuning.MarkerNameMaxBytes), тобто 16 українських літер, і ширшої панелі під довші назви не треба -- таких назв не буває. LIST_SQUEEZE у скрипті: 1306 * 0.7397 = 966, панель починається на 981, між ними 15 одиниць. click: true -- панель ловить кліки сама, щоб вони не провалювались на мапу під нею.
   PanelWidgetClass MarkerPanel {
    visible 0
    halign right_ref
    position 0 0
-   size 345 518
+   size 325 518
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -383,7 +383,7 @@ FrameWidgetClass OZ_PageMap {
     FrameWidgetClass MarkerCol {
      visible 1
      position 6 6
-     size 333 506
+     size 313 506
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -394,7 +394,7 @@ FrameWidgetClass OZ_PageMap {
       FrameWidgetClass SecMarks {
        visible 1
        position 0 0
-       size 333 30
+       size 313 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -418,7 +418,7 @@ FrameWidgetClass OZ_PageMap {
          visible 1
          ignorepointer 1
          position 12 0
-         size 321 24
+         size 301 24
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -436,7 +436,7 @@ FrameWidgetClass OZ_PageMap {
          visible 1
          ignorepointer 1
          position 0 29
-         size 333 1
+         size 313 1
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -450,7 +450,7 @@ FrameWidgetClass OZ_PageMap {
       ScrollWidgetClass MarkerScroll {
        visible 1
        position 0 36
-       size 333 186
+       size 313 178
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -476,8 +476,8 @@ FrameWidgetClass OZ_PageMap {
       }
       PanelWidgetClass MarkerNameFrame {
        visible 1
-       position 0 228
-       size 333 28
+       position 0 220
+       size 313 28
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -490,7 +490,7 @@ FrameWidgetClass OZ_PageMap {
          visible 1
          ignorepointer 1
          position 1 1
-         size 331 26
+         size 311 26
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -502,7 +502,7 @@ FrameWidgetClass OZ_PageMap {
         EditBoxWidgetClass MarkerName {
          visible 1
          position 6 0
-         size 321 28
+         size 301 28
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -516,11 +516,11 @@ FrameWidgetClass OZ_PageMap {
         }
        }
       }
-      // Багаторядкове поле: lines дає MultilineEditBoxWidgetClass.
+      // Багаторядкове поле: lines дає MultilineEditBoxWidgetClass. Висота 58, бо рамка з'їдає 8: усередині лишається 50 -- рівно стільки, скільки мало поле в рукописному файлі. При 50 всередині було 42, а це 2.3 рядка MetronBook14 (~18.5 одиниці на рядок), хоч lines і каже три.
       PanelWidgetClass MarkerDescFrame {
        visible 1
-       position 0 262
-       size 333 50
+       position 0 254
+       size 313 58
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -533,7 +533,7 @@ FrameWidgetClass OZ_PageMap {
          visible 1
          ignorepointer 1
          position 1 1
-         size 331 48
+         size 311 56
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -545,7 +545,7 @@ FrameWidgetClass OZ_PageMap {
         MultilineEditBoxWidgetClass MarkerDesc {
          visible 1
          position 6 4
-         size 321 42
+         size 301 50
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -563,7 +563,7 @@ FrameWidgetClass OZ_PageMap {
       FrameWidgetClass MarkerBtns {
        visible 1
        position 0 318
-       size 333 30
+       size 313 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -573,7 +573,7 @@ FrameWidgetClass OZ_PageMap {
         ButtonWidgetClass BtnMarkSave {
          visible 1
          position 0 0
-         size 163.5 30
+         size 153.5 30
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -585,7 +585,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position -1 -1
-           size 165.5 32
+           size 155.5 32
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -598,7 +598,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position 0 0
-           size 163.5 30
+           size 153.5 30
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -611,7 +611,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position 0 0
-           size 163.5 30
+           size 153.5 30
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -629,8 +629,8 @@ FrameWidgetClass OZ_PageMap {
         }
         ButtonWidgetClass BtnMarkDel {
          visible 1
-         position 169.5 0
-         size 163.5 30
+         position 159.5 0
+         size 153.5 30
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -642,7 +642,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position -1 -1
-           size 165.5 32
+           size 155.5 32
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -655,7 +655,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position 0 0
-           size 163.5 30
+           size 153.5 30
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -668,7 +668,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position 0 0
-           size 163.5 30
+           size 153.5 30
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -689,7 +689,7 @@ FrameWidgetClass OZ_PageMap {
       FrameWidgetClass MarkerSendBtns {
        visible 1
        position 0 354
-       size 333 30
+       size 313 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -699,7 +699,7 @@ FrameWidgetClass OZ_PageMap {
         ButtonWidgetClass BtnMarkShare {
          visible 1
          position 0 0
-         size 163.5 30
+         size 153.5 30
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -711,7 +711,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position -1 -1
-           size 165.5 32
+           size 155.5 32
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -724,7 +724,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position 0 0
-           size 163.5 30
+           size 153.5 30
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -737,7 +737,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position 0 0
-           size 163.5 30
+           size 153.5 30
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -755,8 +755,8 @@ FrameWidgetClass OZ_PageMap {
         }
         ButtonWidgetClass BtnMarkToCar {
          visible 1
-         position 169.5 0
-         size 163.5 30
+         position 159.5 0
+         size 153.5 30
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -768,7 +768,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position -1 -1
-           size 165.5 32
+           size 155.5 32
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -781,7 +781,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position 0 0
-           size 163.5 30
+           size 153.5 30
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -794,7 +794,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position 0 0
-           size 163.5 30
+           size 153.5 30
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -815,7 +815,7 @@ FrameWidgetClass OZ_PageMap {
       ButtonWidgetClass BtnMarkTrack {
        visible 1
        position 0 390
-       size 333 30
+       size 313 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -827,7 +827,7 @@ FrameWidgetClass OZ_PageMap {
          visible 1
          ignorepointer 1
          position -1 -1
-         size 335 32
+         size 315 32
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -840,7 +840,7 @@ FrameWidgetClass OZ_PageMap {
          visible 1
          ignorepointer 1
          position 0 0
-         size 333 30
+         size 313 30
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -853,7 +853,7 @@ FrameWidgetClass OZ_PageMap {
          visible 1
          ignorepointer 1
          position 0 0
-         size 333 30
+         size 313 30
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -874,7 +874,7 @@ FrameWidgetClass OZ_PageMap {
        visible 1
        ignorepointer 1
        position 0 426
-       size 333 20
+       size 313 20
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -891,7 +891,7 @@ FrameWidgetClass OZ_PageMap {
       FrameWidgetClass RouteBtns {
        visible 1
        position 0 452
-       size 333 24
+       size 313 24
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -901,7 +901,7 @@ FrameWidgetClass OZ_PageMap {
         ButtonWidgetClass BtnRouteAdd {
          visible 1
          position 0 0
-         size 163.5 24
+         size 153.5 24
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -913,7 +913,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position -1 -1
-           size 165.5 26
+           size 155.5 26
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -926,7 +926,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position 0 0
-           size 163.5 24
+           size 153.5 24
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -939,7 +939,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position 0 0
-           size 163.5 24
+           size 153.5 24
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -957,8 +957,8 @@ FrameWidgetClass OZ_PageMap {
         }
         ButtonWidgetClass BtnRouteClear {
          visible 1
-         position 169.5 0
-         size 163.5 24
+         position 159.5 0
+         size 153.5 24
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -970,7 +970,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position -1 -1
-           size 165.5 26
+           size 155.5 26
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -983,7 +983,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position 0 0
-           size 163.5 24
+           size 153.5 24
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -996,7 +996,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position 0 0
-           size 163.5 24
+           size 153.5 24
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -1017,7 +1017,7 @@ FrameWidgetClass OZ_PageMap {
       FrameWidgetClass RouteGoBtns {
        visible 1
        position 0 482
-       size 333 24
+       size 313 24
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -1027,7 +1027,7 @@ FrameWidgetClass OZ_PageMap {
         ButtonWidgetClass BtnRouteGo {
          visible 1
          position 0 0
-         size 163.5 24
+         size 153.5 24
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -1039,7 +1039,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position -1 -1
-           size 165.5 26
+           size 155.5 26
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -1052,7 +1052,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position 0 0
-           size 163.5 24
+           size 153.5 24
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -1065,7 +1065,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position 0 0
-           size 163.5 24
+           size 153.5 24
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -1083,8 +1083,8 @@ FrameWidgetClass OZ_PageMap {
         }
         ButtonWidgetClass BtnRouteToCar {
          visible 1
-         position 169.5 0
-         size 163.5 24
+         position 159.5 0
+         size 153.5 24
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -1096,7 +1096,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position -1 -1
-           size 165.5 26
+           size 155.5 26
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -1109,7 +1109,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position 0 0
-           size 163.5 24
+           size 153.5 24
            hexactpos 1
            vexactpos 1
            hexactsize 1
@@ -1122,7 +1122,7 @@ FrameWidgetClass OZ_PageMap {
            visible 1
            ignorepointer 1
            position 0 0
-           size 163.5 24
+           size 153.5 24
            hexactpos 1
            vexactpos 1
            hexactsize 1

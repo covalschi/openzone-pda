@@ -52,9 +52,10 @@ class OZ_PdaPageMap : OZ_PdaPage
     private float m_MapW;
     private float m_MapH;
 
-    // Скільки ширини лишається карті при відкритому списку: 960 з 1306
-    // одиниць розкладки -- панель шириною 345 починається на 961.
-    private static const float LIST_SQUEEZE = 0.7351;
+    // Скільки ширини лишається карті при відкритому списку: 966 з 1306
+    // одиниць розкладки. Панель шириною 325 починається на 981, тобто між
+    // стиснутою картою й списком лишається 15 одиниць повітря.
+    private static const float LIST_SQUEEZE = 0.7397;
 
     // АДМІНСЬКИХ КНОПОК ТУТ БІЛЬШЕ НЕМАЄ.
     //
@@ -673,9 +674,15 @@ class OZ_PdaPageMap : OZ_PdaPage
                 where.SetText(wtxt);
             }
 
+            // Опис у рядку РІЖЕТЬСЯ: сервер дозволяє 160 байтів
+            // (MarkerDescMaxBytes), а другий рядок тримає 261 одиницю, тобто
+            // 33 українські літери у 13 pt (зміряно на стенді 2026-09-05:
+            // 33 літери = 257.8). 64 байти -- це 32 літери, і вони влазять із
+            // запасом. Хвіст не губиться: цілий опис показує поле MarkerDesc,
+            // щойно рядок обрано. Clip ріже по межі символу, а не байта.
             TextWidget desc = TextWidget.Cast(row.FindAnyWidget("RowDesc"));
             if (desc)
-                desc.SetText(mrk.Desc);
+                desc.SetText(OZ_Text.Clip(mrk.Desc, 64));
 
             Widget pick = row.FindAnyWidget("RowPick");
             if (pick)

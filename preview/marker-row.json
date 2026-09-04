@@ -1,8 +1,8 @@
 {
-  "note": "One marker row as OZ_PdaPageMap's RebuildRows fills it: name on the first line, description and the coordinates with the distance on the second one -- the '>>' prefix marks the tracked marker.",
+  "note": "One marker row as OZ_PdaPageMap's RebuildRows fills it. Line 1: a name at the server's cap (32 bytes = 16 Ukrainian letters) and, right-aligned, the coordinates with the distance -- the '>>' prefix marks the tracked marker. Line 2: the description as the script clips it, OZ_Text.Clip(desc, 64), which is the widest line the row can draw; the server allows 160 bytes and the panel's editor shows the whole of it.",
   "ops": [
-    {"op": "text", "name": "RowName", "nth": 1, "text": "Схрон біля Агропрому за трубами"},
-    {"op": "text", "name": "RowDesc", "nth": 1, "text": "два ящики"},
-    {"op": "text", "name": "RowWhere", "nth": 1, "text": ">> 1509 3373  842 m"}
+    {"op": "text", "name": "RowName", "nth": 1, "text": "Схрон за трубами"},
+    {"op": "text", "name": "RowWhere", "nth": 1, "text": ">> 1509 3373  842 m"},
+    {"op": "text", "name": "RowDesc", "nth": 1, "text": "Тут ящики набоїв аптечка бинти кон"}
   ]
 }
