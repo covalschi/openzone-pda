@@ -22,8 +22,8 @@
             {"chip":  {"name": "InvEdge", "hidden": false, "color": "$alert"}},
             {"label": {"name": "InvTitle", "at": [12, 2], "w": 215, "h": 22, "font": "body", "color": "$text"}},
             {"label": {"name": "InvFrom", "at": [12, 24], "w": 215, "h": 20, "font": "small", "color": "$muted"}},
-            {"button": {"name": "InvJoin", "anchor": "right", "at": [70, 9], "size": [60, 28], "text": "#STR_OZ_CHAT_INV_JOIN", "font": "small", "edge": false}},
-            {"button": {"name": "InvDecl", "anchor": "right", "at": [5, 9], "size": [60, 28], "text": "#STR_OZ_CHAT_INV_DECL", "font": "small", "edge": false}}
+            {"button": {"name": "InvJoin", "anchor": "right", "at": [54, 9], "size": [76, 28], "text": "#STR_OZ_CHAT_INV_JOIN", "font": "small", "edge": false}},
+            {"button": {"name": "InvDecl", "anchor": "right", "at": [5, 9], "size": [44, 28], "text": "#STR_OZ_CHAT_INV_DECL", "font": "small", "edge": false}}
           ]}}
       }}},
       {"button": {"name": "BtnGroup", "h": 32, "font": "small"}}

@@ -7,6 +7,6 @@
     {"panel": {"name": "TabMark", "size": [3, "$size.tab"], "color": "$accent", "hidden": true, "priority": 3}},
     {"icon":  {"name": "TabIcon", "at": [17, 8], "size": [26, 26], "image": "tab_page", "color": "$muted", "priority": 3}},
     {"label": {"name": "TabLabel", "at": [0, 38], "w": "fill", "h": 16, "font": "tiny", "color": "$muted", "align": "center", "priority": 3}},
-    {"badge": {"name": "TabBadge", "anchor": "right", "at": [4, 4], "size": [16, 16], "priority": 4}}
+    {"badge": {"name": "TabBadge", "anchor": "right", "at": [2, 2], "size": [14, 14], "priority": 4}}
   ]}}
 }

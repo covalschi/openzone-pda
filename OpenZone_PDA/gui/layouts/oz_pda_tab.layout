@@ -86,8 +86,8 @@ ButtonWidgetClass OZ_PdaTab {
    visible 0
    ignorepointer 1
    halign right_ref
-   position 4 4
-   size 16 16
+   position 2 2
+   size 14 14
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -102,7 +102,7 @@ ButtonWidgetClass OZ_PdaTab {
      visible 1
      ignorepointer 1
      position 0 0
-     size 16 16
+     size 14 14
      hexactpos 1
      vexactpos 1
      hexactsize 1

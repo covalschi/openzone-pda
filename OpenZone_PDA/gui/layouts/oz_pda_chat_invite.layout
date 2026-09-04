@@ -74,8 +74,8 @@ FrameWidgetClass OZ_ChatInviteRow {
   ButtonWidgetClass InvJoin {
    visible 1
    halign right_ref
-   position 70 9
-   size 60 28
+   position 54 9
+   size 76 28
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -87,7 +87,7 @@ FrameWidgetClass OZ_ChatInviteRow {
      visible 1
      ignorepointer 1
      position 0 0
-     size 60 28
+     size 76 28
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -100,7 +100,7 @@ FrameWidgetClass OZ_ChatInviteRow {
      visible 1
      ignorepointer 1
      position 0 0
-     size 60 28
+     size 76 28
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -120,7 +120,7 @@ FrameWidgetClass OZ_ChatInviteRow {
    visible 1
    halign right_ref
    position 5 9
-   size 60 28
+   size 44 28
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -132,7 +132,7 @@ FrameWidgetClass OZ_ChatInviteRow {
      visible 1
      ignorepointer 1
      position 0 0
-     size 60 28
+     size 44 28
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -145,7 +145,7 @@ FrameWidgetClass OZ_ChatInviteRow {
      visible 1
      ignorepointer 1
      position 0 0
-     size 60 28
+     size 44 28
      hexactpos 1
      vexactpos 1
      hexactsize 1
