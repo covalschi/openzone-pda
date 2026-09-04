@@ -1,0 +1,81 @@
+{
+  "layout": "oz_pda_page_chat",
+  "note": "Сторінка «Чат»: ліворуч бесіди (375), праворуч розмова. Список бесід і стрічка повідомлень -- спейсери: рядок повідомлення сам росте від тексту, скрипт лише кладе рядки і зве Update(). Оверлеї (учасники, група, запрошення) -- панелі поверх правої колонки. Імена читає OZ_PdaPageChat.c.",
+  "root": {"frame": {"name": "OZ_PageChat", "size": "$device.page", "inset": 15}},
+  "body": {"hbox": {"gap": "$space.column", "children": [
+    {"vbox": {"w": 375, "gap": "$space.gap", "children": [
+      {"list": {"name": "ChatListScroll", "stack": "ChatList", "h": "fill", "rows": {
+        "oz_pda_chat_head": {"row": {"name": "OZ_ChatHead", "h": "$size.chatHead", "click": true,
+          "note": "Одна бесіда. Ім'я кореня скрипт ставить в Id бесіди, SetUserID(3).",
+          "children": [
+            {"panel": {"name": "RowBg", "size": "fill", "color": "$panel"}},
+            {"panel": {"name": "HeadPick", "size": "fill", "color": "$pick", "hidden": true}},
+            {"label": {"name": "HeadTitle", "at": [15, 4], "w": "fill", "h": 22, "font": "header", "color": "$text"}},
+            {"label": {"name": "HeadKind", "at": [15, 27], "w": "fill", "h": 19, "font": "small", "color": "$muted"}},
+            {"rule":  {"name": "HeadLine", "anchor": "bottom", "at": [15, 0], "w": "fill"}}
+          ]}},
+        "oz_pda_chat_invite": {"row": {"name": "OZ_ChatInviteRow", "h": "$size.chatInvite",
+          "note": "Запрошення до групи -- над бесідами: воно чекає на рішення.",
+          "children": [
+            {"panel": {"name": "InvBg", "at": [0, 0], "w": "fill", "h": 45, "color": "$raised"}},
+            {"chip":  {"name": "InvEdge", "hidden": false, "color": "$alert"}},
+            {"label": {"name": "InvTitle", "at": [12, 2], "w": 225, "h": 20, "font": "body", "color": "$text"}},
+            {"label": {"name": "InvFrom", "at": [12, 24], "w": 225, "h": 18, "font": "small", "color": "$muted"}},
+            {"button": {"name": "InvJoin", "anchor": "right", "at": [70, 9], "size": [60, 28], "text": "#STR_OZ_CHAT_INV_JOIN", "font": "small", "edge": false}},
+            {"button": {"name": "InvDecl", "anchor": "right", "at": [5, 9], "size": [60, 28], "text": "#STR_OZ_CHAT_INV_DECL", "font": "small", "edge": false}}
+          ]}}
+      }}},
+      {"button": {"name": "BtnGroup", "h": 32, "font": "small"}}
+    ]}},
+    {"frame": {"name": "ChatRight", "w": "fill", "children": [
+      {"vbox": {"gap": "$space.tight", "children": [
+        {"hbox": {"h": "$size.button", "gap": "$space.gap", "children": [
+          {"label":  {"name": "ChatTitle", "w": "fill", "font": "header", "color": "$accent"}},
+          {"button": {"name": "BtnMembers", "w": 138, "font": "small"}},
+          {"button": {"name": "BtnGroupEdit", "w": 172, "font": "small"}},
+          {"button": {"name": "BtnInvite", "w": 225, "font": "small"}}
+        ]}},
+        {"button": {"name": "BtnOlder", "h": 22, "font": "small", "edge": false, "bg": "$panel", "note": "Довантажити старіше; ховається в NPC-розмові."}},
+        {"list": {"name": "ChatScroll", "stack": "ChatLines", "h": "fill", "rows": {
+          "oz_pda_chat_line": {"row": {"name": "OZ_ChatLine", "stack": true,
+            "note": "Одна репліка. Висоту дає рушій: RichText переносить текст і міряє себе, стопка складає. Своє позначаємо смужкою LineMine і кольором імені.",
+            "children": [
+              {"hrow": {"h": 22, "children": [
+                {"panel": {"name": "LineMine", "w": 2, "h": 16, "color": "$accent", "hidden": true}},
+                {"gap":   {"w": 8}},
+                {"label": {"name": "LineWho", "w": "auto", "font": "small", "color": "$text"}},
+                {"gap":   {"w": 10}},
+                {"label": {"name": "LineAt", "w": "auto", "font": "small", "color": "$faint"}}
+              ]}},
+              {"text": {"name": "LineText", "font": "body", "color": "$text"}},
+              {"gap":  {"h": 8}}
+            ]}}
+        }}},
+        {"hbox": {"h": "$size.button", "gap": 8, "children": [
+          {"field":  {"name": "ChatInput", "w": "fill"}},
+          {"button": {"name": "BtnAnon", "w": 78, "font": "small", "note": "«Сказати без імені» -- лише для ефіру Зони; сторінка ховає її в бесідах."}},
+          {"button": {"name": "BtnSend", "w": 185, "font": "small"}}
+        ]}},
+        {"label": {"name": "ChatHint", "h": 30, "font": "hint", "color": "$faint"}}
+      ]}},
+      {"panel": {"name": "MembersPanel", "at": [0, 37], "w": "fill", "h": 370, "color": "$panel", "hidden": true, "priority": 5, "inset": 10, "children": [
+        {"label": {"name": "MembersHead", "w": 625, "h": 20, "font": "small", "color": "$accent"}},
+        {"text":  {"name": "MembersList", "at": [0, 25], "w": "fill", "h": 320, "grow": false, "plain": true, "font": "field", "color": "$muted"}}
+      ]}},
+      {"panel": {"name": "GroupPanel", "at": [0, 37], "w": "fill", "h": 370, "color": "$panel", "hidden": true, "priority": 6, "inset": 10, "children": [
+        {"label":  {"name": "GroupHead", "w": 625, "h": 20, "font": "header", "color": "$accent"}},
+        {"field":  {"name": "GName", "at": [0, 40], "size": [525, 32]}},
+        {"field":  {"name": "GDesc", "at": [0, 95], "w": "fill", "h": 32}},
+        {"button": {"name": "BtnGDel", "anchor": "bottom", "at": [0, 0], "size": [162, 28], "font": "small"}},
+        {"button": {"name": "BtnGSave", "anchor": "bottom-right", "at": [150, 0], "size": [130, 28], "font": "small"}},
+        {"button": {"name": "BtnGCancel", "anchor": "bottom-right", "at": [0, 0], "size": [130, 28], "font": "small"}}
+      ]}},
+      {"panel": {"name": "InvitePanel", "at": [0, 37], "w": "fill", "h": 370, "color": "$panel", "hidden": true, "priority": 6, "inset": 10, "children": [
+        {"label":   {"name": "InviteHead", "w": 625, "h": 20, "font": "header", "color": "$accent"}},
+        {"listbox": {"name": "InviteList", "at": [0, 27], "w": "fill", "h": 295, "font": "hint",
+                     "props": {"style": "NoScrollBar", "title visible": 0, "highlight row": 1, "lines": 14}}},
+        {"button":  {"name": "BtnInvCancel", "anchor": "bottom-right", "at": [0, 0], "size": [130, 28], "font": "small"}}
+      ]}}
+    ]}}
+  ]}}
+}
