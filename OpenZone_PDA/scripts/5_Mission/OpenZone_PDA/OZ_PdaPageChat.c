@@ -692,7 +692,7 @@ class OZ_PdaPageChat : OZ_PdaPage
                 if (m_InviteList)
                 {
                     int irow = m_InviteList.AddItem(inv.Names[ii], NULL, 0);
-                    m_InviteList.SetItemColor(irow, 0, ARGB(255, 255, 122, 26));
+                    m_InviteList.SetItemColor(irow, 0, ARGB(255, 79, 181, 232));
                 }
             }
 
@@ -841,12 +841,12 @@ class OZ_PdaPageChat : OZ_PdaPage
         if (m_Anon)
         {
             t.SetText("#STR_OZ_CHAT_ANON_ON");
-            t.SetColor(ARGB(255, 255, 122, 26));
+            t.SetColor(ARGB(255, 79, 181, 232));
         }
         else
         {
             t.SetText("#STR_OZ_CHAT_ANON");
-            t.SetColor(ARGB(255, 140, 140, 148));
+            t.SetColor(ARGB(255, 148, 166, 181));
         }
     }
 
@@ -869,7 +869,13 @@ class OZ_PdaPageChat : OZ_PdaPage
         for (int i = 0; i < m_LineRows.Count(); i++)
         {
             if (m_LineRows[i])
+            {
+                // The press handler was registered on the singleton in LineRow:
+                // dropping the row without dropping the entry leaves a stale
+                // widget key in the handler's map.
+                WidgetEventHandler.GetInstance().UnregisterWidget(m_LineRows[i]);
                 m_LineRows[i].Unlink();
+            }
         }
         m_LineRows.Clear();
         if (m_Lines)
@@ -889,6 +895,10 @@ class OZ_PdaPageChat : OZ_PdaPage
         Widget w = GetGame().GetWorkspace().CreateWidgets("OpenZone_PDA/gui/layouts/oz_pda_chat_line.layout", m_Lines);
         if (!w)
             return;
+
+        // A self-growing row is a WrapSpacer, not a Button, and OnClick does
+        // not reach it: the press is caught here and routed the same way.
+        WidgetEventHandler.GetInstance().RegisterOnMouseButtonDown(w, this, "OnLineDown");
 
         // Рядок клікабельний: одержувач мітки забирає її одним дотиком.
         w.SetUserID(6);
@@ -911,7 +921,7 @@ class OZ_PdaPageChat : OZ_PdaPage
             if (l.WhoColor != 0)
                 who.SetColor(l.WhoColor);
             else if (l.Mine)
-                who.SetColor(ARGB(255, 255, 122, 26));
+                who.SetColor(ARGB(255, 79, 181, 232));
         }
 
         TextWidget at = TextWidget.Cast(w.FindAnyWidget("LineAt"));
@@ -927,8 +937,18 @@ class OZ_PdaPageChat : OZ_PdaPage
             // вона мусить інакше, ніж звичайна репліка: акцентний колір
             // каже «натисни», сірий текст -- «читай».
             if (l.Text.IndexOf("[MARK] ") == 0)
-                text.SetColor(ARGB(255, 255, 122, 26));
+                text.SetColor(ARGB(255, 79, 181, 232));
         }
+    }
+
+    // Mouse press on a message row: the row is a spacer, so this is where its
+    // click arrives (see LineRow). Left button only; the rest is not ours.
+    bool OnLineDown(Widget w, int x, int y, int button)
+    {
+        if (button != MouseState.LEFT)
+            return false;
+        OZ_Log.Dbg("pda chat: line row pressed " + w.GetName());
+        return OnPageClick(w, x, y);
     }
 
     // Межа прокрутки переліку розмов -- за фактичними рядками, тим самим
