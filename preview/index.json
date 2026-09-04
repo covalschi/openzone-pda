@@ -23,6 +23,8 @@
     {"name": "row-faction", "layout": "OpenZone_PDA/gui/layouts/oz_pda_faction_row.layout", "host": "616 32"},
     {"name": "hud", "layout": "OpenZone_PDA/gui/layouts/oz_pda_hud.layout"},
     {"name": "hud-edit", "layout": "OpenZone_PDA/gui/layouts/oz_pda_hud_edit.layout"},
-    {"name": "vpp-pane", "layout": "OpenZone_PDA_VPP/gui/layouts/oz_pda_vpp_pane.layout", "host": "1000 620"}
+    {"name": "vpp-pane", "layout": "OpenZone_PDA_VPP/gui/layouts/oz_pda_vpp_pane.layout", "host": "1000 620"},
+    {"name": "icons", "layout": "OpenZone_PDA/gui/layouts/oz_pda_icons_sheet.layout", "host": "1306 518",
+     "note": "every sprite of the set, tinted accent; blank cells = the set is not registered or the texture did not load"}
   ]
 }

@@ -1,0 +1,1375 @@
+{
+ "layout": "oz_pda_icons_sheet",
+ "note": "Лист усіх спрайтів набору oz_pda_icons -- тільки для галереї (ui_gallery), сторінка не реєструється.",
+ "root": {
+  "frame": {
+   "name": "OZ_IconsSheet",
+   "size": "$device.page",
+   "inset": "$space.page"
+  }
+ },
+ "body": {
+  "grid": {
+   "name": "IconGrid",
+   "size": "fill",
+   "cols": 8,
+   "rows": 5,
+   "gap": 4,
+   "children": [
+    {
+     "frame": {
+      "name": "Cell0",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon0",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "tab_device",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name0",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "tab_device"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell1",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon1",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "tab_map",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name1",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "tab_map"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell2",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon2",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "tab_contacts",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name2",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "tab_contacts"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell3",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon3",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "tab_notes",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name3",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "tab_notes"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell4",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon4",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "tab_chat",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name4",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "tab_chat"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell5",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon5",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "tab_news",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name5",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "tab_news"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell6",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon6",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "tab_journal",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name6",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "tab_journal"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell7",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon7",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "tab_faction",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name7",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "tab_faction"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell8",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon8",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "tab_radio",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name8",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "tab_radio"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell9",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon9",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "tab_page",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name9",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "tab_page"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell10",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon10",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "st_signal",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name10",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "st_signal"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell11",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon11",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "st_battery",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name11",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "st_battery"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell12",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon12",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "st_battery_low",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name12",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "st_battery_low"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell13",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon13",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "st_lock",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name13",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "st_lock"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell14",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon14",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "st_hidden",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name14",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "st_hidden"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell15",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon15",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "st_power",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name15",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "st_power"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell16",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon16",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "badge",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name16",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "badge"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell17",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon17",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "mk_marker",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name17",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "mk_marker"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell18",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon18",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "mk_stash",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name18",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "mk_stash"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell19",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon19",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "mk_danger",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name19",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "mk_danger"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell20",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon20",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "mk_route",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name20",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "mk_route"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell21",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon21",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "fx_duty",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name21",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "fx_duty"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell22",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon22",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "fx_freedom",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name22",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "fx_freedom"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell23",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon23",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "fx_loners",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name23",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "fx_loners"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell24",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon24",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "fx_bandits",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name24",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "fx_bandits"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell25",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon25",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "fx_mercs",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name25",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "fx_mercs"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell26",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon26",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "fx_monolith",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name26",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "fx_monolith"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell27",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon27",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "fx_ecologists",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name27",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "fx_ecologists"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell28",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon28",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "fx_clearsky",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name28",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "fx_clearsky"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell29",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon29",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "fx_military",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name29",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "fx_military"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell30",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon30",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "ui_close",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name30",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "ui_close"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell31",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon31",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "ui_check",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name31",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "ui_check"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "frame": {
+      "name": "Cell32",
+      "children": [
+       {
+        "icon": {
+         "name": "Icon32",
+         "anchor": "center",
+         "at": [
+          0,
+          -12
+         ],
+         "size": [
+          40,
+          40
+         ],
+         "image": "ui_mine",
+         "color": "$accent"
+        }
+       },
+       {
+        "label": {
+         "name": "Name32",
+         "anchor": "bottom-center",
+         "at": [
+          0,
+          8
+         ],
+         "size": [
+          150,
+          16
+         ],
+         "font": "tiny",
+         "color": "$muted",
+         "align": "center",
+         "text": "ui_mine"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  }
+ }
+}

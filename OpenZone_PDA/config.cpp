@@ -141,10 +141,11 @@ class CfgMods
 
         class defs
         {
-            // imageSets arrive with the UI they serve: an imageset pointing at
-            // a texture that does not exist yet is a broken reference the
-            // engine complains about on every boot.
+            // imageSets arrive with the UI they serve: oz_pda_icons is the
+            // first one, the atlas tools/icons/make_icons.py draws and
+            // OpenZone_PDA/gui/imagesets/oz_pda_icons.imageset describes.
 
+            class imageSets { files[] = {"OpenZone_PDA/gui/imagesets/oz_pda_icons.imageset"}; };
             class gameScriptModule    { value = ""; files[] = {"OpenZone_PDA/scripts/3_Game"}; };
             class worldScriptModule   { value = ""; files[] = {"OpenZone_PDA/scripts/4_World"}; };
             class missionScriptModule { value = ""; files[] = {"OpenZone_PDA/scripts/5_Mission"}; };

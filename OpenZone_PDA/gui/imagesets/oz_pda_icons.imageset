@@ -1,0 +1,212 @@
+ImageSetClass {
+ Name "oz_pda_icons"
+ RefSize 512 512
+ Textures {
+  ImageSetTextureClass {
+   mpix 0
+   path "OpenZone_PDA/gui/imagesets/oz_pda_icons_ca.paa"
+  }
+ }
+ Images {
+  ImageSetDefClass tab_device {
+   Name "tab_device"
+   Pos 4 4
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass tab_map {
+   Name "tab_map"
+   Pos 68 4
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass tab_contacts {
+   Name "tab_contacts"
+   Pos 132 4
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass tab_notes {
+   Name "tab_notes"
+   Pos 196 4
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass tab_chat {
+   Name "tab_chat"
+   Pos 260 4
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass tab_news {
+   Name "tab_news"
+   Pos 324 4
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass tab_journal {
+   Name "tab_journal"
+   Pos 388 4
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass tab_faction {
+   Name "tab_faction"
+   Pos 452 4
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass tab_radio {
+   Name "tab_radio"
+   Pos 4 68
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass tab_page {
+   Name "tab_page"
+   Pos 68 68
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass st_signal {
+   Name "st_signal"
+   Pos 132 68
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass st_battery {
+   Name "st_battery"
+   Pos 196 68
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass st_battery_low {
+   Name "st_battery_low"
+   Pos 260 68
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass st_lock {
+   Name "st_lock"
+   Pos 324 68
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass st_hidden {
+   Name "st_hidden"
+   Pos 388 68
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass st_power {
+   Name "st_power"
+   Pos 452 68
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass badge {
+   Name "badge"
+   Pos 4 132
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass mk_marker {
+   Name "mk_marker"
+   Pos 68 132
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass mk_stash {
+   Name "mk_stash"
+   Pos 132 132
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass mk_danger {
+   Name "mk_danger"
+   Pos 196 132
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass mk_route {
+   Name "mk_route"
+   Pos 260 132
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass fx_duty {
+   Name "fx_duty"
+   Pos 324 132
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass fx_freedom {
+   Name "fx_freedom"
+   Pos 388 132
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass fx_loners {
+   Name "fx_loners"
+   Pos 452 132
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass fx_bandits {
+   Name "fx_bandits"
+   Pos 4 196
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass fx_mercs {
+   Name "fx_mercs"
+   Pos 68 196
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass fx_monolith {
+   Name "fx_monolith"
+   Pos 132 196
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass fx_ecologists {
+   Name "fx_ecologists"
+   Pos 196 196
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass fx_clearsky {
+   Name "fx_clearsky"
+   Pos 260 196
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass fx_military {
+   Name "fx_military"
+   Pos 324 196
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass ui_close {
+   Name "ui_close"
+   Pos 388 196
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass ui_check {
+   Name "ui_check"
+   Pos 452 196
+   Size 56 56
+   Flags 0
+  }
+  ImageSetDefClass ui_mine {
+   Name "ui_mine"
+   Pos 4 260
+   Size 56 56
+   Flags 0
+  }
+ }
+ Groups {
+ }
+}
