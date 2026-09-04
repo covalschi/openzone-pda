@@ -122,7 +122,7 @@ FrameWidgetClass OZ_PageChat {
      "text valign" center
     }
     ButtonWidgetClass BtnMembers {
-     visible 1
+     visible 0
      position 326 0
      size 138 30
      hexactpos 1
@@ -179,7 +179,7 @@ FrameWidgetClass OZ_PageChat {
      }
     }
     ButtonWidgetClass BtnGroupEdit {
-     visible 1
+     visible 0
      position 474 0
      size 172 30
      hexactpos 1
@@ -236,7 +236,7 @@ FrameWidgetClass OZ_PageChat {
      }
     }
     ButtonWidgetClass BtnInvite {
-     visible 1
+     visible 0
      position 656 0
      size 225 30
      hexactpos 1
@@ -292,9 +292,9 @@ FrameWidgetClass OZ_PageChat {
       }
      }
     }
-    // Довантажити старіше; ховається в NPC-розмові.
+    // Довантажити старіше; показується, коли є що, ховається в NPC-розмові.
     ButtonWidgetClass BtnOlder {
-     visible 1
+     visible 0
      position 0 36
      size 881 22
      hexactpos 1
@@ -406,9 +406,9 @@ FrameWidgetClass OZ_PageChat {
       }
      }
     }
-    // «Сказати без імені» -- лише для ефіру Зони; сторінка ховає її в бесідах.
+    // «Сказати без імені» -- лише для ефіру Зони; сторінка показує її тільки там.
     ButtonWidgetClass BtnAnon {
-     visible 1
+     visible 0
      position 610 422
      size 78 30
      hexactpos 1

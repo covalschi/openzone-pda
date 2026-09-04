@@ -31,11 +31,11 @@
       {"vbox": {"gap": "$space.tight", "children": [
         {"hbox": {"h": "$size.button", "gap": "$space.gap", "children": [
           {"label":  {"name": "ChatTitle", "w": "fill", "font": "header", "color": "$accent"}},
-          {"button": {"name": "BtnMembers", "w": 138, "font": "small"}},
-          {"button": {"name": "BtnGroupEdit", "w": 172, "font": "small"}},
-          {"button": {"name": "BtnInvite", "w": 225, "font": "small"}}
+          {"button": {"name": "BtnMembers", "hidden": true, "w": 138, "font": "small"}},
+          {"button": {"name": "BtnGroupEdit", "hidden": true, "w": 172, "font": "small"}},
+          {"button": {"name": "BtnInvite", "hidden": true, "w": 225, "font": "small"}}
         ]}},
-        {"button": {"name": "BtnOlder", "h": 22, "font": "small", "edge": false, "bg": "$panel", "note": "Довантажити старіше; ховається в NPC-розмові."}},
+        {"button": {"name": "BtnOlder", "hidden": true, "h": 22, "font": "small", "edge": false, "bg": "$panel", "note": "Довантажити старіше; показується, коли є що, ховається в NPC-розмові."}},
         {"list": {"name": "ChatScroll", "stack": "ChatLines", "h": "fill", "rows": {
           "oz_pda_chat_line": {"row": {"name": "OZ_ChatLine", "stack": true,
             "note": "Одна репліка. Висоту дає рушій: RichText переносить текст і міряє себе, стопка складає. Своє позначаємо смужкою LineMine і кольором імені.",
@@ -53,7 +53,7 @@
         }}},
         {"hbox": {"h": "$size.button", "gap": 8, "children": [
           {"field":  {"name": "ChatInput", "w": "fill"}},
-          {"button": {"name": "BtnAnon", "w": 78, "font": "small", "note": "«Сказати без імені» -- лише для ефіру Зони; сторінка ховає її в бесідах."}},
+          {"button": {"name": "BtnAnon", "hidden": true, "w": 78, "font": "small", "note": "«Сказати без імені» -- лише для ефіру Зони; сторінка показує її тільки там."}},
           {"button": {"name": "BtnSend", "w": 185, "font": "small"}}
         ]}},
         {"label": {"name": "ChatHint", "h": 30, "font": "hint", "color": "$faint"}}
