@@ -107,7 +107,8 @@ WrapSpacerWidgetClass OZ_ChatLine {
     }
    }
   }
-  RichTextWidgetClass LineText {
+  // MultilineText, не RichText: текст іде з Discord як є, і <@згадки> не мають зникати як розмітка.
+  MultilineTextWidgetClass LineText {
    visible 1
    ignorepointer 1
    position 0 0

@@ -541,7 +541,6 @@ FrameWidgetClass OZ_PageChat {
     }
     PanelWidgetClass MembersPanel {
      visible 0
-     ignorepointer 1
      position 0 37
      size 881 370
      hexactpos 1
@@ -594,7 +593,6 @@ FrameWidgetClass OZ_PageChat {
     }
     PanelWidgetClass GroupPanel {
      visible 0
-     ignorepointer 1
      position 0 37
      size 881 370
      hexactpos 1
@@ -887,7 +885,6 @@ FrameWidgetClass OZ_PageChat {
     }
     PanelWidgetClass InvitePanel {
      visible 0
-     ignorepointer 1
      position 0 37
      size 881 370
      hexactpos 1

@@ -21,7 +21,7 @@
             {"label": {"name": "RowFaction", "at": [330, 6], "size": [180, 25], "font": "body", "color": "$muted", "note": "Фракція фарбується у свій колір -- той самий, що й смужка."}},
             {"label": {"name": "RowWhere", "anchor": "right", "at": [12, 6], "w": "auto", "h": 25, "font": "small", "color": "$muted", "align": "right", "note": "Де людина: поруч, у Зоні, чи немає. Якір справа, тому ніколи не під смугою."}},
             {"label": {"name": "RowDetail", "at": [22, 30], "w": "fill", "h": 20, "font": "small", "color": "$muted"}},
-            {"rule":  {"name": "RowLine", "anchor": "bottom", "at": [22, 0], "w": "fill"}}
+            {"rule":  {"name": "RowLine", "anchor": "bottom", "at": [22, 0], "w": 546}}
           ]}}
       }}},
     {"label": {"name": "ContactsHint", "h": "$size.hint", "font": "hint", "color": "$faint"}},

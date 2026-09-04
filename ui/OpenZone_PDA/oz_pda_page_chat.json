@@ -12,7 +12,7 @@
             {"panel": {"name": "HeadPick", "size": "fill", "color": "$pick", "hidden": true}},
             {"label": {"name": "HeadTitle", "at": [15, 4], "w": "fill", "h": 23, "font": "header", "color": "$text"}},
             {"label": {"name": "HeadKind", "at": [15, 27], "w": "fill", "h": 19, "font": "small", "color": "$muted"}},
-            {"rule":  {"name": "HeadLine", "anchor": "bottom", "at": [15, 0], "w": "fill"}}
+            {"rule":  {"name": "HeadLine", "anchor": "bottom", "at": [15, 0], "w": 335}}
           ]}},
         "oz_pda_chat_invite": {"row": {"name": "OZ_ChatInviteRow", "h": "$size.chatInvite",
           "note": "Запрошення до групи -- над бесідами: воно чекає на рішення.",
@@ -47,7 +47,7 @@
                 {"gap":   {"w": 10}},
                 {"label": {"name": "LineAt", "w": "auto", "font": "small", "color": "$faint"}}
               ]}},
-              {"text": {"name": "LineText", "font": "body", "color": "$text"}},
+              {"text": {"name": "LineText", "plain": true, "font": "body", "color": "$text", "note": "MultilineText, не RichText: текст іде з Discord як є, і <@згадки> не мають зникати як розмітка."}},
               {"gap":  {"h": 8}}
             ]}}
         }}},
@@ -58,11 +58,11 @@
         ]}},
         {"label": {"name": "ChatHint", "h": 30, "font": "hint", "color": "$faint"}}
       ]}},
-      {"panel": {"name": "MembersPanel", "at": [0, 37], "w": "fill", "h": 370, "color": "$panel", "hidden": true, "priority": 5, "inset": 10, "children": [
+      {"panel": {"name": "MembersPanel", "at": [0, 37], "w": "fill", "h": 370, "color": "$panel", "hidden": true, "priority": 5, "inset": 10, "click": true, "children": [
         {"label": {"name": "MembersHead", "w": 625, "h": 20, "font": "small", "color": "$accent"}},
         {"text":  {"name": "MembersList", "at": [0, 25], "w": "fill", "h": 320, "grow": false, "plain": true, "font": "field", "color": "$muted"}}
       ]}},
-      {"panel": {"name": "GroupPanel", "at": [0, 37], "w": "fill", "h": 370, "color": "$panel", "hidden": true, "priority": 6, "inset": 10, "children": [
+      {"panel": {"name": "GroupPanel", "at": [0, 37], "w": "fill", "h": 370, "color": "$panel", "hidden": true, "priority": 6, "inset": 10, "click": true, "children": [
         {"label":  {"name": "GroupHead", "w": 625, "h": 20, "font": "header", "color": "$accent"}},
         {"field":  {"name": "GName", "at": [0, 40], "size": [525, 32]}},
         {"field":  {"name": "GDesc", "at": [0, 95], "w": "fill", "h": 32}},
@@ -70,7 +70,7 @@
         {"button": {"name": "BtnGSave", "anchor": "bottom-right", "at": [150, 0], "size": [130, 28], "font": "small"}},
         {"button": {"name": "BtnGCancel", "anchor": "bottom-right", "at": [0, 0], "size": [130, 28], "font": "small"}}
       ]}},
-      {"panel": {"name": "InvitePanel", "at": [0, 37], "w": "fill", "h": 370, "color": "$panel", "hidden": true, "priority": 6, "inset": 10, "children": [
+      {"panel": {"name": "InvitePanel", "at": [0, 37], "w": "fill", "h": 370, "color": "$panel", "hidden": true, "priority": 6, "inset": 10, "click": true, "children": [
         {"label":   {"name": "InviteHead", "w": 625, "h": 20, "font": "header", "color": "$accent"}},
         {"listbox": {"name": "InviteList", "at": [0, 27], "w": "fill", "h": 295, "font": "hint",
                      "props": {"style": "NoScrollBar", "title visible": 0, "highlight row": 1, "lines": 14}}},
