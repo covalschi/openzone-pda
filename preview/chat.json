@@ -1,0 +1,25 @@
+{
+  "note": "Two conversations and an invite in the list, three messages in the thread; the second message wraps onto three lines and must push the third down.",
+  "ops": [
+    {"op": "add", "layout": "OpenZone_PDA/gui/layouts/oz_pda_chat_invite.layout", "into": "ChatList", "count": 1},
+    {"op": "add", "layout": "OpenZone_PDA/gui/layouts/oz_pda_chat_head.layout", "into": "ChatList", "count": 2},
+    {"op": "text", "name": "HeadTitle", "nth": 1, "text": "Долг -- загальний"},
+    {"op": "text", "name": "HeadKind", "nth": 1, "text": "група, 14 учасників"},
+    {"op": "text", "name": "HeadTitle", "nth": 2, "text": "Сивий"},
+    {"op": "text", "name": "HeadKind", "nth": 2, "text": "особиста"},
+    {"op": "show", "name": "HeadPick", "nth": 1},
+    {"op": "text", "name": "InvTitle", "nth": 1, "text": "Запрошення до групи"},
+    {"op": "text", "name": "InvFrom", "nth": 1, "text": "від Гвинта"},
+    {"op": "add", "layout": "OpenZone_PDA/gui/layouts/oz_pda_chat_line.layout", "into": "ChatLines", "count": 3},
+    {"op": "text", "name": "LineWho", "nth": 1, "text": "Гвинт"},
+    {"op": "text", "name": "LineAt", "nth": 1, "text": "13:52"},
+    {"op": "text", "name": "LineText", "nth": 1, "text": "Збір біля бару о 15:00."},
+    {"op": "text", "name": "LineWho", "nth": 2, "text": "Ви"},
+    {"op": "text", "name": "LineAt", "nth": 2, "text": "13:55"},
+    {"op": "show", "name": "LineMine", "nth": 2},
+    {"op": "text", "name": "LineText", "nth": 2, "text": "Буду. Маю два детектори, один можу віддати новачку, якщо хтось іде без приладу; беріть аптечки й антирад, на Агропромі знову кабани в підземеллі, а хто без броні -- лишається на блокпості."},
+    {"op": "text", "name": "LineWho", "nth": 3, "text": "Сивий"},
+    {"op": "text", "name": "LineAt", "nth": 3, "text": "14:02"},
+    {"op": "text", "name": "LineText", "nth": 3, "text": "Добре. Кабан, ти ведеш другу групу."}
+  ]
+}

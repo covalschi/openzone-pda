@@ -54,9 +54,6 @@ class OZ_PdaPageChat : OZ_PdaPage
     private ButtonWidget m_BtnOlder;
     private ButtonWidget m_BtnMembers;
     private ButtonWidget m_BtnGDel;
-    // Ручна розкладка канв: поточний y кожної. Рядок розмови 58, бесіди 40.
-    private int m_LinesY = 0;
-    private int m_ListY = 0;
     // Історія вантажиться сторінками: якір і прапорець від моста, а під час
     // дороги кнопка сама стає індикатором.
     private bool m_OlderBusy = false;
@@ -762,8 +759,6 @@ class OZ_PdaPageChat : OZ_PdaPage
         if (!w)
             return;
 
-        w.SetPos(0, m_ListY);
-        m_ListY += 50;
         m_HeadRows.Insert(w);
 
         TextWidget t = TextWidget.Cast(w.FindAnyWidget("InvTitle"));
@@ -805,9 +800,6 @@ class OZ_PdaPageChat : OZ_PdaPage
         Widget w = GetGame().GetWorkspace().CreateWidgets("OpenZone_PDA/gui/layouts/oz_pda_chat_head.layout", m_List);
         if (!w)
             return;
-
-        w.SetPos(0, m_ListY);
-        m_ListY += 50;
 
         w.SetName(h.Id);
         w.SetUserID(3);   // так OnClick відрізняє бесіду від вкладки й контакту
@@ -880,7 +872,8 @@ class OZ_PdaPageChat : OZ_PdaPage
                 m_LineRows[i].Unlink();
         }
         m_LineRows.Clear();
-        m_LinesY = 0;
+        if (m_Lines)
+            m_Lines.Update();
     }
 
     // Одна репліка.
@@ -896,10 +889,6 @@ class OZ_PdaPageChat : OZ_PdaPage
         Widget w = GetGame().GetWorkspace().CreateWidgets("OpenZone_PDA/gui/layouts/oz_pda_chat_line.layout", m_Lines);
         if (!w)
             return;
-
-        w.SetPos(0, m_LinesY);
-        m_LinesY += 72;
-
 
         // Рядок клікабельний: одержувач мітки забирає її одним дотиком.
         w.SetUserID(6);
@@ -959,7 +948,6 @@ class OZ_PdaPageChat : OZ_PdaPage
                 m_HeadRows[c].Unlink();
         }
         m_HeadRows.Clear();
-        m_ListY = 0;
 
         int inv = 0;
         if (m_Heads && m_Heads.Invites)
@@ -978,11 +966,10 @@ class OZ_PdaPageChat : OZ_PdaPage
         if (n == 0 && inv == 0)
             SetText("ChatHint", "#STR_OZ_CHAT_NONE");
 
-        Widget lstc = Wgt("ChatList");
-        if (lstc)
-        {
-            lstc.SetSize(375, m_ListY);
-        }
+        // The spacer measures itself only on Update(): heads and invites were
+        // just added, and the scroll must see the new height before ListFit.
+        if (m_List)
+            m_List.Update();
 
         GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(ListFit, 50, false);
     }
@@ -1066,12 +1053,13 @@ class OZ_PdaPageChat : OZ_PdaPage
             return;
         }
 
-        // Вниз -- лише коли Є куди: коротка розмова стоїть згори, і жодного
-        // «прокручено в нікуди» на одному повідомленні.
-        if (m_LinesY > 274)
-            sc.VScrollToPos01(1.0);
-        else
-            sc.VScrollToPos01(0);
+        // Вниз -- завжди: висоту тепер рахує сам спейсер, і власна умова
+        // «чи є куди» більше не потрібна.
+        //
+        // The content height is honest now (the spacer's own), so scrolling
+        // to the end of content that fits is a no-op: no "scrolled into
+        // nowhere" on a one-line conversation.
+        sc.VScrollToPos01(1.0);
     }
 
     // ЧИ Є КУДИ ПИСАТИ. Окремо від PaintView, і це не дрібниця.
@@ -1180,13 +1168,6 @@ class OZ_PdaPageChat : OZ_PdaPage
 
         for (int i = 0; i < n; i++)
             LineRow(m_View.Lines[i]);
-
-        // Розмір канви відомий СИНХРОННО: висота рядка фіксована, і чекати
-        // рендера нема чого. Прибирає кадр «порожньої» розмови.
-        if (m_Lines)
-        {
-            m_Lines.SetSize(871, m_LinesY);
-        }
 
         if (n == 0)
             SetText("ChatHint", "#STR_OZ_CHAT_EMPTY");
