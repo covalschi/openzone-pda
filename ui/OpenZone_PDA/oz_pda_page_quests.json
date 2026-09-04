@@ -1,0 +1,19 @@
+{
+  "layout": "oz_pda_page_quests",
+  "note": "Сторінка «Журнал»: перелік завдань списком, підказка внизу. Імена читає OZ_PdaPageQuests.c: QuestSource, QuestList, QuestHint.",
+  "root": {"frame": {"name": "OZ_PageQuests", "size": "$device.page", "inset": "$space.page"}},
+  "body": {"vbox": {"gap": "$space.tight", "children": [
+    {"header":  {"icon": "tab_journal", "h": "$size.header", "title": {"name": "QuestSource"}}},
+    {"listbox": {"name": "QuestList", "h": "fill", "font": "hint",
+      "note": "Друкарська помилка в назві властивості -- рушійна, не наша: colums, не columns. Значення переносяться з давнього ручного файла точно: одна колонка на весь ряд, висота символу 16 (не як у токена hint).",
+      "props": {
+        "style": "NoScrollBar",
+        "title visible": 0,
+        "highlight row": 0,
+        "colums": "text;100;",
+        "lines": 14,
+        "exact text size": 16
+      }}},
+    {"label":   {"name": "QuestHint", "h": "$size.hint", "font": "hint", "color": "$faint"}}
+  ]}}
+}

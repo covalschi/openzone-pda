@@ -1,0 +1,52 @@
+{
+  "layout": "oz_pda_page_news",
+  "note": "Сторінка «Новини»: ліворуч стрічка заголовків (рядки кладе скрипт у NewsRows), праворуч допис; ComposePanel -- оверлей написання. Імена читає OZ_PdaPageNews.c.",
+  "root": {"frame": {"name": "OZ_PageNews", "size": "$device.page", "inset": "$space.page"}},
+  "body": {"hbox": {"gap": "$space.column", "children": [
+    {"vbox": {"w": 400, "gap": "$space.tight", "children": [
+      {"header": {"icon": "tab_news", "h": "$size.header", "title": {"name": "NewsHead", "text": "#STR_OZ_PAGE_NEWS"}}},
+      {"list": {"name": "NewsScroll", "stack": "NewsRows", "h": "fill", "rows": {
+        "oz_pda_news_row": {"row": {"name": "OZ_NewsRow", "h": 70, "click": true,
+          "note": "Один заголовок стрічки: назва переноситься на два рядки й обрізається, під нею джерело й дата.",
+          "children": [
+            {"panel": {"name": "RowBg", "size": "fill", "color": "$panel"}},
+            {"panel": {"name": "RowPick", "size": "fill", "color": "$pick", "hidden": true}},
+            {"text":  {"name": "RowTitle", "at": [12, 4], "w": "fill", "h": 44, "grow": false, "plain": true, "font": "header", "color": "$text"}},
+            {"label": {"name": "RowMeta", "at": [12, 50], "w": "fill", "h": 18, "font": "small", "color": "$faint"}},
+            {"rule":  {"name": "RowLine", "anchor": "bottom", "at": [12, 0], "w": 366}}
+          ]}}
+      }}}
+    ]}},
+    {"panel": {"name": "NewsEdge", "w": 1, "color": "$edge"}},
+    {"frame": {"name": "PostPane", "w": "fill", "children": [
+      {"vbox": {"gap": "$space.tight", "children": [
+        {"text":  {"name": "PostTitle", "h": 52, "grow": false, "plain": true, "font": "title", "color": "$accent"}},
+        {"label": {"name": "PostMeta", "h": 20, "font": "small", "color": "$faint"}},
+        {"list":  {"name": "PostScroll", "stack": "PostStack", "h": "fill",
+          "note": "PostBody -- статичний дочірній текст спейсера PostStack, росте від тексту; скрипт після SetText кличе PostStack.Update().",
+          "children": [
+            {"text": {"name": "PostBody", "plain": true, "font": "hint", "color": "$text"}}
+          ]}},
+        {"hbox": {"h": "$size.field", "gap": "$space.gap", "children": [
+          {"label":  {"name": "NewsHint", "w": "fill", "font": "hint", "color": "$faint"}},
+          {"button": {"name": "BtnWrite", "w": 130, "font": "small"}}
+        ]}}
+      ]}},
+      {"panel": {"name": "ComposePanel", "w": "fill", "h": "fill", "color": "$panel", "hidden": true, "priority": 6, "inset": 10, "click": true,
+        "note": "w/h fill замість size fill: на початку (0,0) size:fill лишає дітям повну ширину панелі, ігноруючи inset (генератор не віднімає його від box.w, коли власний розмір панелі пропорційний). Явні w і h -- точне число вже на етапі породження, inset дітям рахується правильно.",
+        "children": [
+        {"vbox": {"gap": "$space.gap", "children": [
+          {"label": {"name": "CmpHead", "h": 20, "font": "header", "color": "$accent"}},
+          {"field": {"name": "CmpTitle", "h": 32}},
+          {"field": {"name": "CmpBody", "h": "fill", "lines": 16}},
+          {"hbox": {"h": "$size.field", "gap": "$space.gap", "children": [
+            {"button": {"name": "BtnCmpWho", "w": 400, "font": "small"}},
+            {"gap":    {"w": "fill"}},
+            {"button": {"name": "BtnCmpCancel", "w": 130, "font": "small"}},
+            {"button": {"name": "BtnCmpSend", "w": 130, "font": "small"}}
+          ]}}
+        ]}}
+      ]}}
+    ]}}
+  ]}}
+}

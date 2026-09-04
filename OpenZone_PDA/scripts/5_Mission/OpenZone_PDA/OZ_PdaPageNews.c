@@ -211,6 +211,12 @@ class OZ_PdaPageNews : OZ_PdaPage
             if (body)
                 body.SetText(v.Body);
 
+            // The spacer measures itself only on Update(): a new post's text
+            // keeps the old height until the next relayout without it.
+            Widget ps = Wgt("PostStack");
+            if (ps)
+                ps.Update();
+
             SetHint("NewsHint", "");
             return;
         }
@@ -292,6 +298,11 @@ class OZ_PdaPageNews : OZ_PdaPage
         }
         m_RowWgts.Clear();
 
+        // The spacer measures itself only on Update(): rows added or removed
+        // without it keep the old height until the next relayout.
+        if (m_Rows)
+            m_Rows.Update();
+
         int n = 0;
         if (m_List && m_List.Items)
             n = m_List.Items.Count();
@@ -326,6 +337,11 @@ class OZ_PdaPageNews : OZ_PdaPage
             if (pick)
                 pick.Show(it.Id == m_OpenId);
         }
+
+        // The spacer measures itself only on Update(): rows added or removed
+        // without it keep the old height until the next relayout.
+        if (m_Rows)
+            m_Rows.Update();
     }
 
     // "2026-08-28 01:23:45" -> "28.08". Різати за позиціями чесно: формат

@@ -17,7 +17,7 @@
     {"name": "row-chat-line", "layout": "OpenZone_PDA/gui/layouts/oz_pda_chat_line.layout", "host": "871 80"},
     {"name": "row-chat-head", "layout": "OpenZone_PDA/gui/layouts/oz_pda_chat_head.layout", "host": "365 50"},
     {"name": "row-chat-invite", "layout": "OpenZone_PDA/gui/layouts/oz_pda_chat_invite.layout", "host": "365 48"},
-    {"name": "row-news", "layout": "OpenZone_PDA/gui/layouts/oz_pda_news_row.layout", "host": "400 50"},
+    {"name": "row-news", "layout": "OpenZone_PDA/gui/layouts/oz_pda_news_row.layout", "host": "390 70"},
     {"name": "row-marker", "layout": "OpenZone_PDA/gui/layouts/oz_pda_marker_row.layout", "host": "315 42"},
     {"name": "row-note", "layout": "OpenZone_PDA/gui/layouts/oz_pda_note_row.layout", "host": "425 32"},
     {"name": "row-faction", "layout": "OpenZone_PDA/gui/layouts/oz_pda_faction_row.layout", "host": "616 32"},
