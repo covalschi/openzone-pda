@@ -1,0 +1,15 @@
+{
+  "note": "One module in bay 1, a written carrier, no radiation system.",
+  "ops": [
+    {"op": "text", "name": "SessionText", "nth": 1, "text": "НА ЗВ'ЯЗКУ  Гвинт"},
+    {"op": "text", "name": "LinkText", "nth": 1, "text": "Акаунт Discord не прив'язано."},
+    {"op": "text", "name": "BayText0", "nth": 1, "text": "[1]  Радіомодуль"},
+    {"op": "text", "name": "BayText1", "nth": 1, "text": "[2]  порожньо"},
+    {"op": "text", "name": "BayText2", "nth": 1, "text": "[3]  порожньо"},
+    {"op": "text", "name": "CarrierText", "nth": 1, "text": "НОСIЙ  позначки 3/16   нотатки 2/16"},
+    {"op": "text", "name": "PinText", "nth": 1, "text": "PIN-код встановлено - заблоковано"},
+    {"op": "text", "name": "AutoLockText", "nth": 1, "text": "АВТОБЛОКУВАННЯ  увімкнено (5 min)"},
+    {"op": "text", "name": "ChargeLabel", "nth": 1, "text": "Заряд 63 %"},
+    {"op": "text", "name": "RadText", "nth": 1, "text": "На цьому сервері немає системи радіації."}
+  ]
+}

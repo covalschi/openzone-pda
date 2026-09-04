@@ -1,0 +1,106 @@
+{
+  "layout": "oz_pda_page_device",
+  "note": "Сторінка «Пристрій»: два стовпчики секцій -- ліворуч факти (СИСТЕМА, ЗАЛIЗО), праворуч дії (БЕЗПЕКА, ЖИВЛЕННЯ і небезпечна зона). Заряд -- смуга ChargeBar, її наповнення ChargeBarFill розтягує скрипт. Прев'ю пристрою лишається прихованим рішенням власника 2026-08-29: картинка з'їдала третину сторінки. CarPane -- оверлей із вмістом носія поверх стовпчиків. Імена читає OZ_PdaPageDevice.c.",
+  "root": {"frame": {"name": "OZ_PageDevice", "size": "$device.page", "inset": "$space.page", "children": [
+    {"panel": {"name": "PreviewPane", "at": [0, 0], "size": [400, 478], "color": "$panel", "hidden": true, "priority": 1,
+      "note": "Приховане, але живе: скрипт ще кладе в нього предмет і три підписи.",
+      "children": [
+      {"preview": {"name": "Preview", "size": [400, 375], "priority": 2}},
+      {"label": {"name": "TitleName", "at": [18, 380], "size": [365, 32], "font": "title", "color": "$accent"}},
+      {"label": {"name": "TitleProfile", "at": [18, 412], "size": [365, 28], "font": "hint", "color": "$muted"}},
+      {"label": {"name": "TitlePlace", "at": [18, 440], "size": [365, 28], "font": "small", "color": "$muted"}}
+    ]}},
+    {"panel": {"name": "CarPane", "anchor": "bottom", "at": [0, 0], "w": "fill", "h": 240, "color": "$rail",
+      "inset": "$space.gap", "hidden": true, "priority": 5, "click": true,
+      "note": "Перегляд носія: накриває низ сторінки, поки відкритий. Ліворуч рідний список рушія, праворуч запис у прокрутці -- CarBody сам міряє висоту, спейсер CarStack складає (як допис новин).",
+      "children": [
+      {"vbox": {"gap": "$space.tight", "children": [
+        {"label": {"name": "CarPaneHead", "h": 20, "font": "field", "color": "$accent"}},
+        {"hbox": {"name": "CarSplit", "h": "fill", "gap": "$space.gap", "children": [
+          {"listbox": {"name": "CarList", "w": 500, "font": "field", "color": "$text",
+                       "props": {"style": "NoScrollBar", "title visible": 0, "highlight row": 1, "lines": 7}}},
+          {"vbox": {"w": "fill", "gap": "$space.tight", "children": [
+            {"label": {"name": "CarItemHead", "h": 20, "font": "field", "color": "$accent"}},
+            {"list": {"name": "CarScroll", "stack": "CarStack", "h": "fill", "children": [
+              {"text": {"name": "CarBody", "plain": true, "font": "field", "color": "$text"}}
+            ]}}
+          ]}}
+        ]}},
+        {"hbox": {"h": "$size.field", "gap": "$space.gap", "children": [
+          {"button": {"name": "BtnCarTake", "w": 150, "font": "small"}},
+          {"button": {"name": "BtnCarDel", "w": 130, "font": "small", "edge": "$bad", "color": "$bad"}},
+          {"gap":    {"w": "fill"}},
+          {"button": {"name": "BtnCarDoImport", "w": 130, "font": "small"}},
+          {"button": {"name": "BtnCarClose", "w": 130, "font": "small"}}
+        ]}}
+      ]}}
+    ]}}
+  ]}},
+  "body": {"hbox": {"name": "StatePane", "gap": "$space.column", "priority": 2, "children": [
+    {"vbox": {"name": "ColSys", "w": "fill", "gap": "$space.tight", "children": [
+      {"section": {"name": "SecSys", "text": "SYSTEM"}},
+      {"text":  {"name": "SessionText", "h": 44, "plain": true, "grow": false, "font": "body", "color": "$ok",
+                 "note": "Переноситься: «БЕЗ ЗВ'ЯЗКУ - оновлення не надходять» плюс ім'я власника довше за один рядок."}},
+      {"label": {"name": "LinkText", "h": 22, "font": "small", "color": "$muted"}},
+      {"text":  {"name": "SnapshotText", "h": 70, "plain": true, "grow": false, "font": "hint", "color": "$muted"}},
+      {"section": {"name": "SecHw", "text": "HARDWARE"}},
+      {"label": {"name": "BaysLabel", "h": 22, "text": "#STR_OZ_DEV_BAYS", "font": "small", "color": "$muted"}},
+      {"label": {"name": "BayText0", "h": 24, "font": "body", "color": "$text"}},
+      {"label": {"name": "BayText1", "h": 24, "font": "body", "color": "$text"}},
+      {"label": {"name": "BayText2", "h": 24, "font": "body", "color": "$text"}},
+      {"label": {"name": "CarrierText", "h": 24, "font": "body", "color": "$text"}},
+      {"hbox": {"h": "$size.field", "gap": "$space.gap", "children": [
+        {"button": {"name": "BtnCarWriteM", "w": 140, "font": "small", "hidden": true}},
+        {"button": {"name": "BtnCarWriteN", "w": 140, "font": "small", "hidden": true}},
+        {"button": {"name": "BtnCarView",   "w": 140, "font": "small", "hidden": true}},
+        {"button": {"name": "BtnCarErase",  "w": 140, "font": "small", "hidden": true, "edge": "$bad", "color": "$bad"}}
+      ]}}
+    ]}},
+    {"vbox": {"name": "ColSec", "w": "fill", "gap": "$space.tight",
+      "note": "Кнопки стоять однією вертикаллю праворуч, як у старому файлі; підпис ліворуч бере решту рядка. Кнопка 240, а не 190 як у старому файлі: «ВИМКНУТИ АВТОБЛОКУВАННЯ» міряється 312 px у 281 px коробці на 3840x1600 (зміряно живим обходом 2026-09-04).",
+      "children": [
+      {"section": {"name": "SecSec", "text": "SECURITY"}},
+      {"hbox": {"h": "$size.field", "gap": "$space.gap", "children": [
+        {"label":  {"name": "PinText", "w": "fill", "font": "body", "color": "$text"}},
+        {"button": {"name": "BtnPin", "w": 240, "font": "small"}}
+      ]}},
+      {"hbox": {"h": "$size.field", "gap": "$space.gap", "children": [
+        {"gap":    {"w": "fill"}},
+        {"button": {"name": "BtnPinClear", "w": 240, "font": "small"}}
+      ]}},
+      {"hbox": {"h": "$size.field", "gap": "$space.gap", "children": [
+        {"label":  {"name": "AutoLockText", "w": "fill", "font": "body", "color": "$text"}},
+        {"button": {"name": "BtnAutoLock", "w": 240, "font": "small"}}
+      ]}},
+      {"hbox": {"h": "$size.field", "gap": "$space.gap", "children": [
+        {"gap":    {"w": "fill"}},
+        {"button": {"name": "BtnLock", "w": 240, "font": "small", "hidden": true}}
+      ]}},
+      {"hbox": {"h": "$size.field", "gap": "$space.gap", "children": [
+        {"gap":    {"w": "fill"}},
+        {"button": {"name": "BtnHudEdit", "w": 240, "font": "small"}}
+      ]}},
+      {"section": {"name": "SecDev", "text": "POWER"}},
+      {"hbox": {"h": "$size.field", "gap": "$space.gap", "children": [
+        {"button": {"name": "BtnInit", "w": 240, "font": "small", "hidden": true}},
+        {"gap":    {"w": "fill"}},
+        {"button": {"name": "BtnPower", "w": 240, "font": "small"}}
+      ]}},
+      {"label": {"name": "ChargeLabel", "h": 22, "font": "small", "color": "$muted"}},
+      {"bar":   {"name": "ChargeBar", "w": "fill", "track": "$rule", "fill": "$accent",
+                 "note": "Порожня доріжка: ChargeBarFill розтягує PaintCharge часткою заряду."}},
+      {"text":  {"name": "RadText", "h": 44, "plain": true, "grow": false, "font": "hint", "color": "$bad",
+                 "note": "Переноситься: «На цьому сервері немає системи радіації.» -- 39 літер."}},
+      {"gap":   {"h": "fill"}},
+      {"rule":  {"name": "DangerRule", "color": "$bad"}},
+      {"hbox": {"h": "$size.field", "children": [
+        {"gap":    {"w": "fill"}},
+        {"button": {"name": "BtnFactoryDev", "w": 400, "font": "small", "hidden": true, "edge": "$bad", "color": "$bad"}}
+      ]}},
+      {"hbox": {"h": "$size.field", "children": [
+        {"gap":    {"w": "fill"}},
+        {"button": {"name": "BtnLogout", "w": 400, "font": "small", "hidden": true}}
+      ]}}
+    ]}}
+  ]}}
+}

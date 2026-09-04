@@ -7,6 +7,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
 {
     private int m_Beat = 0;
     private ItemPreviewWidget m_Preview;
+    private Widget m_ChargeBar;
     private Widget m_ChargeFill;
     private ButtonWidget m_BtnPower;
     private ButtonWidget m_BtnPin;
@@ -70,7 +71,10 @@ class OZ_PdaPageDevice : OZ_PdaPage
         m_BtnHudEdit = ButtonWidget.Cast(Wgt("BtnHudEdit"));
         SetText("BtnHudEditText", "#STR_OZ_DEV_HUD_EDIT");
         m_Preview    = ItemPreviewWidget.Cast(Wgt("Preview"));
-        m_ChargeFill = Wgt("ChargeFill");
+        // Смугу заряду породжує примітив bar: доріжка ChargeBar і її
+        // наповнення ChargeBarFill -- ім'я дає генератор, не рука.
+        m_ChargeBar  = Wgt("ChargeBar");
+        m_ChargeFill = Wgt("ChargeBarFill");
         m_BtnPower     = ButtonWidget.Cast(Wgt("BtnPower"));
         m_BtnPin       = ButtonWidget.Cast(Wgt("BtnPin"));
         m_BtnPinClear  = ButtonWidget.Cast(Wgt("BtnPinClear"));
@@ -540,7 +544,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
 
         // Напис на кнопці -- це те, що станеться після натискання, а не те,
         // що є зараз. Без батареї вмикати нічого, і кнопка про це й пише.
-        TextWidget pt = Text("PowerText");
+        TextWidget pt = Text("BtnPowerText");
         if (pt)
         {
             if (!st.HasBattery)
@@ -551,11 +555,15 @@ class OZ_PdaPageDevice : OZ_PdaPage
                 pt.SetText("#STR_OZ_DEV_POWER_ON");
         }
 
-        if (m_ChargeFill)
+        if (m_ChargeBar && m_ChargeFill)
         {
-            // Ширина смуги -- у тих самих одиницях розмітки, що й у layout.
-            float w = 677 * Math.Clamp(st.Charge01, 0, 1);
-            m_ChargeFill.SetSize(w, 10);
+            // Ширину бере сама доріжка: розмітка знає свій розмір, скрипт
+            // лише множить його на частку заряду. Число в коді означало б
+            // другу правду про ширину -- і саме нею був старий 677.
+            float tw;
+            float th;
+            m_ChargeBar.GetSize(tw, th);
+            m_ChargeFill.SetSize(tw * Math.Clamp(st.Charge01, 0, 1), th);
         }
     }
 
@@ -686,9 +694,9 @@ class OZ_PdaPageDevice : OZ_PdaPage
     }
 
     // Тіло прев'ю з ЧЕСНОЮ висотою вмісту: скрол їздить рівно по тексту,
-    // а не по запасних восьмистах пікселях. Висота -- оцінка по рядках
-    // (перенос ~38 символів на 307px тим шрифтом), і її вистачає, бо
-    // ціль -- межа прокрутки, а не типографіка.
+    // а не по запасних восьмистах пікселях. Висоту дає РУШІЙ: CarBody
+    // міряє себе сам, спейсер CarStack складає -- рахувати «~38 символів
+    // на рядок» руками більше не треба (те саме робить допис новин).
     private void SetCarBody(string text)
     {
         TextWidget tw = TextWidget.Cast(Wgt("CarBody"));
@@ -697,26 +705,11 @@ class OZ_PdaPageDevice : OZ_PdaPage
 
         tw.SetText(text);
 
-        int lines = 0;
-        int seg = 0;
-        for (int ci = 0; ci < text.Length(); ci++)
-        {
-            if (text.Substring(ci, 1) == "\n")
-            {
-                lines += 1 + seg / 66;
-                seg = 0;
-            }
-            else
-            {
-                seg++;
-            }
-        }
-        lines += 1 + seg / 66;
-
-        int h = lines * 18 + 6;
-        if (h < 108)
-            h = 108;
-        tw.SetSize(580, h);
+        // Спейсер міряє себе лише на Update(): без нього новий запис
+        // лишається з висотою попереднього до наступної перерозкладки.
+        Widget stack = Wgt("CarStack");
+        if (stack)
+            stack.Update();
     }
 
     // Клік по рядку списку: повний запис у праву панель.
