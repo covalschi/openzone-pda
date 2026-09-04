@@ -1,3 +1,4 @@
+// Hand-written (proportional layout, not generated): colours are the palette of ui/tokens.json, kept by hand.
 // HUD КПК: смужка живлення, тост чату, мінімапа.
 //
 // Створюється ПРЯМО НА РОБОЧІЙ ОБЛАСТІ, повз меню -- живе, поки гравець
@@ -37,7 +38,7 @@ FrameWidgetClass OZ_PdaHudRoot {
     PanelWidgetClass HudBg {
      visible 1
      ignorepointer 1
-     color 0.055 0.055 0.062 0.62
+     color 0.1 0.135 0.17 1
      position 0 0
      size 1 1
      hexactpos 0
@@ -53,7 +54,7 @@ FrameWidgetClass OZ_PdaHudRoot {
     PanelWidgetClass HudMark {
      visible 1
      ignorepointer 1
-     color 1 0.478 0.102 1
+     color 0.31 0.71 0.91 1
      position 0 0
      size 3 1
      hexactpos 1
@@ -73,7 +74,7 @@ FrameWidgetClass OZ_PdaHudRoot {
      vexactpos 1
      hexactsize 0
      vexactsize 0
-     color 0.788 0.788 0.816 1
+     color 0.58 0.65 0.71 1
      text ""
      font "gui/fonts/sdf_MetronBook24"
      "exact text" 1
@@ -105,7 +106,7 @@ FrameWidgetClass OZ_PdaHudRoot {
     PanelWidgetClass ToastBg {
      visible 1
      ignorepointer 1
-     color 0.055 0.055 0.062 0.72
+     color 0.1 0.135 0.17 1
      position 0 0
      size 1 1
      hexactpos 0
@@ -119,7 +120,7 @@ FrameWidgetClass OZ_PdaHudRoot {
     PanelWidgetClass ToastMark {
      visible 1
      ignorepointer 1
-     color 1 0.478 0.102 1
+     color 0.31 0.71 0.91 1
      position 0 0
      size 3 1
      hexactpos 1
@@ -139,7 +140,7 @@ FrameWidgetClass OZ_PdaHudRoot {
      vexactpos 1
      hexactsize 0
      vexactsize 1
-     color 1 0.478 0.102 1
+     color 0.31 0.71 0.91 1
      text ""
      font "gui/fonts/sdf_MetronBook24"
      "exact text" 1
@@ -159,7 +160,7 @@ FrameWidgetClass OZ_PdaHudRoot {
      vexactpos 1
      hexactsize 0
      vexactsize 1
-     color 0.788 0.788 0.816 1
+     color 0.58 0.65 0.71 1
      text ""
      font "gui/fonts/sdf_MetronBook24"
      "exact text" 1
@@ -190,7 +191,7 @@ FrameWidgetClass OZ_PdaHudRoot {
     PanelWidgetClass MiniFrame {
      visible 1
      ignorepointer 1
-     color 0.055 0.055 0.062 0.85
+     color 0.1 0.135 0.17 1
      position 0 0
      size 1 1
      hexactpos 0
@@ -226,7 +227,7 @@ FrameWidgetClass OZ_PdaHudRoot {
      vexactpos 1
      hexactsize 1
      vexactsize 1
-     color 1 0.478 0.102 1
+     color 0.31 0.71 0.91 1
      text ""
      font "gui/fonts/sdf_MetronBook24"
      "exact text" 1
