@@ -1,0 +1,33 @@
+{
+  "layout": "oz_pda_page_contacts",
+  "note": "Сторінка «Контакти»: хто зараз у Зоні. Ліва половина вкладки (640x518), права належить сторінці фракції. Імена читає OZ_PdaPageContacts.c: ContactsHeader, ContactList, ContactsHint, BtnHide, BtnHideContacts, BtnMsg, BtnFriend та їхні *Text; у рядку -- RowChip, RowPick, RowName, RowFaction, RowWhere, RowDetail.",
+  "root": {"frame": {"name": "OZ_PageContacts", "size": "$device.half", "inset": "$space.page"}},
+  "body": {"vbox": {"gap": "$space.tight", "children": [
+    {"hbox": {"h": "$size.header", "gap": "$space.gap", "children": [
+      {"label":  {"name": "ContactsHeader", "w": "fill", "font": "title", "color": "$accent"}},
+      {"button": {"name": "BtnHide", "w": 195, "font": "small"}},
+      {"button": {"name": "BtnHideContacts", "w": 195, "font": "small"}}
+    ]}},
+    {"list": {"name": "ContactScroll", "stack": "ContactList", "h": "fill",
+      "note": "Список -- прокрутка з рядками, а не TextListbox: кожен контакт -- власна розкладка, у якій є де показати ім'я, фракцію її кольором, звання, посаду й мітки. Спейсер росте рівно на суму рядків; скрипт кладе рядки і зве Update().",
+      "rows": {
+        "oz_pda_contact_row": {"row": {"name": "OZ_ContactRow", "h": "$size.contactRow", "click": true,
+          "note": "Один рядок списку контактів. Ім'я кореня скрипт перезаписує на ключ контакту (SetName), SetUserID(2) відрізняє рядок від вкладки в OnClick. Ширина -- від спейсера: 600 - 10 під смугу прокрутки.",
+          "children": [
+            {"panel": {"name": "RowBg", "size": "fill", "color": "$panel"}},
+            {"panel": {"name": "RowPick", "size": "fill", "color": "$pick", "hidden": true, "note": "Підсвітка обраного, ПІД усім іншим."}},
+            {"chip":  {"name": "RowChip", "note": "Смужка кольору фракції; без фракції лишається невидимою."}},
+            {"label": {"name": "RowName", "at": [22, 6], "size": [300, 25], "font": "header", "color": "$text"}},
+            {"label": {"name": "RowFaction", "at": [330, 6], "size": [180, 25], "font": "body", "color": "$muted", "note": "Фракція фарбується у свій колір -- той самий, що й смужка."}},
+            {"label": {"name": "RowWhere", "anchor": "right", "at": [12, 6], "w": "auto", "h": 25, "font": "small", "color": "$muted", "align": "right", "note": "Де людина: поруч, у Зоні, чи немає. Якір справа, тому ніколи не під смугою."}},
+            {"label": {"name": "RowDetail", "at": [22, 30], "w": "fill", "h": 20, "font": "small", "color": "$muted"}},
+            {"rule":  {"name": "RowLine", "anchor": "bottom", "at": [22, 0], "w": "fill"}}
+          ]}}
+      }}},
+    {"label": {"name": "ContactsHint", "h": "$size.hint", "font": "hint", "color": "$faint"}},
+    {"hbox": {"h": "$size.button", "gap": 30, "children": [
+      {"button": {"name": "BtnMsg", "w": "fill", "hidden": true, "font": "small", "note": "Написати обраному контакту. Лише контакту: чат починається з рукостискання."}},
+      {"button": {"name": "BtnFriend", "w": "fill", "font": "small", "note": "Дія над обраним рядком: просити, прийняти, відмовити, викреслити -- напис каже, що саме."}}
+    ]}}
+  ]}}
+}
