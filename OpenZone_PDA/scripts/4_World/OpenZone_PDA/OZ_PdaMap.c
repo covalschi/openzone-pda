@@ -190,7 +190,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_MarkerList>.MakeData(r, outJson, err, false))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return false;
         }
         pda.OZ_SetRouteJson(outJson);
@@ -212,7 +212,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_MarkerRef>.LoadData(json, r, err) || !r || r.Id == "")
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -228,7 +228,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         }
         if (!src)
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -339,7 +339,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_MarkerList>.MakeData(route, outJson, err, false))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -385,7 +385,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_MarkerList>.LoadData(c.OZ_Route(), incoming, err) || !incoming || !incoming.Items)
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -432,7 +432,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_MarkerRef>.LoadData(json, r, err) || !r)
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -449,7 +449,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
 
         if (!found)
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -502,7 +502,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         string outJson;
         if (!JsonFileLoader<OZ_MarkerList>.MakeData(carried, outJson, err, false))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -577,7 +577,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_MapMarker>.LoadData(json, incoming, err) || !incoming)
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -611,7 +611,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
 
         if (!SaveMarkers(pda, list))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -635,7 +635,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_MarkerRef>.LoadData(json, r, err) || !r)
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -661,7 +661,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
 
         if (!SaveMarkers(pda, list))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -688,7 +688,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_MapMarker>.LoadData(json, incoming, err) || !incoming)
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -716,7 +716,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
 
         if (!SaveMarkers(pda, list))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -1003,7 +1003,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         if (!JsonFileLoader<OZ_MapState>.MakeData(st, outJson, err, false))
         {
             OZ_Log.Error("map state serialise failed: " + err);
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -1020,7 +1020,7 @@ class OZ_PdaHandlerMap : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_TransponderOp>.LoadData(json, t, err) || !t)
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 

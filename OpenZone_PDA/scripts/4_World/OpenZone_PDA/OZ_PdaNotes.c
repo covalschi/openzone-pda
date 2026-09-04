@@ -119,7 +119,7 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
         if (!JsonFileLoader<OZ_NoteBook>.MakeData(book, outJson, err, false))
         {
             OZ_Log.Error("notes: cannot serialise the book: " + err);
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return false;
         }
 
@@ -137,7 +137,7 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_Note>.LoadData(json, n, err) || !n || n.Id == "")
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -198,7 +198,7 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
         string outJson;
         if (!JsonFileLoader<OZ_NoteBook>.MakeData(book, outJson, err, false))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -224,7 +224,7 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_NoteBook>.MakeData(book, outJson, err, false))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -239,7 +239,7 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_Note>.LoadData(json, incoming, err) || !incoming)
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -310,7 +310,7 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
         string outJson;
         if (!JsonFileLoader<OZ_NoteRef>.MakeData(saved, outJson, err, false))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -325,7 +325,7 @@ class OZ_PdaHandlerNotes : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_NoteRef>.LoadData(json, r, err) || !r || r.Id == "")
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 

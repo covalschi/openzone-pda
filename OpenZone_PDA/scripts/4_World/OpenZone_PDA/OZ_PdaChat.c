@@ -198,7 +198,7 @@ class OZ_ChatFail
             return "STR_OZ_ERR_NOT_OWNER";
         if (code == "group_full")
             return "STR_OZ_ERR_GROUP_FULL";
-        return "STR_OZ_ERR_INTERNAL";
+        return "STR_OZ_ERR_PDA_INTERNAL";
     }
 }
 
@@ -540,7 +540,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         if (!JsonFileLoader<OZ_ChatAskMine>.MakeData(a, letter, err, false))
         {
             OZ_Log.Error("chat: cannot build the letter: " + err);
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -556,7 +556,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_ChatRef>.LoadData(json, r, err) || !r)
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -572,7 +572,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         if (!JsonFileLoader<OZ_ChatAskOpen>.MakeData(a, letter, err, false))
         {
             OZ_Log.Error("chat: cannot build the letter: " + err);
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -588,7 +588,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_ChatOlderReq>.LoadData(json, r, err) || !r || r.Id == "")
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -605,7 +605,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         if (!JsonFileLoader<OZ_ChatAskOlder>.MakeData(a, letter, err, false))
         {
             OZ_Log.Error("chat: cannot build the letter: " + err);
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -623,7 +623,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_ChatSend>.LoadData(json, s, err) || !s)
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -662,7 +662,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         if (!JsonFileLoader<OZ_ChatAskSend>.MakeData(a, letter, err, false))
         {
             OZ_Log.Error("chat: cannot build the letter: " + err);
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -682,7 +682,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_NameRef>.LoadData(json, r, err) || !r)
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -724,7 +724,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         if (!JsonFileLoader<OZ_ChatAskStart>.MakeData(a, letter, err, false))
         {
             OZ_Log.Error("chat: cannot build the letter: " + err);
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -740,7 +740,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_ChatGroupSpec>.LoadData(json, r, err) || !r)
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -770,7 +770,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         if (!JsonFileLoader<OZ_ChatAskGroup>.MakeData(a, letter, err, false))
         {
             OZ_Log.Error("chat: cannot build the letter: " + err);
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -786,7 +786,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_ChatGroupSpec>.LoadData(json, r, err) || !r || r.Id == "")
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -802,7 +802,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         if (!JsonFileLoader<OZ_ChatAskGroupEdit>.MakeData(a, letter, err, false))
         {
             OZ_Log.Error("chat: cannot build the letter: " + err);
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -820,7 +820,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_NoteRef>.LoadData(json, r, err) || !r || r.Id == "")
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -832,7 +832,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         if (!JsonFileLoader<OZ_ChatAskGroupDel>.MakeData(a, letter, err, false))
         {
             OZ_Log.Error("chat: cannot build the letter: " + err);
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -848,7 +848,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_NoteRef>.LoadData(json, r, err) || !r || r.Id == "")
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -862,7 +862,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         if (!JsonFileLoader<OZ_ChatAskGroupDel>.MakeData(a, letter, err, false))
         {
             OZ_Log.Error("chat: cannot build the letter: " + err);
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -906,7 +906,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_ChatInvitees>.MakeData(inv, outJson, err, false))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -921,7 +921,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_ChatAdd>.LoadData(json, add, err) || !add)
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -950,7 +950,7 @@ class OZ_PdaHandlerChat : OZ_PageHandler
         if (!JsonFileLoader<OZ_ChatAskInvite>.MakeData(a, letter, err, false))
         {
             OZ_Log.Error("chat: cannot build the letter: " + err);
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 

@@ -63,7 +63,7 @@ class OZ_NewsFail
             return "STR_OZ_ERR_NEWS_NO_AUTHOR";
         if (code == "post_failed")
             return "STR_OZ_ERR_NEWS_POST_FAILED";
-        return "STR_OZ_ERR_INTERNAL";
+        return "STR_OZ_ERR_PDA_INTERNAL";
     }
 }
 
@@ -203,7 +203,7 @@ class OZ_PdaHandlerNews : OZ_PageHandler
 
             if (!JsonFileLoader<OZ_NewsAskList>.MakeData(a, letter, err, false))
             {
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 
@@ -217,7 +217,7 @@ class OZ_PdaHandlerNews : OZ_PageHandler
             OZ_NewsRef r;
             if (!JsonFileLoader<OZ_NewsRef>.LoadData(json, r, err) || !r)
             {
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 
@@ -226,7 +226,7 @@ class OZ_PdaHandlerNews : OZ_PageHandler
 
             if (!JsonFileLoader<OZ_NewsRef>.MakeData(ask, letter, err, false))
             {
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 
@@ -242,7 +242,7 @@ class OZ_PdaHandlerNews : OZ_PageHandler
 
             if (!JsonFileLoader<OZ_NewsAskList>.MakeData(v, letter, err, false))
             {
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 
@@ -256,7 +256,7 @@ class OZ_PdaHandlerNews : OZ_PageHandler
             OZ_NewsPostAsk from;
             if (!JsonFileLoader<OZ_NewsPostAsk>.LoadData(json, from, err) || !from)
             {
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 
@@ -283,7 +283,7 @@ class OZ_PdaHandlerNews : OZ_PageHandler
 
             if (!JsonFileLoader<OZ_NewsPostAsk>.MakeData(p, letter, err, false))
             {
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 

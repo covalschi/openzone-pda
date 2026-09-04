@@ -91,7 +91,7 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         string outJson;
         if (!JsonFileLoader<OZ_ContactList>.MakeData(list, outJson, serr, false))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -440,7 +440,7 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         if (!JsonFileLoader<OZ_ContactList>.MakeData(list, outJson, err, false))
         {
             OZ_Log.Error("contact list serialise failed: " + err);
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -460,7 +460,7 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_PdaFlagOp>.LoadData(json, flag, err))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -487,7 +487,7 @@ class OZ_PdaHandlerContacts : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_NameRef>.LoadData(json, r, err))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 

@@ -72,35 +72,80 @@ class OZ_PdaPageFactory
         s_Glyph.Set(pageId, glyph);
     }
 
-    // Спрайт вкладки з набору oz_pda_icons. Сторінки склейок (фракція, рація)
-    // реєструють лише гліф і отримують загальний спрайт, доки не принесуть свій.
-    static string Icon(string pageId)
+    // СПРАЙТ ВКЛАДКИ -- той самий реєстр, що й Letter(), з тим самим жадібним
+    // посівом сімох вбудованих. Чужа сторінка (фракція, рація), що покликала
+    // лише Letter(), у цю мапу не потрапляє і отримує запасний "tab_page" --
+    // те саме, що й раніше, тепер явний запасний варіант, а не рядок if-ів.
+    private static ref map<string, string> s_Sprite;
+
+    private static void SeedSprites()
     {
-        if (pageId == OZ_PdaConst.PAGE_DEVICE)   return "tab_device";
-        if (pageId == OZ_PdaConst.PAGE_QUESTS)   return "tab_journal";
-        if (pageId == OZ_PdaConst.PAGE_MAP)      return "tab_map";
-        if (pageId == OZ_PdaConst.PAGE_CONTACTS) return "tab_contacts";
-        if (pageId == OZ_PdaConst.PAGE_CHAT)     return "tab_chat";
-        if (pageId == OZ_PdaConst.PAGE_NOTES)    return "tab_notes";
-        if (pageId == OZ_PdaConst.PAGE_NEWS)     return "tab_news";
-        return "tab_page";
+        if (s_Sprite)
+            return;
+
+        s_Sprite = new map<string, string>();
+        s_Sprite.Set(OZ_PdaConst.PAGE_DEVICE,   "tab_device");
+        s_Sprite.Set(OZ_PdaConst.PAGE_QUESTS,   "tab_journal");
+        s_Sprite.Set(OZ_PdaConst.PAGE_MAP,      "tab_map");
+        s_Sprite.Set(OZ_PdaConst.PAGE_CONTACTS, "tab_contacts");
+        s_Sprite.Set(OZ_PdaConst.PAGE_CHAT,     "tab_chat");
+        s_Sprite.Set(OZ_PdaConst.PAGE_NOTES,    "tab_notes");
+        s_Sprite.Set(OZ_PdaConst.PAGE_NEWS,     "tab_news");
     }
 
-    // Підпис вкладки: рядок сторінки КПК, або зареєстрований гліф для чужої.
-    //
-    // По одній перевірці на рядок, а не один if з || на кілька сторінок:
-    // умова if у Enforce мусить уміщатися в один рядок, перенесення дає
-    // "Expected ')', not a '||'" (та сама пастка, що й у HudWasShown).
+    static void Sprite(string pageId, string image)
+    {
+        SeedSprites();
+        s_Sprite.Set(pageId, image);
+    }
+
+    // ПІДПИС ВКЛАДКИ -- так само реєстр. Запасний варіант для чужої сторінки,
+    // що не покликала Caption(), -- Glyph(pageId), та сама літера рельса.
+    private static ref map<string, string> s_Caption;
+
+    private static void SeedCaptions()
+    {
+        if (s_Caption)
+            return;
+
+        s_Caption = new map<string, string>();
+        s_Caption.Set(OZ_PdaConst.PAGE_DEVICE,   "#STR_OZ_PAGE_DEVICE");
+        s_Caption.Set(OZ_PdaConst.PAGE_QUESTS,   "#STR_OZ_PAGE_QUESTS");
+        s_Caption.Set(OZ_PdaConst.PAGE_MAP,      "#STR_OZ_PAGE_MAP");
+        s_Caption.Set(OZ_PdaConst.PAGE_CONTACTS, "#STR_OZ_PAGE_CONTACTS");
+        s_Caption.Set(OZ_PdaConst.PAGE_CHAT,     "#STR_OZ_PAGE_CHAT");
+        s_Caption.Set(OZ_PdaConst.PAGE_NOTES,    "#STR_OZ_PAGE_NOTES");
+        s_Caption.Set(OZ_PdaConst.PAGE_NEWS,     "#STR_OZ_PAGE_NEWS");
+    }
+
+    static void Caption(string pageId, string strKey)
+    {
+        SeedCaptions();
+        s_Caption.Set(pageId, strKey);
+    }
+
+    // Спрайт вкладки з набору oz_pda_icons: зареєстрований, або запасний
+    // "tab_page", доки чужа сторінка не принесе свій (Sprite()).
+    static string Icon(string pageId)
+    {
+        SeedSprites();
+
+        if (!s_Sprite.Contains(pageId))
+            return "tab_page";
+
+        return s_Sprite.Get(pageId);
+    }
+
+    // Підпис вкладки: зареєстрований рядок КПК (Caption()), або зареєстрований
+    // гліф для чужої сторінки, що покликала лише Letter().
     static string Title(string pageId)
     {
-        if (pageId == OZ_PdaConst.PAGE_DEVICE)   return "#STR_OZ_PAGE_DEVICE";
-        if (pageId == OZ_PdaConst.PAGE_QUESTS)   return "#STR_OZ_PAGE_QUESTS";
-        if (pageId == OZ_PdaConst.PAGE_MAP)      return "#STR_OZ_PAGE_MAP";
-        if (pageId == OZ_PdaConst.PAGE_CONTACTS) return "#STR_OZ_PAGE_CONTACTS";
-        if (pageId == OZ_PdaConst.PAGE_CHAT)     return "#STR_OZ_PAGE_CHAT";
-        if (pageId == OZ_PdaConst.PAGE_NOTES)    return "#STR_OZ_PAGE_NOTES";
-        if (pageId == OZ_PdaConst.PAGE_NEWS)     return "#STR_OZ_PAGE_NEWS";
-        return Glyph(pageId);
+        SeedCaptions();
+
+        if (!s_Caption.Contains(pageId))
+            return Glyph(pageId);
+
+        return s_Caption.Get(pageId);
     }
 
     // ПАРА СТОРІНОК, що ділять одну вкладку: ліворуч одна, праворуч друга.

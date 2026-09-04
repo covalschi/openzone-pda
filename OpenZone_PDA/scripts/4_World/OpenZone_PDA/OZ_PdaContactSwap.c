@@ -57,7 +57,7 @@ class OZ_PdaContactSwap
         if (!from || !to)
         {
             OZ_Log.Warn("swap: one of the two identities is gone, the exchange is dropped");
-            Say(from, "STR_OZ_ERR_INTERNAL");
+            Say(from, "STR_OZ_ERR_PDA_INTERNAL");
             return;
         }
 

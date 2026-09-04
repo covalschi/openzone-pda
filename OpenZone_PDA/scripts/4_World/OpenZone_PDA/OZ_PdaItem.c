@@ -485,7 +485,7 @@ class OZ_PDA_Base : ItemBase
     string OZ_StartCrack(float seconds)
     {
         if (!GetGame().IsServer())
-            return "STR_OZ_ERR_INTERNAL";
+            return "STR_OZ_ERR_PDA_INTERNAL";
 
         // Ламається ЗАМОК, а не тільки печатка (рішення власника
         // 2026-08-28): звичайний замкнений пін дешифратор бере так само.
@@ -929,7 +929,7 @@ class OZ_PDA_Base : ItemBase
     string OZ_FactoryReset()
     {
         if (!GetGame().IsServer())
-            return "STR_OZ_ERR_INTERNAL";
+            return "STR_OZ_ERR_PDA_INTERNAL";
 
         // Квестовий прилад до заводських не скидається -- ні запечатаний, ні
         // зламаний (ТЗ-4 R-B3.1): скидання посіяло б новий код, якого немає в

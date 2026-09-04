@@ -281,7 +281,7 @@ class OZ_PdaPageNews : OZ_PdaPage
         string err;
         if (!JsonFileLoader<OZ_NewsPostAsk>.MakeData(p, json, err, false))
         {
-            SetHintSticky("NewsHint", "#STR_OZ_ERR_INTERNAL");
+            SetHintSticky("NewsHint", "#STR_OZ_ERR_PDA_INTERNAL");
             return;
         }
 

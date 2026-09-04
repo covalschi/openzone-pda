@@ -128,7 +128,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_CarrierWriteOp>.LoadData(json, opw, err) || !opw)
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -177,7 +177,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
 
                 if (!JsonFileLoader<OZ_MarkerList>.MakeData(pl, payload, perr, false))
                 {
-                    error = "STR_OZ_ERR_INTERNAL";
+                    error = "STR_OZ_ERR_PDA_INTERNAL";
                     return "";
                 }
             }
@@ -234,7 +234,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             string payloadW;
             if (!JsonFileLoader<OZ_NoteBook>.MakeData(bookW, payloadW, err, false))
             {
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 
@@ -257,7 +257,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             return wtjN;
         }
 
-        error = "STR_OZ_ERR_INTERNAL";
+        error = "STR_OZ_ERR_PDA_INTERNAL";
         return "";
     }
 
@@ -306,7 +306,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_CarrierView>.MakeData(v, outJson, err, false))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -340,7 +340,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             string err;
             if (!JsonFileLoader<OZ_MarkerList>.LoadData(c.OZ_Marks(), incoming, err) || !incoming || !incoming.Items)
             {
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 
@@ -426,7 +426,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             string outJson;
             if (!JsonFileLoader<OZ_MarkerList>.MakeData(mine, outJson, err, false))
             {
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 
@@ -449,7 +449,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
                 // чипі на потім.
                 if (marksTotal >= 0)
                     return MarksOnlyTaken(marksTaken, marksTotal, ok, error);
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 
@@ -523,7 +523,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             {
                 if (marksTotal >= 0)
                     return MarksOnlyTaken(marksTaken, marksTotal, ok, error);
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 
@@ -565,7 +565,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             return tjm;
         }
 
-        error = "STR_OZ_ERR_INTERNAL";
+        error = "STR_OZ_ERR_PDA_INTERNAL";
         return "";
     }
 
@@ -597,7 +597,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_CarrierItemRef>.LoadData(json, r, err) || !r || r.Index < 0)
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -610,7 +610,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             OZ_MarkerList src;
             if (!JsonFileLoader<OZ_MarkerList>.LoadData(c.OZ_Marks(), src, err) || !src || !src.Items || r.Index >= src.Items.Count())
             {
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 
@@ -643,7 +643,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             OZ_MapMarker m = src.Items[r.Index];
             if (!m)
             {
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
             m.Name = OZ_Text.Clip(m.Name, OZ_PdaTune.MarkerNameMax());
@@ -667,7 +667,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             string outJson;
             if (!JsonFileLoader<OZ_MarkerList>.MakeData(mine, outJson, err, false))
             {
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 
@@ -682,13 +682,13 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             OZ_NoteBook book;
             if (!JsonFileLoader<OZ_NoteBook>.LoadData(c.OZ_Notes(), book, err) || !book || !book.Notes || r.Index >= book.Notes.Count())
             {
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 
             if (!book.Notes[r.Index])
             {
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 
@@ -748,7 +748,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             string outN;
             if (!JsonFileLoader<OZ_NoteBook>.MakeData(mineN, outN, err, false))
             {
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 
@@ -758,7 +758,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             return "";
         }
 
-        error = "STR_OZ_ERR_INTERNAL";
+        error = "STR_OZ_ERR_PDA_INTERNAL";
         return "";
     }
 
@@ -772,7 +772,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_CarrierItemRef>.LoadData(json, r, err) || !r || r.Index < 0)
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -785,7 +785,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             OZ_MarkerList ml;
             if (!JsonFileLoader<OZ_MarkerList>.LoadData(c.OZ_Marks(), ml, err) || !ml || !ml.Items || r.Index >= ml.Items.Count())
             {
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 
@@ -796,7 +796,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             {
                 if (!JsonFileLoader<OZ_MarkerList>.MakeData(ml, mj, err, false))
                 {
-                    error = "STR_OZ_ERR_INTERNAL";
+                    error = "STR_OZ_ERR_PDA_INTERNAL";
                     return "";
                 }
             }
@@ -816,7 +816,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             OZ_NoteBook nb;
             if (!JsonFileLoader<OZ_NoteBook>.LoadData(c.OZ_Notes(), nb, err) || !nb || !nb.Notes || r.Index >= nb.Notes.Count())
             {
-                error = "STR_OZ_ERR_INTERNAL";
+                error = "STR_OZ_ERR_PDA_INTERNAL";
                 return "";
             }
 
@@ -827,7 +827,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             {
                 if (!JsonFileLoader<OZ_NoteBook>.MakeData(nb, nj, err, false))
                 {
-                    error = "STR_OZ_ERR_INTERNAL";
+                    error = "STR_OZ_ERR_PDA_INTERNAL";
                     return "";
                 }
             }
@@ -842,7 +842,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
             return "";
         }
 
-        error = "STR_OZ_ERR_INTERNAL";
+        error = "STR_OZ_ERR_PDA_INTERNAL";
         return "";
     }
 
@@ -961,7 +961,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         if (!JsonFileLoader<OZ_PdaDeviceStatus>.MakeData(st, json, jerr, false))
         {
             OZ_Log.Error("pda: cannot build the virtual status: " + jerr);
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -1248,7 +1248,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         if (!JsonFileLoader<OZ_PdaDeviceStatus>.MakeData(st, outJson, err, false))
         {
             OZ_Log.Error("device status serialise failed: " + err);
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -1272,7 +1272,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_PdaPinAttempt>.LoadData(json, att, err))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -1324,7 +1324,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_PdaDeviceStatus>.MakeData(st, outJson, err, false))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -1381,7 +1381,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_PdaPinChange>.LoadData(json, ch, err))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -1452,7 +1452,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
 
         if (!pda.OZ_HasSession(uid, pd.SessionEpoch))
         {
-            error = "STR_OZ_ERR_NOT_YOURS";
+            error = "STR_OZ_ERR_PDA_NOT_YOURS";
             return "";
         }
 
@@ -1536,7 +1536,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_PdaFlagOp>.LoadData(json, flag, err))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -1574,7 +1574,7 @@ class OZ_PdaHandlerDevice : OZ_PageHandler
         string err;
         if (!JsonFileLoader<OZ_PdaFlagOp>.LoadData(json, flag, err))
         {
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
             return "";
         }
 
@@ -1614,7 +1614,7 @@ class OZ_PdaHandlerQuests : OZ_PageHandler
             }
 
             OZ_Log.Error("quest journal serialise failed: " + err);
-            error = "STR_OZ_ERR_INTERNAL";
+            error = "STR_OZ_ERR_PDA_INTERNAL";
         }
 
         return "";
