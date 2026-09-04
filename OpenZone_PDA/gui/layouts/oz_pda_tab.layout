@@ -3,7 +3,7 @@
 ButtonWidgetClass OZ_PdaTab {
  visible 1
  position 0 0
- size 60 60
+ size 84 60
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -49,10 +49,11 @@ ButtonWidgetClass OZ_PdaTab {
    priority 3
    style rover_sim_colorable
   }
+  // 29 = (84 - 26) / 2: іконка по середині рельса.
   ImageWidgetClass TabIcon {
    visible 1
    ignorepointer 1
-   position 17 8
+   position 29 8
    size 26 26
    hexactpos 1
    vexactpos 1
@@ -68,7 +69,7 @@ ButtonWidgetClass OZ_PdaTab {
    visible 1
    ignorepointer 1
    position 0 38
-   size 60 16
+   size 84 20
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -78,7 +79,7 @@ ButtonWidgetClass OZ_PdaTab {
    text ""
    font "gui/fonts/sdf_MetronBook24"
    "exact text" 1
-   "exact text size" 10
+   "exact text size" 13
    "text halign" center
    "text valign" center
   }

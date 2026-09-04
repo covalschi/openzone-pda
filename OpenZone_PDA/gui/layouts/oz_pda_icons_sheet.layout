@@ -3,7 +3,7 @@
 FrameWidgetClass OZ_IconsSheet {
  visible 1
  position 0 0
- size 1306 518
+ size 1282 518
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -12,7 +12,7 @@ FrameWidgetClass OZ_IconsSheet {
   GridSpacerWidgetClass IconGrid {
    visible 1
    position 20 20
-   size 1266 478
+   size 1242 478
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -26,7 +26,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell0 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -75,7 +75,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell1 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -124,7 +124,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell2 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -173,7 +173,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell3 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -222,7 +222,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell4 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -271,7 +271,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell5 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -320,7 +320,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell6 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -369,7 +369,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell7 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -418,7 +418,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell8 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -467,7 +467,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell9 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -516,7 +516,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell10 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -565,7 +565,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell11 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -614,7 +614,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell12 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -663,7 +663,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell13 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -712,7 +712,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell14 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -761,7 +761,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell15 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -810,7 +810,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell16 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -859,7 +859,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell17 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -908,7 +908,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell18 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -957,7 +957,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell19 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -1006,7 +1006,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell20 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -1055,7 +1055,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell21 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -1104,7 +1104,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell22 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -1153,7 +1153,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell23 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -1202,7 +1202,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell24 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -1251,7 +1251,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell25 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -1300,7 +1300,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell26 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -1349,7 +1349,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell27 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -1398,7 +1398,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell28 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -1447,7 +1447,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell29 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -1496,7 +1496,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell30 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -1545,7 +1545,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell31 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -1594,7 +1594,7 @@ FrameWidgetClass OZ_IconsSheet {
     FrameWidgetClass Cell32 {
      visible 1
      position 0 0
-     size 154.75 92.4
+     size 151.75 92.4
      hexactpos 1
      vexactpos 1
      hexactsize 1

@@ -7,18 +7,19 @@
       {"panel": {"name": "Backdrop", "size": "fill", "color": "$dim", "priority": 1, "note": "Світ лишається видимим і приглушеним: пристрій тримають у руках."}},
       {"frame": {"name": "Device", "anchor": "center", "size": "$device.shell", "priority": 2, "children": [
         {"panel": {"name": "Screen", "at": [18, 18], "size": "$device.screen", "color": "$screen", "priority": 1, "click": true, "children": [
-          {"panel": {"name": "TabRailBg", "size": [60, 546], "color": "$rail", "priority": 1}},
-          {"stack": {"name": "TabRail", "w": 60, "priority": 2, "note": "Вкладки кладе скрипт (oz_pda_tab.layout), по одній на сторінку; спейсер міряє себе на Update()."}},
-          {"panel": {"name": "TabRailEdge", "at": [60, 0], "size": [1, 546], "color": "$edge", "priority": 2}},
-          {"frame": {"name": "PageHost", "at": [61, 0], "size": "$device.page", "priority": 3}},
-          {"panel": {"name": "StatusBar", "at": [61, 518], "size": [1306, 28], "color": "$rail", "priority": 4, "children": [
+          {"panel": {"name": "TabRailBg", "size": ["$device.rail", "$device.screenH"], "color": "$rail", "priority": 1}},
+          {"stack": {"name": "TabRail", "w": "$device.rail", "priority": 2, "note": "Вкладки кладе скрипт (oz_pda_tab.layout), по одній на сторінку; спейсер міряє себе на Update()."}},
+          {"panel": {"name": "TabRailEdge", "at": ["$device.rail", 0], "size": [1, "$device.screenH"], "color": "$edge", "priority": 2}},
+          {"frame": {"name": "PageHost", "at": ["$device.railEdge", 0], "size": "$device.page", "priority": 3}},
+          {"panel": {"name": "StatusBar", "at": ["$device.railEdge", 518], "size": ["$device.pageW", "$device.status"], "color": "$rail", "priority": 4, "children": [
             {"label": {"name": "StatusLeft", "at": [12, 0], "size": [340, 28], "font": "small", "color": "$muted"}},
             {"label": {"name": "StatusMid", "anchor": "center", "size": [360, 28], "font": "small", "color": "$muted", "align": "center"}},
             {"icon":  {"name": "StatusSignal", "anchor": "right", "at": [332, 6], "size": [16, 16], "image": "st_signal", "color": "$muted"}},
             {"icon":  {"name": "StatusBattery", "anchor": "right", "at": [312, 6], "size": [16, 16], "image": "st_battery", "color": "$muted"}},
             {"label": {"name": "StatusRight", "at": [12, 0], "anchor": "right", "size": [290, 28], "font": "small", "color": "$muted", "align": "right"}}
           ]}},
-          {"panel": {"name": "InitPanel", "size": "$device.page", "color": "$screen", "priority": 7, "click": true, "hidden": true, "children": [
+          {"panel": {"name": "InitPanel", "size": "$device.screen", "color": "$screen", "priority": 7, "click": true, "hidden": true,
+            "note": "На весь екран, як LockPanel: сторінка (менша за екран) лишала б смугу праворуч і весь статусний рядок на видноті, а дітей центрувала б повз середину екрана.", "children": [
             {"label":  {"name": "InitTitle", "anchor": "center", "at": [0, -60], "size": [600, 24], "font": "header", "color": "$accent", "align": "center"}},
             {"label":  {"name": "InitHint", "anchor": "center", "at": [0, -25], "size": [700, 36], "font": "hint", "color": "$muted", "align": "center"}},
             {"button": {"name": "BtnInitBig", "anchor": "center", "at": [0, 30], "size": [260, 32], "font": "small"}}

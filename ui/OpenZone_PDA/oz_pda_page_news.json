@@ -35,7 +35,7 @@
           {"button": {"name": "BtnWrite", "w": 130, "font": "small"}}
         ]}}
       ]}},
-      {"panel": {"name": "ComposePanel", "w": "fill", "h": "fill", "color": "$panel", "hidden": true, "priority": 6, "inset": 10, "click": true,
+      {"panel": {"name": "ComposePanel", "w": "fill", "h": "fill", "color": "$panel", "hidden": true, "priority": 6, "inset": "$space.overlay", "click": true,
         "note": "w/h fill замість size fill: на початку (0,0) size:fill лишає дітям повну ширину панелі, ігноруючи inset (генератор не віднімає його від box.w, коли власний розмір панелі пропорційний). Явні w і h -- точне число вже на етапі породження, inset дітям рахується правильно.",
         "children": [
         {"vbox": {"gap": "$space.gap", "children": [

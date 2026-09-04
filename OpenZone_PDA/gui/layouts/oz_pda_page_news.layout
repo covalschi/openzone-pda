@@ -3,7 +3,7 @@
 FrameWidgetClass OZ_PageNews {
  visible 1
  position 0 0
- size 1306 518
+ size 1282 518
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -85,7 +85,7 @@ FrameWidgetClass OZ_PageNews {
   FrameWidgetClass PostPane {
    visible 1
    position 461 20
-   size 825 478
+   size 801 478
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -96,7 +96,7 @@ FrameWidgetClass OZ_PageNews {
      visible 1
      ignorepointer 1
      position 0 0
-     size 825 52
+     size 801 52
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -117,7 +117,7 @@ FrameWidgetClass OZ_PageNews {
      visible 1
      ignorepointer 1
      position 0 58
-     size 825 20
+     size 801 20
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -135,7 +135,7 @@ FrameWidgetClass OZ_PageNews {
     ScrollWidgetClass PostScroll {
      visible 1
      position 0 84
-     size 825 360
+     size 801 360
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -186,7 +186,7 @@ FrameWidgetClass OZ_PageNews {
      visible 1
      ignorepointer 1
      position 0 450
-     size 685 28
+     size 661 28
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -202,7 +202,7 @@ FrameWidgetClass OZ_PageNews {
     }
     ButtonWidgetClass BtnWrite {
      visible 1
-     position 695 450
+     position 671 450
      size 130 28
      hexactpos 1
      vexactpos 1
@@ -261,7 +261,7 @@ FrameWidgetClass OZ_PageNews {
     PanelWidgetClass ComposePanel {
      visible 0
      position 0 0
-     size 825 478
+     size 801 478
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -274,7 +274,7 @@ FrameWidgetClass OZ_PageNews {
        visible 1
        ignorepointer 1
        position 10 10
-       size 805 20
+       size 781 20
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -291,7 +291,7 @@ FrameWidgetClass OZ_PageNews {
       PanelWidgetClass CmpTitleFrame {
        visible 1
        position 10 40
-       size 805 32
+       size 781 32
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -304,7 +304,7 @@ FrameWidgetClass OZ_PageNews {
          visible 1
          ignorepointer 1
          position 1 1
-         size 803 30
+         size 779 30
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -316,7 +316,7 @@ FrameWidgetClass OZ_PageNews {
         EditBoxWidgetClass CmpTitle {
          visible 1
          position 6 0
-         size 793 32
+         size 769 32
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -333,7 +333,7 @@ FrameWidgetClass OZ_PageNews {
       PanelWidgetClass CmpBodyFrame {
        visible 1
        position 10 82
-       size 805 348
+       size 781 348
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -346,7 +346,7 @@ FrameWidgetClass OZ_PageNews {
          visible 1
          ignorepointer 1
          position 1 1
-         size 803 346
+         size 779 346
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -358,7 +358,7 @@ FrameWidgetClass OZ_PageNews {
         MultilineEditBoxWidgetClass CmpBody {
          visible 1
          position 6 4
-         size 793 340
+         size 769 340
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -432,7 +432,7 @@ FrameWidgetClass OZ_PageNews {
       }
       ButtonWidgetClass BtnCmpCancel {
        visible 1
-       position 545 440
+       position 521 440
        size 130 28
        hexactpos 1
        vexactpos 1
@@ -489,7 +489,7 @@ FrameWidgetClass OZ_PageNews {
       }
       ButtonWidgetClass BtnCmpSend {
        visible 1
-       position 685 440
+       position 661 440
        size 130 28
        hexactpos 1
        vexactpos 1

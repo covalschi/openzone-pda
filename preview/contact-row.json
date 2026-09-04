@@ -1,0 +1,10 @@
+{
+  "note": "One contact row at its widest, in Ukrainian: the longest faction name the registry has and the longest thing Where() can write -- the last-seen line, which grows leftwards from the right edge.",
+  "ops": [
+    {"op": "text", "name": "RowName", "nth": 1, "text": "Тарас Кривоносенко"},
+    {"op": "text", "name": "RowFaction", "nth": 1, "text": "Чисте небо"},
+    {"op": "text", "name": "RowWhere", "nth": 1, "text": "востаннє бачили 2026-08-30"},
+    {"op": "text", "name": "RowDetail", "nth": 1, "text": "Досвідчений сталкер   ·   провідник"},
+    {"op": "show", "name": "RowChip", "nth": 1}
+  ]
+}

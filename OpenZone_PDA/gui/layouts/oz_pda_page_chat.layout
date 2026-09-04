@@ -3,7 +3,7 @@
 FrameWidgetClass OZ_PageChat {
  visible 1
  position 0 0
- size 1306 518
+ size 1282 518
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -45,7 +45,7 @@ FrameWidgetClass OZ_PageChat {
   ScrollWidgetClass ChatListScroll {
    visible 1
    position 20 64
-   size 375 392
+   size 375 394
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -71,8 +71,8 @@ FrameWidgetClass OZ_PageChat {
   }
   ButtonWidgetClass BtnGroup {
    visible 1
-   position 20 466
-   size 375 32
+   position 20 468
+   size 375 30
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -84,7 +84,7 @@ FrameWidgetClass OZ_PageChat {
      visible 1
      ignorepointer 1
      position -1 -1
-     size 377 34
+     size 377 32
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -97,7 +97,7 @@ FrameWidgetClass OZ_PageChat {
      visible 1
      ignorepointer 1
      position 0 0
-     size 375 32
+     size 375 30
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -110,7 +110,7 @@ FrameWidgetClass OZ_PageChat {
      visible 1
      ignorepointer 1
      position 0 0
-     size 375 32
+     size 375 30
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -129,7 +129,7 @@ FrameWidgetClass OZ_PageChat {
   FrameWidgetClass ChatRight {
    visible 1
    position 415 20
-   size 871 478
+   size 847 478
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -140,7 +140,7 @@ FrameWidgetClass OZ_PageChat {
      visible 1
      ignorepointer 1
      position 0 0
-     size 306 34
+     size 282 34
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -156,7 +156,7 @@ FrameWidgetClass OZ_PageChat {
     }
     ButtonWidgetClass BtnMembers {
      visible 0
-     position 316 0
+     position 292 0
      size 138 34
      hexactpos 1
      vexactpos 1
@@ -213,7 +213,7 @@ FrameWidgetClass OZ_PageChat {
     }
     ButtonWidgetClass BtnGroupEdit {
      visible 0
-     position 464 0
+     position 440 0
      size 172 34
      hexactpos 1
      vexactpos 1
@@ -270,7 +270,7 @@ FrameWidgetClass OZ_PageChat {
     }
     ButtonWidgetClass BtnInvite {
      visible 0
-     position 646 0
+     position 622 0
      size 225 34
      hexactpos 1
      vexactpos 1
@@ -329,7 +329,7 @@ FrameWidgetClass OZ_PageChat {
     ButtonWidgetClass BtnOlder {
      visible 0
      position 0 40
-     size 871 22
+     size 847 22
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -341,7 +341,7 @@ FrameWidgetClass OZ_PageChat {
        visible 1
        ignorepointer 1
        position 0 0
-       size 871 22
+       size 847 22
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -354,7 +354,7 @@ FrameWidgetClass OZ_PageChat {
        visible 1
        ignorepointer 1
        position 0 0
-       size 871 22
+       size 847 22
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -373,7 +373,7 @@ FrameWidgetClass OZ_PageChat {
     ScrollWidgetClass ChatScroll {
      visible 1
      position 0 68
-     size 871 338
+     size 847 346
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -399,8 +399,8 @@ FrameWidgetClass OZ_PageChat {
     }
     PanelWidgetClass ChatInputFrame {
      visible 1
-     position 0 412
-     size 592 30
+     position 0 420
+     size 568 30
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -413,7 +413,7 @@ FrameWidgetClass OZ_PageChat {
        visible 1
        ignorepointer 1
        position 1 1
-       size 590 28
+       size 566 28
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -425,7 +425,7 @@ FrameWidgetClass OZ_PageChat {
       EditBoxWidgetClass ChatInput {
        visible 1
        position 6 0
-       size 580 30
+       size 556 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -442,7 +442,7 @@ FrameWidgetClass OZ_PageChat {
     // «Сказати без імені» -- лише для ефіру Зони; сторінка показує її тільки там.
     ButtonWidgetClass BtnAnon {
      visible 0
-     position 600 412
+     position 576 420
      size 78 30
      hexactpos 1
      vexactpos 1
@@ -499,7 +499,7 @@ FrameWidgetClass OZ_PageChat {
     }
     ButtonWidgetClass BtnSend {
      visible 1
-     position 686 412
+     position 662 420
      size 185 30
      hexactpos 1
      vexactpos 1
@@ -557,8 +557,8 @@ FrameWidgetClass OZ_PageChat {
     TextWidgetClass ChatHint {
      visible 1
      ignorepointer 1
-     position 0 448
-     size 871 30
+     position 0 456
+     size 847 22
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -575,7 +575,7 @@ FrameWidgetClass OZ_PageChat {
     PanelWidgetClass MembersPanel {
      visible 0
      position 0 40
-     size 871 370
+     size 847 370
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -588,7 +588,7 @@ FrameWidgetClass OZ_PageChat {
        visible 1
        ignorepointer 1
        position 10 10
-       size 851 20
+       size 827 20
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -606,7 +606,7 @@ FrameWidgetClass OZ_PageChat {
        visible 1
        ignorepointer 1
        position 10 35
-       size 851 320
+       size 827 320
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -627,7 +627,7 @@ FrameWidgetClass OZ_PageChat {
     PanelWidgetClass GroupPanel {
      visible 0
      position 0 40
-     size 871 370
+     size 847 370
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -640,7 +640,7 @@ FrameWidgetClass OZ_PageChat {
        visible 1
        ignorepointer 1
        position 10 10
-       size 851 20
+       size 827 20
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -657,7 +657,7 @@ FrameWidgetClass OZ_PageChat {
       PanelWidgetClass GNameFrame {
        visible 1
        position 10 50
-       size 525 32
+       size 827 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -670,7 +670,7 @@ FrameWidgetClass OZ_PageChat {
          visible 1
          ignorepointer 1
          position 1 1
-         size 523 30
+         size 825 28
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -682,7 +682,7 @@ FrameWidgetClass OZ_PageChat {
         EditBoxWidgetClass GName {
          visible 1
          position 6 0
-         size 513 32
+         size 815 30
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -699,7 +699,7 @@ FrameWidgetClass OZ_PageChat {
       PanelWidgetClass GDescFrame {
        visible 1
        position 10 105
-       size 851 32
+       size 827 32
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -712,7 +712,7 @@ FrameWidgetClass OZ_PageChat {
          visible 1
          ignorepointer 1
          position 1 1
-         size 849 30
+         size 825 30
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -724,7 +724,7 @@ FrameWidgetClass OZ_PageChat {
         EditBoxWidgetClass GDesc {
          visible 1
          position 6 0
-         size 839 32
+         size 815 32
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -919,7 +919,7 @@ FrameWidgetClass OZ_PageChat {
     PanelWidgetClass InvitePanel {
      visible 0
      position 0 40
-     size 871 370
+     size 847 370
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -932,7 +932,7 @@ FrameWidgetClass OZ_PageChat {
        visible 1
        ignorepointer 1
        position 10 10
-       size 851 20
+       size 827 20
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -949,7 +949,7 @@ FrameWidgetClass OZ_PageChat {
       TextListboxWidgetClass InviteList {
        visible 1
        position 10 37
-       size 851 295
+       size 827 295
        hexactpos 1
        vexactpos 1
        hexactsize 1

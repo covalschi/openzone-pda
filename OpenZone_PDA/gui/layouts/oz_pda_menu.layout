@@ -53,7 +53,7 @@ FrameWidgetClass OZ_PdaRoot {
        visible 1
        ignorepointer 1
        position 0 0
-       size 60 546
+       size 84 546
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -66,7 +66,7 @@ FrameWidgetClass OZ_PdaRoot {
       WrapSpacerWidgetClass TabRail {
        visible 1
        position 0 0
-       size 60 0
+       size 84 0
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -79,7 +79,7 @@ FrameWidgetClass OZ_PdaRoot {
       PanelWidgetClass TabRailEdge {
        visible 1
        ignorepointer 1
-       position 60 0
+       position 84 0
        size 1 546
        hexactpos 1
        vexactpos 1
@@ -91,8 +91,8 @@ FrameWidgetClass OZ_PdaRoot {
       }
       FrameWidgetClass PageHost {
        visible 1
-       position 61 0
-       size 1306 518
+       position 85 0
+       size 1282 518
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -102,8 +102,8 @@ FrameWidgetClass OZ_PdaRoot {
       PanelWidgetClass StatusBar {
        visible 1
        ignorepointer 1
-       position 61 518
-       size 1306 28
+       position 85 518
+       size 1282 28
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -203,10 +203,11 @@ FrameWidgetClass OZ_PdaRoot {
         }
        }
       }
+      // На весь екран, як LockPanel: сторінка (менша за екран) лишала б смугу праворуч і весь статусний рядок на видноті, а дітей центрувала б повз середину екрана.
       PanelWidgetClass InitPanel {
        visible 0
        position 0 0
-       size 1306 518
+       size 1367 546
        hexactpos 1
        vexactpos 1
        hexactsize 1

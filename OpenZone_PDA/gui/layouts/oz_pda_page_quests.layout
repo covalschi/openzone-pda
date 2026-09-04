@@ -3,7 +3,7 @@
 FrameWidgetClass OZ_PageQuests {
  visible 1
  position 0 0
- size 1306 518
+ size 1282 518
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -28,7 +28,7 @@ FrameWidgetClass OZ_PageQuests {
    visible 1
    ignorepointer 1
    position 52 20
-   size 1234 34
+   size 1210 34
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -46,7 +46,7 @@ FrameWidgetClass OZ_PageQuests {
   TextListboxWidgetClass QuestList {
    visible 1
    position 20 60
-   size 1266 410
+   size 1242 410
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -65,7 +65,7 @@ FrameWidgetClass OZ_PageQuests {
    visible 1
    ignorepointer 1
    position 20 476
-   size 1266 22
+   size 1242 22
    hexactpos 1
    vexactpos 1
    hexactsize 1

@@ -1,12 +1,12 @@
 {
   "layout": "oz_pda_tab",
   "note": "Одна вкладка рельса: іконка, підпис, смуга активної, лічильник. Скрипт ставить ім'я сторінки (SetName), SetUserID(1), вантажить іконку в TabIcon і текст у TabLabel; TabActive/TabHover/TabMark вмикає сам. TabBadge намальований наперед лічильника непрочитаного, який підключить фаза B2 -- поки що його нічого не вмикає.",
-  "root": {"button": {"name": "OZ_PdaTab", "size": [60, "$size.tab"], "children": [
+  "root": {"button": {"name": "OZ_PdaTab", "size": ["$device.rail", "$size.tab"], "children": [
     {"panel": {"name": "TabActive", "size": "fill", "color": "$pick", "hidden": true, "priority": 1}},
     {"panel": {"name": "TabHover", "size": "fill", "color": "$hover", "hidden": true, "priority": 2}},
     {"panel": {"name": "TabMark", "size": [3, "$size.tab"], "color": "$accent", "hidden": true, "priority": 3}},
-    {"icon":  {"name": "TabIcon", "at": [17, 8], "size": [26, 26], "image": "tab_page", "color": "$muted", "priority": 3}},
-    {"label": {"name": "TabLabel", "at": [0, 38], "w": "fill", "h": 16, "font": "tiny", "color": "$muted", "align": "center", "priority": 3}},
+    {"icon":  {"name": "TabIcon", "at": [29, 8], "size": [26, 26], "image": "tab_page", "color": "$muted", "priority": 3, "note": "29 = (84 - 26) / 2: іконка по середині рельса."}},
+    {"label": {"name": "TabLabel", "at": [0, 38], "w": "fill", "h": "$size.tabLabel", "font": "small", "color": "$muted", "align": "center", "priority": 3}},
     {"badge": {"name": "TabBadge", "anchor": "right", "at": [2, 2], "size": [14, 14], "priority": 4}}
   ]}}
 }

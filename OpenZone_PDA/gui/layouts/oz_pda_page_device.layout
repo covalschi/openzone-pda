@@ -3,7 +3,7 @@
 FrameWidgetClass OZ_PageDevice {
  visible 1
  position 0 0
- size 1306 518
+ size 1282 518
  hexactpos 1
  vexactpos 1
  hexactsize 1
@@ -94,7 +94,7 @@ FrameWidgetClass OZ_PageDevice {
    visible 0
    valign bottom_ref
    position 20 20
-   size 1266 240
+   size 1242 240
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -107,7 +107,7 @@ FrameWidgetClass OZ_PageDevice {
      visible 1
      ignorepointer 1
      position 10 10
-     size 1246 20
+     size 1222 20
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -123,7 +123,7 @@ FrameWidgetClass OZ_PageDevice {
     FrameWidgetClass CarSplit {
      visible 1
      position 10 36
-     size 1246 160
+     size 1222 160
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -151,7 +151,7 @@ FrameWidgetClass OZ_PageDevice {
        visible 1
        ignorepointer 1
        position 510 0
-       size 736 20
+       size 712 20
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -167,7 +167,7 @@ FrameWidgetClass OZ_PageDevice {
       ScrollWidgetClass CarScroll {
        visible 1
        position 510 26
-       size 736 134
+       size 712 134
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -331,7 +331,7 @@ FrameWidgetClass OZ_PageDevice {
     }
     ButtonWidgetClass BtnCarDoImport {
      visible 1
-     position 986 202
+     position 962 202
      size 130 28
      hexactpos 1
      vexactpos 1
@@ -388,7 +388,7 @@ FrameWidgetClass OZ_PageDevice {
     }
     ButtonWidgetClass BtnCarClose {
      visible 1
-     position 1126 202
+     position 1102 202
      size 130 28
      hexactpos 1
      vexactpos 1
@@ -448,7 +448,7 @@ FrameWidgetClass OZ_PageDevice {
   FrameWidgetClass StatePane {
    visible 1
    position 20 20
-   size 1266 478
+   size 1242 478
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -458,7 +458,7 @@ FrameWidgetClass OZ_PageDevice {
     FrameWidgetClass ColSys {
      visible 1
      position 0 0
-     size 623 478
+     size 611 478
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -468,7 +468,7 @@ FrameWidgetClass OZ_PageDevice {
       FrameWidgetClass SecSys {
        visible 1
        position 0 0
-       size 623 30
+       size 611 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -492,7 +492,7 @@ FrameWidgetClass OZ_PageDevice {
          visible 1
          ignorepointer 1
          position 12 0
-         size 611 24
+         size 599 24
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -510,7 +510,7 @@ FrameWidgetClass OZ_PageDevice {
          visible 1
          ignorepointer 1
          position 0 29
-         size 623 1
+         size 611 1
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -526,7 +526,7 @@ FrameWidgetClass OZ_PageDevice {
        visible 1
        ignorepointer 1
        position 0 36
-       size 623 44
+       size 611 44
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -547,7 +547,7 @@ FrameWidgetClass OZ_PageDevice {
        visible 1
        ignorepointer 1
        position 0 86
-       size 623 22
+       size 611 22
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -565,7 +565,7 @@ FrameWidgetClass OZ_PageDevice {
        visible 1
        ignorepointer 1
        position 0 114
-       size 623 70
+       size 611 70
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -585,7 +585,7 @@ FrameWidgetClass OZ_PageDevice {
       FrameWidgetClass SecHw {
        visible 1
        position 0 190
-       size 623 30
+       size 611 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -609,7 +609,7 @@ FrameWidgetClass OZ_PageDevice {
          visible 1
          ignorepointer 1
          position 12 0
-         size 611 24
+         size 599 24
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -627,7 +627,7 @@ FrameWidgetClass OZ_PageDevice {
          visible 1
          ignorepointer 1
          position 0 29
-         size 623 1
+         size 611 1
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -642,7 +642,7 @@ FrameWidgetClass OZ_PageDevice {
        visible 1
        ignorepointer 1
        position 0 226
-       size 623 22
+       size 611 22
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -660,7 +660,7 @@ FrameWidgetClass OZ_PageDevice {
        visible 1
        ignorepointer 1
        position 0 254
-       size 623 24
+       size 611 24
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -678,7 +678,7 @@ FrameWidgetClass OZ_PageDevice {
        visible 1
        ignorepointer 1
        position 0 284
-       size 623 24
+       size 611 24
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -696,7 +696,7 @@ FrameWidgetClass OZ_PageDevice {
        visible 1
        ignorepointer 1
        position 0 314
-       size 623 24
+       size 611 24
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -714,7 +714,7 @@ FrameWidgetClass OZ_PageDevice {
        visible 1
        ignorepointer 1
        position 0 344
-       size 623 24
+       size 611 24
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -961,8 +961,8 @@ FrameWidgetClass OZ_PageDevice {
     // Кнопки стоять однією вертикаллю праворуч, як у старому файлі; підпис ліворуч бере решту рядка. Кнопка 240, а не 190 як у старому файлі: «ВИМКНУТИ АВТОБЛОКУВАННЯ» міряється 312 px у 281 px коробці на 3840x1600 (зміряно живим обходом 2026-09-04).
     FrameWidgetClass ColSec {
      visible 1
-     position 643 0
-     size 623 478
+     position 631 0
+     size 611 478
      hexactpos 1
      vexactpos 1
      hexactsize 1
@@ -972,7 +972,7 @@ FrameWidgetClass OZ_PageDevice {
       FrameWidgetClass SecSec {
        visible 1
        position 0 0
-       size 623 30
+       size 611 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -996,7 +996,7 @@ FrameWidgetClass OZ_PageDevice {
          visible 1
          ignorepointer 1
          position 12 0
-         size 611 24
+         size 599 24
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -1014,7 +1014,7 @@ FrameWidgetClass OZ_PageDevice {
          visible 1
          ignorepointer 1
          position 0 29
-         size 623 1
+         size 611 1
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -1029,7 +1029,7 @@ FrameWidgetClass OZ_PageDevice {
        visible 1
        ignorepointer 1
        position 0 36
-       size 373 28
+       size 361 28
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -1045,7 +1045,7 @@ FrameWidgetClass OZ_PageDevice {
       }
       ButtonWidgetClass BtnPin {
        visible 1
-       position 383 36
+       position 371 36
        size 240 28
        hexactpos 1
        vexactpos 1
@@ -1102,7 +1102,7 @@ FrameWidgetClass OZ_PageDevice {
       }
       ButtonWidgetClass BtnPinClear {
        visible 1
-       position 383 70
+       position 371 70
        size 240 28
        hexactpos 1
        vexactpos 1
@@ -1161,7 +1161,7 @@ FrameWidgetClass OZ_PageDevice {
        visible 1
        ignorepointer 1
        position 0 104
-       size 373 28
+       size 361 28
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -1177,7 +1177,7 @@ FrameWidgetClass OZ_PageDevice {
       }
       ButtonWidgetClass BtnAutoLock {
        visible 1
-       position 383 104
+       position 371 104
        size 240 28
        hexactpos 1
        vexactpos 1
@@ -1234,7 +1234,7 @@ FrameWidgetClass OZ_PageDevice {
       }
       ButtonWidgetClass BtnLock {
        visible 0
-       position 383 138
+       position 371 138
        size 240 28
        hexactpos 1
        vexactpos 1
@@ -1291,7 +1291,7 @@ FrameWidgetClass OZ_PageDevice {
       }
       ButtonWidgetClass BtnHudEdit {
        visible 1
-       position 383 172
+       position 371 172
        size 240 28
        hexactpos 1
        vexactpos 1
@@ -1349,7 +1349,7 @@ FrameWidgetClass OZ_PageDevice {
       FrameWidgetClass SecDev {
        visible 1
        position 0 206
-       size 623 30
+       size 611 30
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -1373,7 +1373,7 @@ FrameWidgetClass OZ_PageDevice {
          visible 1
          ignorepointer 1
          position 12 0
-         size 611 24
+         size 599 24
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -1391,7 +1391,7 @@ FrameWidgetClass OZ_PageDevice {
          visible 1
          ignorepointer 1
          position 0 29
-         size 623 1
+         size 611 1
          hexactpos 1
          vexactpos 1
          hexactsize 1
@@ -1461,7 +1461,7 @@ FrameWidgetClass OZ_PageDevice {
       }
       ButtonWidgetClass BtnPower {
        visible 1
-       position 383 242
+       position 371 242
        size 240 28
        hexactpos 1
        vexactpos 1
@@ -1521,7 +1521,7 @@ FrameWidgetClass OZ_PageDevice {
        visible 1
        ignorepointer 1
        position 0 276
-       size 623 22
+       size 611 22
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -1540,7 +1540,7 @@ FrameWidgetClass OZ_PageDevice {
        visible 1
        ignorepointer 1
        position 0 304
-       size 623 10
+       size 611 10
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -1569,7 +1569,7 @@ FrameWidgetClass OZ_PageDevice {
        visible 1
        ignorepointer 1
        position 0 320
-       size 623 44
+       size 611 44
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -1590,7 +1590,7 @@ FrameWidgetClass OZ_PageDevice {
        visible 1
        ignorepointer 1
        position 0 409
-       size 623 1
+       size 611 1
        hexactpos 1
        vexactpos 1
        hexactsize 1
@@ -1601,7 +1601,7 @@ FrameWidgetClass OZ_PageDevice {
       }
       ButtonWidgetClass BtnFactoryDev {
        visible 0
-       position 223 416
+       position 211 416
        size 400 28
        hexactpos 1
        vexactpos 1
@@ -1658,7 +1658,7 @@ FrameWidgetClass OZ_PageDevice {
       }
       ButtonWidgetClass BtnLogout {
        visible 0
-       position 223 450
+       position 211 450
        size 400 28
        hexactpos 1
        vexactpos 1

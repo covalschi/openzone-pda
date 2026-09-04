@@ -55,7 +55,7 @@ ButtonWidgetClass OZ_ContactRow {
    visible 1
    ignorepointer 1
    position 22 6
-   size 300 25
+   size 260 25
    hexactpos 1
    vexactpos 1
    hexactsize 1
@@ -69,12 +69,12 @@ ButtonWidgetClass OZ_ContactRow {
    "text halign" left
    "text valign" center
   }
-  // Фракція фарбується у свій колір -- той самий, що й смужка.
+  // Фракція фарбується у свій колір -- той самий, що й смужка. Три написи ділять один рядок, і межі тут виміряні (2026-09-05): «Чисте небо», найдовша назва реєстру, міряє 88 одиниць, тож 94 їй досить; RowWhere росте ліворуч від 578 і в найдовшому своєму вигляді («востаннє бачили 2026-08-30» -- 186 одиниць) починається на 392, тому назва мусить скінчитися на 384.
   TextWidgetClass RowFaction {
    visible 1
    ignorepointer 1
-   position 330 6
-   size 180 25
+   position 290 6
+   size 94 25
    hexactpos 1
    vexactpos 1
    hexactsize 1

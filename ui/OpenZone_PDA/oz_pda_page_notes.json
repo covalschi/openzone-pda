@@ -17,13 +17,13 @@
           ]}}
       }}},
       {"label":  {"name": "NotesHint", "h": "$size.hint", "font": "hint", "color": "$faint"}},
-      {"button": {"name": "BtnNew", "h": 32, "font": "small"}}
+      {"button": {"name": "BtnNew", "h": "$size.button", "font": "small"}}
     ]}},
-    {"panel": {"name": "EditorPane", "w": "fill", "color": "$panel", "inset": 12, "click": true, "children": [
+    {"panel": {"name": "EditorPane", "w": "fill", "color": "$panel", "inset": "$space.overlay", "click": true, "children": [
       {"vbox": {"gap": "$space.gap", "children": [
         {"field": {"name": "NoteTitle", "h": 32}},
         {"field": {"name": "NoteBody", "h": "fill", "lines": 15}},
-        {"hbox": {"h": 32, "gap": "$space.gap", "children": [
+        {"hbox": {"h": "$size.button", "gap": "$space.gap", "children": [
           {"button": {"name": "BtnSave", "w": 200, "font": "small"}},
           {"button": {"name": "BtnDelete", "w": 200, "font": "small"}},
           {"gap":    {"w": "fill"}},
