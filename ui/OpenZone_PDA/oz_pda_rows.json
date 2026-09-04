@@ -1,0 +1,29 @@
+{
+  "layout": "oz_pda_rows",
+  "note": "Лист шаблонів рядків карти і фракції: сторінка не реєструється, генератор породжує з нього два рядки -- oz_pda_marker_row.layout, oz_pda_faction_row.layout. Кожен list дає своєму рядку ширину (розмір списку мінус SCROLLBAR_UNITS): MarkerScroll 325 -> 315, FactionScroll 626 -> 616 -- ті самі числа, що й старі рядки, писані руками.",
+  "root": {"frame": {"name": "OZ_RowsSheet", "size": "$device.page", "children": [
+    {"list": {"name": "MarkerScroll", "stack": "MarkerRows", "at": [0, 0], "size": [325, 400], "rows": {
+      "oz_pda_marker_row": {"row": {"name": "OZ_MarkerRow", "h": 42, "click": true,
+        "note": "Один рядок мітки. Ім'я КОРЕНЯ скрипт перезаписує на Id мітки (SetName), SetUserID(5) відрізняє рядок мітки в OnClick. RowIcon -- нове: скрипт кличе SetMarkerIcon(row, marker) (OZ_PdaPageMap.c).",
+        "children": [
+          {"panel": {"name": "RowBg", "size": "fill", "color": "$panel", "priority": 0}},
+          {"panel": {"name": "RowPick", "at": [0, 0], "size": [3, 42], "color": "$accent", "hidden": true, "priority": 1}},
+          {"icon":  {"name": "RowIcon", "at": [8, 11], "size": [20, 20], "image": "mk_marker", "color": "$accent", "priority": 1}},
+          {"label": {"name": "RowName", "at": [34, 0], "w": 195, "h": 23, "font": "body", "color": "$text", "priority": 1}},
+          {"label": {"name": "RowWhere", "anchor": "right", "at": [8, 3], "w": 70, "h": 18, "font": "small", "color": "$muted", "align": "right", "priority": 1}},
+          {"label": {"name": "RowDesc", "at": [34, 23], "w": 273, "h": 18, "font": "small", "color": "$muted", "priority": 1}},
+          {"rule":  {"name": "RowLine", "anchor": "bottom", "at": [8, 0], "w": 299, "priority": 1}}
+        ]}}
+    }}},
+    {"list": {"name": "FactionScroll", "stack": "FactionRows", "at": [340, 0], "size": [626, 400], "rows": {
+      "oz_pda_faction_row": {"row": {"name": "OZ_FactionRow", "h": 32, "click": true,
+        "note": "Один рядок члена фракції. Ім'я кореня скрипт міняє на ім'я гравця, UserID 8 відрізняє його в OnClick.",
+        "children": [
+          {"panel": {"name": "FRowBg", "size": "fill", "color": "$panel", "priority": 0}},
+          {"panel": {"name": "FRowPick", "at": [0, 0], "size": [3, 32], "color": "$accent", "hidden": true, "priority": 1}},
+          {"label": {"name": "FRowName", "at": [12, 0], "w": 380, "h": 30, "font": "body", "color": "$text", "priority": 1}},
+          {"label": {"name": "FRowRank", "at": [400, 0], "w": 200, "h": 30, "font": "small", "color": "$muted", "align": "right", "priority": 1}}
+        ]}}
+    }}}
+  ]}}
+}

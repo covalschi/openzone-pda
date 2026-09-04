@@ -569,6 +569,14 @@ class OZ_PdaPageMap : OZ_PdaPage
             OZ_Rpc.Request(OZ_PdaConst.PAGE_MAP, "marker_edit", json);
     }
 
+    // Спрайт рядка мітки. OZ_MapMarker (OZ_PdaTypes.c) поки несе лише
+    // Id/Name/Pos/Desc -- поля виду немає, тож завжди базова крапка;
+    // mk_stash/mk_danger/mk_route чекають на це поле в мітці.
+    private string SpriteFor(OZ_MapMarker m)
+    {
+        return "mk_marker";
+    }
+
     // Перебудувати рядки списку. force -- перебудувати завжди (вибір
     // змінився, підсвітку треба перемалювати); без force -- лише коли
     // самі мітки змінилися, бо стан приходить щосекунди.
@@ -639,6 +647,10 @@ class OZ_PdaPageMap : OZ_PdaPage
             row.SetName(mrk.Id);
             row.SetUserID(5);
             m_RowWgts.Insert(row);
+
+            ImageWidget ic = ImageWidget.Cast(row.FindAnyWidget("RowIcon"));
+            if (ic)
+                ic.LoadImageFile(0, "set:oz_pda_icons image:" + SpriteFor(mrk));
 
             TextWidget name = TextWidget.Cast(row.FindAnyWidget("RowName"));
             if (name)

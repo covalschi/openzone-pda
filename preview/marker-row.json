@@ -1,0 +1,7 @@
+{
+  "note": "One marker row, as OZ_PdaPageMap's RebuildRows fills it (name, then distance right-aligned, then description below).",
+  "ops": [
+    {"op": "text", "name": "RowName", "nth": 1, "text": "Схрон біля Агропрому"},
+    {"op": "text", "name": "RowWhere", "nth": 1, "text": "1,2 км"}
+  ]
+}
