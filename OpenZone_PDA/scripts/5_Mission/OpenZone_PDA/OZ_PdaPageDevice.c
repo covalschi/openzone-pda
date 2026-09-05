@@ -661,7 +661,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
                     // Лише назва: координати живуть у прев'ю праворуч, а
                     // рядок списку мусить читатись одним поглядом.
                     int row = m_CarList.AddItem("[M] " + m.Name, NULL, 0);
-                    m_CarList.SetItemColor(row, 0, ARGB(255, 255, 122, 26));
+                    m_CarList.SetItemColor(row, 0, ARGB(255, 79, 181, 232));
                     m_CarRowKind.Insert("mark");
                     m_CarRowIndex.Insert(i);
                 }
@@ -676,7 +676,7 @@ class OZ_PdaPageDevice : OZ_PdaPage
                         continue;
 
                     int nrow = m_CarList.AddItem("[N] " + n.Title, NULL, 0);
-                    m_CarList.SetItemColor(nrow, 0, ARGB(255, 255, 122, 26));
+                    m_CarList.SetItemColor(nrow, 0, ARGB(255, 79, 181, 232));
                     m_CarRowKind.Insert("note");
                     m_CarRowIndex.Insert(k);
                 }
