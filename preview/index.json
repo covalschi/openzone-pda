@@ -1,5 +1,5 @@
 {
-  "note": "Preview gallery for ui_gallery: every layout of the PDA as the engine draws it. Page hosts are the container a layout lives in (layout units); migrated rows use the list width minus 10 (the scrollbar). A fixture travels to the bridge as one JSON string of at most ~1000 bytes on the wire.",
+  "note": "Preview gallery for ui_gallery: every layout of the PDA as the engine draws it. Page hosts are the container a layout lives in (layout units); migrated rows use the list width minus 10 (the scrollbar). A fixture travels to the bridge as one JSON string of at most ~1000 bytes on the wire. `oz_pda_hud_proxy.layout` has no entry: its `ProxyLabel` is exact-positioned 8 units in with a width that is a fraction of its parent, so it overflows that parent by 8 units at any host size a preview could give it -- tried once (issues.error == 1, independent of the rect). Only `OZ_HudEditMenu`, which never resizes that child and only ever wraps a live pane, avoids the overflow in practice.",
   "entries": [
     {"name": "shell", "layout": "OpenZone_PDA/gui/layouts/oz_pda_menu.layout", "fixture": "preview/shell.json",
      "note": "the device shell with seven tabs in the rail; pages are looked at separately"},
@@ -25,7 +25,6 @@
     {"name": "row-note", "layout": "OpenZone_PDA/gui/layouts/oz_pda_note_row.layout", "host": "415 32"},
     {"name": "hud", "layout": "OpenZone_PDA/gui/layouts/oz_pda_hud.layout"},
     {"name": "hud-edit", "layout": "OpenZone_PDA/gui/layouts/oz_pda_hud_edit.layout"},
-    {"name": "hud-proxy", "layout": "OpenZone_PDA/gui/layouts/oz_pda_hud_proxy.layout"},
     {"name": "vpp-pane", "layout": "OpenZone_PDA_VPP/gui/layouts/oz_pda_vpp_pane.layout", "host": "1000 620"},
     {"name": "icons", "layout": "OpenZone_PDA/gui/layouts/oz_pda_icons_sheet.layout", "host": "1282 518",
      "note": "every sprite of the set, tinted accent; blank cells = the set is not registered or the texture did not load"}
