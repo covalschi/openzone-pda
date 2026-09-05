@@ -1,5 +1,5 @@
 {
-  "note": "Preview gallery for ui_gallery: every layout of the PDA as the engine draws it. Page hosts are the container a layout lives in (layout units); migrated rows use the list width minus 10 (the scrollbar), hand-written rows their own root size. A fixture travels to the bridge as one JSON string of at most ~1000 bytes on the wire.",
+  "note": "Preview gallery for ui_gallery: every layout of the PDA as the engine draws it. Page hosts are the container a layout lives in (layout units); migrated rows use the list width minus 10 (the scrollbar). A fixture travels to the bridge as one JSON string of at most ~1000 bytes on the wire.",
   "entries": [
     {"name": "shell", "layout": "OpenZone_PDA/gui/layouts/oz_pda_menu.layout", "fixture": "preview/shell.json",
      "note": "the device shell with seven tabs in the rail; pages are looked at separately"},
@@ -25,6 +25,7 @@
     {"name": "row-note", "layout": "OpenZone_PDA/gui/layouts/oz_pda_note_row.layout", "host": "415 32"},
     {"name": "hud", "layout": "OpenZone_PDA/gui/layouts/oz_pda_hud.layout"},
     {"name": "hud-edit", "layout": "OpenZone_PDA/gui/layouts/oz_pda_hud_edit.layout"},
+    {"name": "hud-proxy", "layout": "OpenZone_PDA/gui/layouts/oz_pda_hud_proxy.layout"},
     {"name": "vpp-pane", "layout": "OpenZone_PDA_VPP/gui/layouts/oz_pda_vpp_pane.layout", "host": "1000 620"},
     {"name": "icons", "layout": "OpenZone_PDA/gui/layouts/oz_pda_icons_sheet.layout", "host": "1282 518",
      "note": "every sprite of the set, tinted accent; blank cells = the set is not registered or the texture did not load"}

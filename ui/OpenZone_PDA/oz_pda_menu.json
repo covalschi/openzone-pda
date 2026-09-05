@@ -11,7 +11,7 @@
           {"stack": {"name": "TabRail", "w": "$device.rail", "priority": 2, "note": "Вкладки кладе скрипт (oz_pda_tab.layout), по одній на сторінку; спейсер міряє себе на Update()."}},
           {"panel": {"name": "TabRailEdge", "at": ["$device.rail", 0], "size": [1, "$device.screenH"], "color": "$edge", "priority": 2}},
           {"frame": {"name": "PageHost", "at": ["$device.railEdge", 0], "size": "$device.page", "priority": 3}},
-          {"panel": {"name": "StatusBar", "at": ["$device.railEdge", 518], "size": ["$device.pageW", "$device.status"], "color": "$rail", "priority": 4, "children": [
+          {"panel": {"name": "StatusBar", "at": ["$device.railEdge", "$device.pageH"], "size": ["$device.pageW", "$device.status"], "color": "$rail", "priority": 4, "children": [
             {"label": {"name": "StatusLeft", "at": [12, 0], "size": [340, 28], "font": "small", "color": "$muted"}},
             {"label": {"name": "StatusMid", "anchor": "center", "size": [360, 28], "font": "small", "color": "$muted", "align": "center"}},
             {"icon":  {"name": "StatusSignal", "anchor": "right", "at": [332, 6], "size": [16, 16], "image": "st_signal", "color": "$muted"}},

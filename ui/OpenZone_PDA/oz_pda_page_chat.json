@@ -44,7 +44,7 @@
                 {"panel": {"name": "LineMine", "w": 2, "h": 16, "color": "$accent", "hidden": true}},
                 {"gap":   {"w": 8}},
                 {"label": {"name": "LineWho", "w": "auto", "font": "small", "color": "$text"}},
-                {"gap":   {"w": 10}},
+                {"gap":   {"w": "$space.gap"}},
                 {"label": {"name": "LineAt", "w": "auto", "font": "small", "color": "$faint"}}
               ]}},
               {"text": {"name": "LineText", "plain": true, "font": "body", "color": "$text", "note": "MultilineText, не RichText: текст іде з Discord як є, і <@згадки> не мають зникати як розмітка."}},

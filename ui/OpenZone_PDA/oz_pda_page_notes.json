@@ -6,7 +6,7 @@
   ]}},
   "body": {"hbox": {"gap": "$space.column", "children": [
     {"vbox": {"w": 425, "gap": "$space.tight", "children": [
-      {"header": {"icon": "tab_notes", "title": {"name": "NotesHead", "text": "#STR_OZ_PAGE_NOTES"}}},
+      {"header": {"icon": "tab_notes", "h": "$size.header", "title": {"name": "NotesHead", "text": "#STR_OZ_PAGE_NOTES"}}},
       {"list": {"name": "NotesScroll", "stack": "NotesCanvas", "h": "fill", "rows": {
         "oz_pda_note_row": {"row": {"name": "OZ_NoteRow", "h": 32, "click": true,
           "note": "Одна нотатка: назва й дата; смужка ліворуч -- обрана.",

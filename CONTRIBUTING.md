@@ -30,11 +30,22 @@ cannot be accepted. **GPL code in particular cannot go in.**
   `original` is Ukrainian, `english` is English, and the twelve remaining vanilla
   columns repeat `original`; the capital Ukrainian `І` is stored as the Latin `I`
   because no Metron font draws U+0406.
-- **`OpenZone_PDA/gui/layouts/*.layout` files are generated, never hand-edited.**
-  They come from `ui/OpenZone_PDA/*.json` plus `ui/tokens.json`; regenerate with
-  the MCP's `layout_build`, or `python -m dayz_mcp.layoutgen <root> OpenZone_PDA`
-  from the generator repo. Run the gallery at two sizes and in two languages
-  before calling a UI change done.
+- **`OpenZone_PDA/gui/layouts/*.layout` files are generated, never hand-edited** --
+  with four named exceptions: `oz_pda_hud.layout`, `oz_pda_hud_edit.layout` and
+  `oz_pda_hud_proxy.layout` (proportional layouts, hand-written on purpose, palette
+  kept by hand) and `OpenZone_PDA_VPP/gui/layouts/oz_pda_vpp_pane.layout` (deferred
+  to phase C). Every other layout comes from `ui/OpenZone_PDA/*.json` plus
+  `ui/tokens.json`; regenerate with the MCP's `layout_build`, or
+  `python -m dayz_mcp.layoutgen <root> OpenZone_PDA` from the generator repo. Run
+  the gallery at two sizes and in two languages before calling a UI change done.
+- **`ui/tokens.json` is the shared single source, not only this repo's input.**
+  `openzone-factions` reads it through its own `[build] tokens` to lay out the
+  faction page that shares the contacts tab (`$device.satellite`); changing a
+  token here can re-lay a page in that repository too.
+- **Icons**: `tools/icons/make_icons.py` draws the atlas and writes the PNG and
+  the `.imageset`; it does not touch `ui/OpenZone_PDA/oz_pda_icons_sheet.json`
+  (the gallery sheet description), which is kept by hand and must list the same
+  sprite names.
 - **No hard dependency beyond Community Framework.** Anything else is an optional
   provider behind an `#ifdef` plus a runtime probe, with a working fallback.
 - **Never identify an item by inheritance from our own class.** Item classnames come
