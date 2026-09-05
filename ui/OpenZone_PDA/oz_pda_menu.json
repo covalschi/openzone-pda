@@ -21,7 +21,7 @@
           {"panel": {"name": "InitPanel", "size": "$device.screen", "color": "$screen", "priority": 7, "click": true, "hidden": true,
             "note": "На весь екран, як LockPanel: сторінка (менша за екран) лишала б смугу праворуч і весь статусний рядок на видноті, а дітей центрувала б повз середину екрана.", "children": [
             {"label":  {"name": "InitTitle", "anchor": "center", "at": [0, -60], "size": [600, 24], "font": "header", "color": "$accent", "align": "center"}},
-            {"label":  {"name": "InitHint", "anchor": "center", "at": [0, -25], "size": [700, 36], "font": "hint", "color": "$muted", "align": "center"}},
+            {"label":  {"name": "InitHint", "anchor": "center", "at": [0, -25], "size": [1100, 36], "font": "hint", "color": "$muted", "align": "center"}},
             {"button": {"name": "BtnInitBig", "anchor": "center", "at": [0, 30], "size": [260, 32], "font": "small"}}
           ]}},
           {"panel": {"name": "LockPanel", "size": "$device.screen", "color": "$screen", "priority": 9, "click": true, "hidden": true, "children": [
